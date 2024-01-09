@@ -1,0 +1,137 @@
+#!/bin/bash
+# shellcheck disable=SC1091
+function app::functions::port_randomizer() {
+    local ports
+    local retries
+    local port_low
+    local port_high
+    ports="$1"
+    retries=0
+    port_low=$(echo "$ports" | cut -d'-' -f 1 | tr -d '[]')
+    port_high=$(echo "$ports" | cut -d'-' -f 2 | tr -d '[]')
+    while ((retries > 0)); do
+        local port=$((port_low + RANDOM % (port_high - port_low + 1)))
+        if ! netstat -tuln | grep -q ":$port "; then
+            echo "$port"
+            return 0
+        fi
+        ((retries--))
+    done
+    logger::log "error" "$(i18n::translate 'port_unavailable')"
+    return 1
+}
+
+function app::functions::app_name_sanitizer() {
+    local app_name
+    app_name=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    export APP_NAME_SANITIZED="$app_name"
+}
+
+function app::functions::multi_user_handler() {
+    local service_name
+    local caddyfile_dest
+    local service_file
+    local username
+    local app_name
+    local multi_user
+    local app_name_sanitized
+    username="$1"
+    app_name="$2"
+    multi_user="$3"
+    app_name_sanitized=$(app::functions::app_name_sanitizer "$app_name")
+
+    if [ "$multi_user" == "true" ]; then
+        service_name="$app_name_sanitized@$username"
+        caddyfile_dest="/etc/caddy/softwares/$username/$app_name"
+        service_file="/etc/systemd/system/$service_name.service"
+    else
+        service_name="$app_name_sanitized"
+        caddyfile_dest="/etc/caddy/softwares/$app_name"
+        service_file="/etc/systemd/system/$service_name.service"
+    fi
+
+    echo "$service_name"
+    echo "$caddyfile_dest"
+    echo "$service_file"
+}
+
+function app::functions::service_manager() {
+    local action=$1
+    local service_name=$2
+    if systemctl is-active --quiet "$service_name"; then
+        logger::log "info" "$(i18n::translate 'service_running' "$service_name")"
+    else
+        logger::log "info" "$(i18n::translate 'service_not_running' "$service_name")"
+    fi
+
+    case $action in
+    start | stop | restart)
+        systemctl "$action" "$service_name"
+        logger::log "info" "$(i18n::translate 'service_action' "$service_name" "$action")"
+        ;;
+    enable)
+        systemctl enable "$service_name"
+        systemctl daemon-reload
+        systemctl start "$service_name"
+        logger::log "info" "$(i18n::translate 'service_action' "$service_name" "enabled, reloaded, and started")"
+        ;;
+    disable)
+        systemctl stop "$service_name"
+        systemctl disable "$service_name"
+        systemctl daemon-reload
+        logger::log "info" "$(i18n::translate 'service_action' "$service_name" "stopped, disabled, and reloaded")"
+        ;;
+    status)
+        if systemctl is-active --quiet "$service_name"; then
+            logger::log "info" "$(i18n::translate 'service_running' "$service_name")"
+        else
+            logger::log "info" "$(i18n::translate 'service_is_not_running' "$service_name")"
+        fi
+        ;;
+    *)
+        logger::log "error" "$(i18n::translate 'action_invalid_for' "$action" "$service_name")"
+        exit 1
+        ;;
+    esac
+}
+
+function app::functions::install::dependencies() {
+    local dependencies=$1
+    logger::do "apt-get update"
+    echo -n "$(i18n::translate 'install.installing'): "
+    apt::functions::inline_install "${dependencies[@]}"
+    logger::log "success" "$(i18n::translate 'install.required_dependencies_outro')"
+}
+
+function app::functions::install::external::dependency() {
+    local filename="$1"
+    local url="$2"
+    local path="$3"
+    local executable="$4"
+
+    logger::log "info" "$(i18n::translate 'install_extra_deps' "$filename")"
+
+    local full_path="$path/$filename"
+    if [[ -f "$full_path" ]]; then
+        logger::log "info" "$(i18n::translate 'install_extra_deps_already_exists' "$filename")"
+        return 0
+    fi
+
+    logger::log "info" "$(i18n::translate 'install_extra_deps_download' "$filename")"
+    if wget -q "$url" -O "$full_path"; then
+        if [[ "$executable" == "true" ]]; then
+            chmod +x "$full_path"
+        fi
+        logger::log "success" "$(i18n::translate 'install_extra_deps_download_success' "$filename")"
+    else
+        logger::log "error" "$(i18n::translate 'install_extra_deps_download_failed' "$filename")"
+        return 1
+    fi
+}
+
+function app::functions::4k_renamer() {
+    local app_name=$1
+    local option=$2
+    APP_NAME="$app_name$option"
+    APP_NAME_SANITIZED=$(app::functions::app_name_sanitizer "$APP_NAME")
+}

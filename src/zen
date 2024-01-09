@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Source the necessary modules
+# shellcheck disable=SC1091
+source ./modules/init.sh
+set -e
+set -o pipefail
+trapMessage=$(logger::log "error" "$(i18n::translate 'error_line' "$LINENO")")
+trapCode=";exit 1"
+trap '$trapMessage$trapCode' ERR
+# Function to add software
+function zen::software_handler() {
+	local action="$1"
+	local app_name="$2"
+	local username="$3"
+	local option="$4"
+
+	# Determine the script path based on the action and app_name
+	local script_path="./apps/official/$app_name/$app_name"
+
+	# Check if the script exists
+	if [[ ! -f "$script_path" ]]; then
+		echo "Error: Script for $app_name not found."
+		exit 1
+	fi
+
+	# Execute the script with the appropriate action and options
+	bash "$script_path" "$action" -u "$username" -o "$option"
+}
+
+# Main function to handle the commands
+main() {
+	if [[ "$1" != "software" ]]; then
+		echo "Usage: $0 software [add|remove] [software] -u [username] [-o [option]]"
+		exit 1
+	fi
+
+	local action="$2"
+	local app_name="$3"
+	local username=""
+	local option=""
+
+	# Parse the command-line arguments
+	shift 3
+	while getopts ":u:o:" opt; do
+		case $opt in
+		u) username="$OPTARG" ;;
+		o) option="$OPTARG" ;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1
+			;;
+		esac
+	done
+
+	# Check if username is provided
+	if [[ -z "$username" ]]; then
+		echo "Error: Username is required."
+		exit 1
+	fi
+
+	# Call the software handler with the provided parameters
+	zen::software_handler "$action" "$app_name" "$username" "$option"
+}
+
+# Call the main function with all the script arguments
+main "$@"

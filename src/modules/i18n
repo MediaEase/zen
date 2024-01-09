@@ -1,0 +1,27 @@
+#!/bin/bash
+
+function i18n::translate() {
+    local key="$1"
+    shift
+    local args=("$@")
+    local locale_file_path
+    locale_file_path="$MEDIAEASE_LOCALE_FILE"
+    local translation
+    # Use 'yq e' to evaluate the expression
+    translation=$(yq e ".${key}" "$locale_file_path" 2>/dev/null)
+    if [[ -z "$translation" || "$translation" == "null" ]]; then
+        logger::log "info" "Translation key not found: $key"
+        printf '%s' "$key"
+        return
+    fi
+
+    local i=0
+    for arg in "${args[@]}"; do
+        local placeholder="{arg${i}}"
+        translation="${translation//$placeholder/$arg}"
+        ((i++))
+    done
+    translation="${translation%\"}"
+    translation="${translation#\"}"
+    printf '%s' "$translation"
+}

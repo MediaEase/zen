@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+function apt::functions::clear_dpkg() {
+    logger::log "info" "$(i18n::translate 'common.updating_system')"
+    apt::functions::non_interactive_apt "update"
+    apt::functions::non_interactive_apt "upgrade" >/dev/null 2>&1
+    if [ "$?" -eq 2 ]; then
+        logger::log "warning" "$(i18n::translate 'dpkg_locked')"
+        logger::log "info" "$(i18n::translate 'dpkg_locked_info')"
+        rm -f /var/lib/dpkg/updates/0*
+        local locks
+        locks=$(find /var/lib/dpkg/lock* -o -find /var/cache/apt/archives/lock*)
+        if [[ "$locks" ]]; then
+            for lock in $locks; do
+                rm -f "$lock"
+            done
+            logger::do "dpkg --configure -a"
+            apt::functions::non_interactive_apt "update" >/dev/null 2>&1
+            apt::functions::non_interactive_apt "upgrade" >/dev/null 2>&1
+        fi
+        if ! logger::do "apt-get check"; then
+            logger::die "$(i18n::translate 'apt_failed')"
+        fi
+    fi
+    logger::log "success" "$(i18n::translate 'common.updating_system_complete')"
+}
+function apt::functions::inline_install() {
+    local dependencies=("$@")
+    local first=true
+    for dep in "${dependencies[@]}"; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            echo -n " | "
+        fi
+
+        if apt::functions::safe_install "$dep"; then
+            echo -n -e "${GREEN}$dep${NC}"
+        else
+            echo -n -e "${RED}$dep${NC}"
+        fi
+    done
+    echo
+}
+
+function apt::functions::non_interactive_apt() {
+    DEBIAN_FRONTEND=noninteractive apt-get -yqq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" "$@"
+}
+
+function apt::functions::safe_install() {
+    local package="$1"
+    local reinstall="$2"
+    if [[ -z "$package" ]]; then
+        logger::log "error" "$(i18n::translate 'common.package_name_not_provided')"
+        return 1
+    fi
+    if [[ "$reinstall" == "true" ]]; then
+        logger::do "apt-get -yqq --allow-unauthenticated install --reinstall $package"
+    else
+        logger::do "apt-get -yqq --allow-unauthenticated install $package"
+    fi
+}

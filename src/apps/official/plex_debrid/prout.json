@@ -1,0 +1,61 @@
+{
+  "arguments": {
+    "app_name": "Plex Debrid",
+    "docs": "https://github.com/itsToggle/plex_debrid/wiki",
+    "homepage": "https://github.com/itsToggle/plex_debrid",
+    "multi_user": true,
+    "subdomain": false,
+    "options": null,
+    "ports": null,
+    "connects_to": {
+      "Plex": {
+        "keys": [
+          {
+            "object": "plexOnlineToken",
+            "type": "config_file"
+          }
+        ]
+      },
+      "Overseer": {
+        "keys": [
+          {
+            "object": "apiKey",
+            "type": "database"
+          },
+          {
+            "object": "proxy_pass",
+            "type": "nginx_config"
+          }
+        ]
+      },
+      "Jackett": {
+        "keys": [
+          {
+            "object": "APIKey",
+            "type": "config_file"
+          },
+          {
+            "object": "proxy_pass",
+            "type": "nginx_config"
+          },
+          {
+            "object": "LocalBindAddress",
+            "type": "config_file"
+          }
+        ]
+      },
+      "Prowlarr": {
+        "keys": [
+          {
+            "object": "APIKey",
+            "type": "config_file"
+          },
+          {
+            "object": "proxy_pass",
+            "type": "nginx_config"
+          }
+        ]
+      }
+    }
+  }
+}

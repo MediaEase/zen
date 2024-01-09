@@ -1,0 +1,34 @@
+name: Check PR labels
+
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'docs/**'
+
+jobs:
+  documentation-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check for 'docs-needed' Label
+        id: label-check
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const payload = context.payload.pull_request
+            const labelFound = payload.labels.some(label => label.name === 'docs-needed');
+            return labelFound;
+
+      - name: Verify Documentation Changes
+        if: steps.label-check.outputs.result == 'true'
+        run: |
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD -- 'docs/')
+          if [[ -z "$CHANGED_FILES" ]]; then
+            echo "No changes in documentation found."
+            exit 1
+          fi

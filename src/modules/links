@@ -1,0 +1,87 @@
+#!/bin/bash
+# This script will be used for the auto-connections between apps.
+declare -A app_endpoints=(
+    ["Sonarr:download"]="/api/v3/download"
+    ["Sonarr:connect"]="/api/v3/connections"
+    ["Sonarr:indexer"]="/api/v3/indexer"
+    ["Radarr:download"]="/api/v3/download"
+    ["Radarr:connect"]="/api/v3/connections"
+    ["Radarr:indexer"]="/api/v3/indexer"
+)
+
+function links::app::get_endpoint() {
+    local app="$1"
+    local action="$2"
+    local key="${app}:${action}"
+
+    # Retrieve endpoint using the compound key
+    local endpoint="${app_endpoints[$key]}"
+
+    if [[ -n "$endpoint" ]]; then
+        echo "$endpoint"
+    else
+        logger::log "error" "$(i18n::translate "endpoint_not_supported" "$app" "$action")"
+        return 1
+    fi
+}
+
+function links::app::send_api_request() {
+    local app="$1"
+    local action="$2"
+    local username="$3"
+    local json_data="$4"
+
+    local user_id app_api_key app_port endpoint base_url
+
+    # Get the user ID from the database
+    user_id=$(links::db::get_userId "$username")
+    if [[ -z "$user_id" ]]; then
+        logger::log "error" "$(i18n::translate "user_id_not_found" "$username")"
+        return 1
+    fi
+
+    # Get the application details from the database
+    read -r app_api_key app_port <<<"$(links::db::get_app_details "$app" "$user_id")"
+    if [[ -z "$app_api_key" || -z "$app_port" ]]; then
+        logger::log "error" "$(i18n::translate "app_details_not_found" "$app" "$user_id")"
+        return 1
+    fi
+
+    # Get the endpoint for the app and action
+    endpoint=$(links::app::get_endpoint "$app" "$action")
+    if [[ -z "$endpoint" ]]; then
+        logger::log "error" "$(i18n::translate "endpoint_not_found" "$app" "$action")"
+        return 1
+    fi
+
+    # Construct the base URL
+    base_url="http://localhost:$app_port"
+
+    # Send the POST request to the application API
+    curl -s -X POST -H "Content-Type: application/json" -H "X-Api-Key: $app_api_key" --data "$json_data" "${base_url}${endpoint}"
+}
+
+function links::db::get_userId() {
+    local username="$1"
+    local user_id
+
+    # Get the user ID from the database
+    while IFS= read -r id; do
+        echo "$id"
+        return 0
+    done < <(sqlite3 "$MEDIAEASE_DB" "SELECT id FROM users WHERE username='$username'")
+    return 1
+}
+
+function links::db::get_app_details() {
+    local app="$1"
+    local user_id="$2"
+    local app_api_key app_port
+
+    # Get the application details from the database
+    while IFS='|' read -r api_key port; do
+        echo "$api_key $port"
+        return 0
+    done < <(sqlite3 "$MEDIAEASE_DB" "SELECT api_key, port FROM apps WHERE app='$app' AND user_id='$user_id'")
+    return 1
+}
