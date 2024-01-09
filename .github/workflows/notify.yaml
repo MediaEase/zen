@@ -33,18 +33,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Repository Dispatch for HarmonyUI
+      - name: Repository Dispatch for Scripts
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.MEDIAEASE_ACCESS_TOKEN }}
           repository: MediaEase/MediaEase
-          event-type: harmonyui-release
+          event-type: scripts-release
           client-payload: |
             {
-              "submodule": "HarmonyUI",
+              "submodule": "scripts",
               "ref": "${{ github.ref }}",
               "sha": "${{ github.sha }}",
-              "harmonyui_version": "${{ steps.get_latest_release.outputs.tag_name }}",
+              "scripts_version": "${{ steps.get_latest_release.outputs.tag_name }}",
               "release_type": "${{ steps.get_latest_release.outputs.prerelease ? 'prerelease' : 'release' }}",
-              "harmonyui_release_notes": "${{ steps.get_latest_release.outputs.body }}"
+              "scripts_release_notes": "${{ steps.get_latest_release.outputs.body }}"
             }
