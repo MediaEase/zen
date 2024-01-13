@@ -28,7 +28,7 @@ jobs:
       - name: Set up Git
         id: git-config
         run: |
-          git config --global user.name 'GitHub Actions'
+          git config --global user.name 'tomcdj71'
           git config --global user.email 'actions@github.com'
 
       - name: Run release script
@@ -38,8 +38,8 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
           DEVELOP_BRANCH: develop
           # PRERELEASE_IDENTIFIER: 'alpha'
-          PRERELEASE_REPO: 'MediaEase/MediaEase'
-          PRERELEASE_FILE: 'prerelease_identifier.txt'
+          PRERELEASE_REPO: "MediaEase/MediaEase"
+          PRERELEASE_FILE: "prerelease_identifier.txt"
         run: |
           curl -sSL https://raw.githubusercontent.com/MediaEase/HarmonyUI/develop/.github/scripts/create-release.sh -o .github/scripts/create-release.sh
           chmod +x .github/scripts/create-release.sh
