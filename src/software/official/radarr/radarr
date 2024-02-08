@@ -1,6 +1,36 @@
 #!/usr/bin/env bash
+################################################################################
+# @file_name: radarr
+# @version: 1
+# @project_name: zen
+# @description: Radarr Handler
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
 
+################################################################################
+# zen::software::radarr::add
+#
+# Adds a Radarr application for a user, including downloading the release,
+# configuring the application, generating a proxy file, and starting the service.
+#
+# Arguments:
+#   app_name - The name of the application (Radarr).
+#   app_name_sanitized - A sanitized version of the application name for display.
+# Globals:
+#   software_config_file - Global variable containing the path to the software's
+#                          configuration file.
+#   user - An associative array containing user-specific information.
+# Outputs:
+#   Downloads, configures, and starts the Radarr application for the user.
 # shellcheck disable=SC2154
+# Disabling SC2154 because the variable is defined in the main script
+################################################################################
 zen::software::radarr::add(){
     local app_name="$1"
     local app_name_sanitized="$2"
@@ -18,6 +48,21 @@ zen::software::radarr::add(){
     zen::software::backup::create "$app_name" "$software_config_file"
 }
 
+################################################################################
+# zen::software::radarr::config
+#
+# Configures the Radarr application for a user, including setting up the
+# application's configuration file and generating proxy settings.
+#
+# Arguments:
+#   app_name - The name of the application (Radarr).
+#   app_name_sanitized - A sanitized version of the application name for display.
+#   is_prerelease - Indicates whether to use a prerelease version of Radarr.
+# Globals:
+#   user - An associative array containing user-specific information.
+# Outputs:
+#   Configures the Radarr application for the user.
+################################################################################
 zen::software::radarr::config(){
     local app_name="$1"
     local app_name_sanitized="$2"
@@ -55,6 +100,21 @@ RCON
     mflibs::shell::text::green "$(zen::i18n::translate "software.application_configured" "$app_name")"
 }
 
+################################################################################
+# zen::software::radarr::update
+#
+# Updates the Radarr application for a user by stopping the service, downloading
+# the latest release, and restarting the service.
+#
+# Arguments:
+#   app_name - The name of the application (Radarr).
+#   app_name_sanitized - A sanitized version of the application name for display.
+# Globals:
+#   user - An associative array containing user-specific information.
+#   software_config_file - Path to the software's configuration file.
+# Outputs:
+#   Updates the Radarr application for the user.
+################################################################################
 zen::software::radarr::update(){
     local app_name="$1"
     local app_name_sanitized="$2"
@@ -71,6 +131,20 @@ zen::software::radarr::update(){
     zen::service::manage "start" "$service_name"
 }
 
+################################################################################
+# zen::software::radarr::remove
+#
+# Removes the Radarr application for a user, including disabling and deleting
+# the service, removing proxy configurations, and cleaning up application files.
+#
+# Arguments:
+#   app_name - The name of the application (Radarr).
+#   app_name_sanitized - A sanitized version of the application name for display.
+# Globals:
+#   user - An associative array containing user-specific information.
+# Outputs:
+#   Removes the Radarr application and its configurations for the user.
+################################################################################
 zen::software::radarr::remove(){
     local app_name="$1"
     local app_name_sanitized="$2"
@@ -87,16 +161,46 @@ zen::software::radarr::remove(){
     rm -rf /home/"${user[username]}"/tmp/"$app_name"
 }
 
+################################################################################
+# zen::software::radarr::backup
+#
+# Creates a backup for the Radarr application settings for a user.
+# (This function is currently a placeholder and needs implementation.)
+#
+# Arguments:
+#   username - The username of the user for whom to create the backup.
+#   app_name - The name of the application (Radarr).
+################################################################################
 zen::software::radarr::backup(){
     local username="$1"
     local app_name="$2"
 }
 
+################################################################################
+# zen::software::radarr::reset
+#
+# Resets the Radarr application settings for a user.
+# (This function is currently a placeholder and needs implementation.)
+#
+# Arguments:
+#   username - The username of the user for whom to reset the settings.
+#   app_name - The name of the application (Radarr).
+################################################################################
 zen::software::radarr::reset(){
     local username="$1"
     local app_name="$2"
 }
 
+################################################################################
+# zen::software::radarr::reinstall
+#
+# Reinstalls the Radarr application for a user.
+# (This function is currently a placeholder and needs implementation.)
+#
+# Arguments:
+#   username - The username of the user for whom to reinstall the application.
+#   app_name - The name of the application (Radarr).
+################################################################################
 zen::software::radarr::reinstall(){
     local username="$1"
     local app_name="$2"
