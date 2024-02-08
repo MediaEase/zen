@@ -1,3 +1,5 @@
 src/zen*
 src/handlers/software_handler.sh
 src/modules/api
+src/modules/output.sh
+src/modules/lock.sh
