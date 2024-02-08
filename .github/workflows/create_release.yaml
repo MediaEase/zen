@@ -41,5 +41,6 @@ jobs:
           PRERELEASE_REPO: 'MediaEase/MediaEase'
           PRERELEASE_FILE: 'prerelease_identifier.txt'
         run: |
+          curl -sSL https://raw.githubusercontent.com/MediaEase/HarmonyUI/develop/.github/scripts/create-release.sh -o .github/scripts/create-release.sh
           chmod +x .github/scripts/create-release.sh
           bash .github/scripts/create-release.sh
