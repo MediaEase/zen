@@ -250,3 +250,24 @@ zen::common::dashboard::log() {
 	fi
 	echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
 }
+
+################################################################################
+# zen::common:shell::color::randomizer
+#
+# Selects a random color code for output styling.
+#
+# No arguments.
+# Outputs:
+#   Echoes a random color code (yellow, magenta, cyan).
+# Notes:
+#   Used to randomize the color of text output in the shell for visual variety.
+################################################################################
+zen::common:shell::color::randomizer(){
+    local color
+    color=$((RANDOM % 3))
+    case $color in
+        0) echo "yellow";;
+        1) echo "magenta";;
+        2) echo "cyan";;
+    esac
+}
