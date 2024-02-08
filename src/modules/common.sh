@@ -1,10 +1,38 @@
 #!/usr/bin/env bash
 ################################################################################
-# @description: Clones a Git repository into a specified directory.
-# @arg: $1: repo_url - URL of the Git repository to clone.
-# @arg: $2: target_dir - Target directory for the clone.
-# @arg: $3 (optional): branch - The name of the branch to clone.
-# @return: Exit code 0 on success, 1 on failure.
+# @file_name: common.sh
+# @version: 1
+# @project_name: zen
+# @description: a library for common functions
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
+
+################################################################################
+# zen::common::git::clone
+#
+# Clones a Git repository into the specified directory. This function clones
+# the specified branch of the repository, or the default branch if none is
+# specified.
+#
+# Arguments:
+#   repo_url - The full URL of the Git repository to clone.
+#   target_dir - The target directory where the repository will be cloned.
+#   branch (optional) - The specific branch to clone. Defaults to the main branch
+#                       if not specified.
+# Outputs:
+#   Clones the repository into the target directory.
+# Returns:
+#   0 on successful cloning, 1 on failure.
+# Notes:
+#   If the target directory already exists, the function will warn and exit
+#   without performing the clone. It also adjusts permissions based on the
+#   target directory's location.
 ################################################################################
 zen::common::git::clone() {
     local repo_name="$1"
@@ -38,12 +66,25 @@ zen::common::git::clone() {
 }
 
 ################################################################################
-# @description: Retrieves a release from a GitHub repository and extracts it into a specified directory.
-# @arg: $1: target_dir - Target directory for the release.
-# @arg: $2: repo_url - URL of the GitHub repository.
-# @arg: $3: is_prerelease - Whether to retrieve a prerelease (true) or a stable release (false).
-# @arg: $4: release_name - Name of the release file to retrieve.
-# @return: Exit code 0 on success, 1 on failure.
+# zen::common::git::get_release
+#
+# Retrieves a release from a GitHub repository and extracts it into the
+# specified directory. This function can handle both stable and prerelease
+# versions, and supports various file formats for the release archive.
+#
+# Arguments:
+#   target_dir - The directory where the release will be extracted.
+#   repo_url - The full URL of the GitHub repository.
+#   is_prerelease - Boolean indicating whether to retrieve a prerelease (true)
+#                   or a stable release (false).
+#   release_name - The name or pattern of the release file to be retrieved.
+# Outputs:
+#   Downloads and extracts the specified release into the target directory.
+# Returns:
+#   0 on successful retrieval and extraction, 1 on failure.
+# Notes:
+#   The function cleans up the downloaded archive after extraction and sets
+#   appropriate permissions for the extracted files.
 ################################################################################
 zen::common::git::get_release(){
     local target_dir="$1"
@@ -91,9 +132,17 @@ zen::common::git::get_release(){
 }
 
 ################################################################################
-# @description: Retrieves the value of an environment variable.
-# @arg: $1: var_name - Name of the environment variable.
-# @return: Value of the variable, or an error message if not set.
+# zen::common::environment::get::variable
+#
+# Retrieves the value of a specified environment variable. If the variable is
+# not set, the function outputs an error message.
+#
+# Arguments:
+#   var_name - The name of the environment variable to retrieve.
+# Outputs:
+#   The value of the specified environment variable.
+# Returns:
+#   Echoes the variable's value if set, otherwise prints an error message.
 ################################################################################
 zen::common::environment::get::variable() {
     local var_name="$1"
@@ -105,13 +154,20 @@ zen::common::environment::get::variable() {
 }
 
 ################################################################################
-# @description: Fixes permissions of a path for a given user and group.
-# @arg: $1: path - Path whose permissions need to be fixed.
-# @arg: $2: user - User owner of the files/directories.
-# @arg: $3: group - Group owner of the files/directories.
-# @arg: $4: dir_permissions - Permissions to apply to directories.
-# @arg: $5: file_permissions - Permissions to apply to files.
-# @return: Exit code 0 on success, 1 on failure.
+# zen::common::fix::permissions
+#
+# Fixes the permissions of a specified path for a given user and group. This
+# function recursively changes ownership and sets permissions for directories
+# and files within the given path.
+#
+# Arguments:
+#   path - The file system path whose permissions need to be fixed.
+#   user - The user to whom ownership of the files/directories should be set.
+#   group - The group to whom ownership of the files/directories should be set.
+#   dir_permissions - The permissions to apply to directories (e.g., '755').
+#   file_permissions - The permissions to apply to files (e.g., '644').
+# Returns:
+#   0 if permissions were successfully changed, 1 if the path doesn't exist.
 ################################################################################
 zen::common::fix::permissions() {
     local path="$1"
@@ -131,9 +187,21 @@ zen::common::fix::permissions() {
 }
 
 ################################################################################
-# @description: Loads the settings from the database into an associative array
-# @return: settings - Associative array containing the settings.
+# zen::common::setting::load
+#
+# Loads settings from the database into a globally accessible associative array.
+# This function is designed to retrieve application settings stored in a
+# database and make them available within the script.
+#
+# Globals:
+#   settings - An associative array that will be populated with the settings.
+# Returns:
+#   Populates the 'settings' global associative array with settings from the database.
+# Notes:
+#   This function relies on 'zen::database::load_config' for parsing the SQL
+#   query results and populating the 'settings' array.
 # shellcheck disable=SC2034
+# Disable reason: 'settings' is used in other functions
 ################################################################################
 zen::common::setting::load(){
     declare -A -g settings
@@ -142,9 +210,15 @@ zen::common::setting::load(){
 }
 
 ################################################################################
-# @description: Capitalizes the first letter of a string.
-# @arg: $1: input_string - The string to be transformed.
-# @return: Transformed string with the first letter capitalized.
+# zen::common::capitalize::first
+#
+# Capitalizes the first letter of the given string. This function is useful
+# for formatting output or user input where capitalization is required.
+#
+# Arguments:
+#   input_string - The string to be capitalized.
+# Returns:
+#   The transformed string with the first letter capitalized.
 ################################################################################
 zen::common::capitalize::first() {
     local input_string="$1"
@@ -155,9 +229,18 @@ zen::common::capitalize::first() {
 }
 
 ################################################################################
-# @description: passes shell output to dashboard
-# @arg: $1: string
-# @return: none
+# zen::common::dashboard::log
+#
+# Passes shell output to the dashboard log. This function is used for logging
+# messages to a file that can be displayed on a dashboard or web interface.
+#
+# Arguments:
+#   string - The message string to be logged.
+# Returns:
+#   None. Writes the message to the dashboard log file.
+# Notes:
+#   Creates the dashboard log file if it does not exist and sets appropriate
+#   permissions. Formats newlines in the log message as HTML line breaks.
 ################################################################################
 zen::common::dashboard::log() {
 	if [[ ! -f "/srv/zen/logs/dashboard" ]]; then

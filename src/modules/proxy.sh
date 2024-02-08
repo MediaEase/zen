@@ -1,12 +1,39 @@
 #!/usr/bin/env bash
+################################################################################
+# @file_name: proxy.sh
+# @version: 1.0.0
+# @project_name: MediaEase
+# @description: a library for internationalization functions
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
 
 ################################################################################
-# @description: Generates a proxy configuration file for a given application.
-# @arg: $1: app_name - The name of the application.
-# @arg: $2: port - The port number the application is running on.
-# @arg: $3: url_base - The base URL for the application.
+# zen::proxy::generate
+#
+# Generates a Caddy proxy configuration file for a specified application. This
+# function creates a configuration file that routes requests to the application
+# running on a given port.
+#
+# Arguments:
+#   app_name - The name of the application for which the proxy is being configured.
+#   port - The port number on which the application is running.
+#   url_base - The base URL for routing to the application.
+# Globals:
+#   software_config_file - Global variable containing the path to the software's
+#                          configuration file.
+# Outputs:
+#   Creates or overwrites a Caddy configuration file for the application.
+# Notes:
+#   The function checks if the application is multi-user and adjusts the file path
+#   accordingly. It disables certain headers for proper reverse proxy functionality.
 # shellcheck disable=SC2154
-# @disable reason : build entries variables are global variables and are created in other functions
+# Disabling SC2154 because the variable is defined in the main script
 ################################################################################
 zen::proxy::generate() {
     local app_name="$1"
@@ -34,10 +61,21 @@ EOF
 }
 
 ################################################################################
-# @description: Adds a directive to a proxy configuration file.
-# @arg: $1: app_name - The name of the application.
-# @arg: $2: username - The username associated with the application.
-# @arg: $3: directive - The directive to add to the configuration file.
+# zen::proxy::add_directive
+#
+# Adds a specific directive to the Caddy proxy configuration file of an
+# application. This allows for customizing the proxy settings for individual
+# applications.
+#
+# Arguments:
+#   app_name - The name of the application.
+#   username - The username associated with the application (used in multi-user mode).
+#   directive - The directive to be added to the proxy configuration.
+# Globals:
+#   software_config_file - Global variable containing the path to the software's
+#                          configuration file.
+# Outputs:
+#   Appends the specified directive to the application's proxy configuration file.
 ################################################################################
 zen::proxy::add_directive() {
     local app_name="$1"
@@ -50,11 +88,20 @@ zen::proxy::add_directive() {
     echo "$directive" >> "${caddy_file}"
 }
 
-
 ################################################################################
-# @description: Removes a proxy configuration file for a given application.
-# @arg: $1: app_name - The name of the application.
-# @arg: $2: username - The username associated with the application.
+# zen::proxy::remove
+#
+# Removes the proxy configuration file for a specified application. This is typically
+# used when an application is uninstalled or when its proxy configuration is no longer needed.
+#
+# Arguments:
+#   app_name - The name of the application.
+#   username - The username associated with the application (used in multi-user mode).
+# Globals:
+#   software_config_file - Global variable containing the path to the software's
+#                          configuration file.
+# Outputs:
+#   Deletes the Caddy configuration file for the specified application.
 ################################################################################
 zen::proxy::remove() {
     local app_name="$1"

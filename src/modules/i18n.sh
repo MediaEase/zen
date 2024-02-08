@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ################################################################################
-# @file_name: i18n
+# @file_name: i18n.sh
 # @version: 1.0.0
 # @project_name: MediaEase
 # @description: a library for internationalization functions
@@ -14,14 +14,25 @@
 ################################################################################
 
 ################################################################################
-# @function_name: zen::i18n::load_locale_file
-# @description: Loads the appropriate locale file based on the specified language.
-#               Sets system locale settings and loads corresponding YAML file for translations.
-# @param: lang - The language code (e.g., 'en' for English, 'fr' for French).
-# @globals: MEDIAEASE_HOME - Set to the base directory of the MediaEase application.
-# @output: Writes error/warning messages to stderr.
-#          Sets system locale settings and environment variables for language and locale file path.
-# @return_code: 1 if the specified language is not supported or locale file is not found.
+# zen::i18n::load_locale_file
+#
+# Loads the appropriate locale file based on the specified language code. It sets
+# the system locale settings for the application and loads the corresponding YAML
+# file containing translations.
+#
+# Arguments:
+#   lang - A language code (e.g., 'en' for English, 'fr' for French).
+# Globals:
+#   MEDIAEASE_HOME - Base directory of the MediaEase application.
+# Outputs:
+#   Sets system locale settings and environment variables for language and locale
+#   file path. Writes error/warning messages to stderr.
+# Returns:
+#   1 if the specified language is not supported or if the locale file is not found.
+# Notes:
+#   The function validates the language code and sets up the environment for
+#   internationalization support. It also dynamically generates the locale file
+#   path based on the provided language code.
 ################################################################################
 zen::i18n::load_locale_file() {
     local lang="$1"
@@ -60,14 +71,26 @@ zen::i18n::load_locale_file() {
 }
 
 ################################################################################
-# @function_name: zen::i18n::translate
-# @description: Translates a given key into the selected language using the loaded locale file.
-#               Dynamically replaces placeholders in the translation string with provided arguments.
-# @param: key - The translation key to look up in the locale file.
-# @param: args - Additional arguments that are substituted into the translation string.
-# @globals: None
-# @output: The translated string or the original key if no translation is found.
-# @return_code: None
+# zen::i18n::translate
+#
+# Translates a specified key into the selected language using the loaded locale
+# file. It dynamically replaces placeholders in the translation string with
+# provided arguments, enabling flexible and context-aware translations.
+#
+# Arguments:
+#   key - The translation key to look up in the locale file.
+#   args - Additional arguments to be substituted into the translation string.
+# Globals:
+#   MEDIAEASE_LOCALE_FILE - The path to the currently loaded locale file.
+# Outputs:
+#   The translated string. If no translation is found, outputs the original key.
+# Returns:
+#   None.
+# Notes:
+#   The function uses 'yq' to parse the YAML locale file. It handles the case
+#   where no translation is found by returning the original key. Placeholders
+#   in the form of '{arg0}', '{arg1}', etc., in the translation strings are
+#   replaced by the respective arguments passed to the function.
 ################################################################################
 zen::i18n::translate() {
     local key="$1"

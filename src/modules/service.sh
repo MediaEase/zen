@@ -1,12 +1,38 @@
 #!/usr/bin/env bash
+################################################################################
+# @file_name: service.sh
+# @version: 1.0.0
+# @project_name: MediaEase
+# @description: a library for internationalization functions
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
 
 ################################################################################
-# @description: Generates a systemd service file for an application.
-# @arg: $1: app_name - The name of the application.
-# @arg: $2: multi_user - Flag indicating if the service is for multiple users.
-# @arg: $3: app_specific_directives - Array of application-specific directives.
+# zen::service::generate
+#
+# Generates a systemd service file for an application. This function creates a
+# service file with necessary directives and configurations based on the app's
+# requirements and the system's environment.
+#
+# Arguments:
+#   app_name - The name of the application.
+#   is_child - Flag indicating if the service is for multiple users.
+# Globals:
+#   software_config_file - Path to the software's configuration file.
+# Outputs:
+#   Creates a systemd service file for the application.
+# Notes:
+#   The function handles both single-user and multi-user service scenarios. It
+#   dynamically determines the service name and configures it based on the
+#   application's needs and user settings.
 # shellcheck disable=SC2154
-# @disable reason : build entries variables are global variables and are created in other functions
+# Disable reason : build entries variables are global variables and are created in other functions
 ################################################################################
 zen::service::generate() {
     local app_name="$1"
@@ -68,10 +94,21 @@ zen::service::generate() {
 }
 
 ################################################################################
-# @description: Manages a systemd service (start, stop, restart, enable, disable, status)
-# @arg $1: action (start, stop, restart, enable, disable, status)
-# @arg $2: service_name
-# @usage: zen::software::service "start" "service_name"
+# zen::service::manage
+#
+# Manages the state of a systemd service. This function allows for starting,
+# stopping, restarting, enabling, disabling, and checking the status of a service.
+#
+# Arguments:
+#   action - The action to perform (start, stop, restart, enable, disable, status).
+#   service_name - The name of the service to manage.
+# Outputs:
+#   Performs the specified action on the systemd service.
+# Returns:
+#   Exits with a status code if an invalid action is provided.
+# Notes:
+#   This function is a wrapper around systemctl commands, providing an easier
+#   interface for service management within the script.
 ################################################################################
 zen::service::manage() {
     local action=$1
@@ -107,10 +144,20 @@ zen::service::manage() {
 }
 
 ################################################################################
-# @description: Adds an entry to the api_service associative array
-# @arg $1: key
-# @arg $2: value
-# @usage: zen::service::build::add_entry "key" "value"
+# zen::service::build::add_entry
+#
+# Adds an entry to the api_service associative array. This function is used
+# to build up the service configuration dynamically.
+#
+# Arguments:
+#   key - The key of the entry to add.
+#   value - The value of the entry.
+# Globals:
+#   api_service - An associative array used to build the service configuration.
+# Outputs:
+#   Adds a key-value pair to the api_service associative array.
+# Returns:
+#   1 if the key already exists in the array, otherwise 0.
 ################################################################################
 zen::service::build::add_entry() {
     local key="$1"
@@ -124,10 +171,23 @@ zen::service::build::add_entry() {
 }
 
 ################################################################################
-# @description: Validates the api_service associative array and inserts the data into the database
-# @arg $1: is_child - Flag indicating if the service is a child service.
-# @arg $2: app_name_sanitized - The sanitized name of the application.
-# @usage: zen::service::validate "true" "app_name_sanitized"
+# zen::service::validate
+#
+# Validates the api_service associative array and inserts the data into the
+# database. This function ensures that the service configuration is valid and
+# prepares it for storage.
+#
+# Arguments:
+#   is_child - Flag indicating if the service is a child service.
+#   app_name_sanitized - The sanitized name of the application.
+# Globals:
+#   None.
+# Outputs:
+#   Validates service configuration and inserts it into the database.
+# Notes:
+#   The function constructs JSON objects for the service configuration and
+#   uses database functions to store the configuration. It is typically called
+#   after building the service configuration using `zen::service::build::add_entry`.
 ################################################################################
 zen::service::validate() {
     local is_child="$1"

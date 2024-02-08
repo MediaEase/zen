@@ -1,14 +1,34 @@
 #!/usr/bin/env bash
+################################################################################
+# @file_name: software.sh
+# @version: 1.0.0
+# @project_name: MediaEase
+# @description: a library for internationalization functions
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
 
 ################################################################################
-# @description: Checks if a specific software is installed for a given user
-# @arg $1: Name (altname) of the software
-# @arg $2: User ID for which to check the software installation (use "*" to check for all users)
-# @return: Returns 0 if the software is installed, 1 otherwise
-# @notes: This function queries the database to check if an entry exists in the
-#         'service' table for a given user and software. Use '*' for user_id to check across all users.
-# @usage: zen::software::is::installed "software_name" "user_id"
-#         [[ $(zen::software::is::installed "subsonic" 6) ]] && echo "yes" || echo "no"
+# zen::software::is::installed
+#
+# Checks if a specific software is installed for a given user.
+#
+# Arguments:
+#   software - Name (altname) of the software.
+#   user_id - User ID to check the software installation for (use "*" to check for all users).
+# Returns:
+#   0 if the software is installed, 1 otherwise.
+# Notes:
+#   Queries the database to check for an entry in the 'service' table for a given
+#   user and software. Use '*' for user_id to check across all users.
+# Usage:
+#   zen::software::is::installed "software_name" "user_id"
+#   [[ $(zen::software::is::installed "subsonic" 6) ]] && echo "yes" || echo "no"
 ################################################################################
 zen::software::is::installed() {
     local software="$1"
@@ -39,12 +59,18 @@ zen::software::is::installed() {
 }
 
 ################################################################################
-# @description: Generates a random port number within a given range
-# @arg $1: Name of the application
-# @arg $2: Type of port to generate (default, ssl)
-# @arg $3: Path to the configuration file
-# @return: Randomly selected port number within the specified range
-# @usage: zen::software::port_randomizer  "app_name" "port_type" "config_file"
+# zen::software::port_randomizer
+#
+# Generates a random port number within a specified range for a given application.
+#
+# Arguments:
+#   app_name - Name of the application.
+#   port_type - Type of port to generate (default, ssl).
+#   software_config_file - Path to the configuration file.
+# Returns:
+#   A randomly selected port number within the specified range.
+# Usage:
+#   zen::software::port_randomizer "app_name" "port_type" "config_file"
 ################################################################################
 zen::software::port_randomizer() {
     local app_name="$1"
@@ -77,14 +103,20 @@ zen::software::port_randomizer() {
 }
 
 ################################################################################
-# @description: Builds the header or footer for the software installer
-# @arg $1: app_name - The name of the application.
-# @arg $2: shell_color - The color to use for the text.
-# @arg $3: action - The action being performed (add, update, backup, reset, remove, reinstall).
-# @arg $4: infobox_type - "intro" for header, "outro" for footer.
-# @arg $5: username - The username to display in the infobox.
-# @arg $6: password - The password to display in the infobox.
-# @usage: zen::software::infobox "app_name" "shell_color" "action" "infobox_type"
+# zen::software::infobox
+#
+# Builds the header or footer for the software installer, providing contextual
+# information about the installation process.
+#
+# Arguments:
+#   app_name - The name of the application.
+#   shell_color - The color to use for the text.
+#   action - The action being performed (add, update, backup, reset, remove, reinstall).
+#   infobox_type - "intro" for header, "outro" for footer.
+#   username (optional) - The username to display in the infobox.
+#   password (optional) - The password to display in the infobox.
+# Usage:
+#   zen::software::infobox "app_name" "shell_color" "action" "infobox_type"
 ################################################################################
 zen::software::infobox() {
     local app_name="$1"
@@ -165,21 +197,18 @@ zen::software::infobox() {
     echo ""
 }
 
-
 ################################################################################
-# @description: Checks for software updates
-# @noargs
-# @usage: zen::software::check::update
-################################################################################
-zen::software::check::update() {
-	/usr/local/bin/zen "software" "check"
-}
-
-################################################################################
-# @description: Processes software options from a comma-separated string
-# @arg $1: options string (e.g. "branch=beta,email=test@example.com")
-# @usage: zen::software::options::process "branch=beta,email=test@example.com"
+# zen::software::options::process
+#
+# Processes software options from a comma-separated string. This function parses
+# options like branch, email, domain, and key from a string and sets them as variables.
+#
+# Arguments:
+#   options - A string of options in the format "option1=value1,option2=value2".
+# Usage:
+#   zen::software::options::process "branch=beta,email=test@example.com"
 # shellcheck disable=SC2034
+# Disable SC2034 because the variables are exported and used in other functions
 ################################################################################
 zen::software::options::process() {
     local options="$1"
@@ -219,9 +248,17 @@ zen::software::options::process() {
 }
 
 ################################################################################
-# @description: Handles software backup creation
-# @arg $1: app_name - The name of the application.
+# zen::software::backup::create
+#
+# Handles the creation of software backups. This function generates a backup
+# of the specified software and stores it in a designated directory.
+#
+# Arguments:
+#   app_name - The name of the application.
+# Usage:
+#   zen::software::backup::create "app_name"
 # shellcheck disable=SC2154
+# Disable SC2154 because the variable is defined in the main script
 ################################################################################
 zen::software::backup::create() {
     local app_name="$1"
@@ -247,10 +284,19 @@ zen::software::backup::create() {
 }
 
 ################################################################################
-# @description: Retrieves the value of a specified key or expression from a YAML config file
-# @arg: $1: software_config_file - Path to the YAML configuration file
-# @arg: $2: yq_expression - The 'yq' expression to evaluate in the configuration file
-# @return: Exit status of the command
+# zen::software::get_config_key_value
+#
+# Retrieves the value of a specified key or expression from a YAML configuration file.
+# This function is used to parse and extract specific settings from the software's
+# configuration file.
+#
+# Arguments:
+#   software_config_file - Path to the YAML configuration file.
+#   yq_expression - The 'yq' expression to evaluate in the configuration file.
+# Returns:
+#   The value of the specified key or expression.
+# Usage:
+#   zen::software::get_config_key_value "config_file_path" "yq_expression"
 ################################################################################
 zen::software::get_config_key_value() {
     local software_config_file="$1"
@@ -283,10 +329,17 @@ zen::software::get_config_key_value() {
 }
 
 ################################################################################
-# @description: Generates random values for keys specified in the 'autogen' section of the software configuration file
-# @noargs
-# @usage: zen::software::autogen
+# zen::software::autogen
+#
+# Automatically generates random values for keys specified in the 'autogen' section
+# of the software configuration file. This function is useful for auto-generating
+# API keys, port numbers, and other configuration parameters.
+#
+# No arguments.
+# Usage:
+#   zen::software::autogen
 # shellcheck disable=SC2034
+# Disable SC2034 because the variables are exported and used in other functions
 ################################################################################
 zen::software::autogen() {
     local autogen_keys

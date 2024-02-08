@@ -1,11 +1,32 @@
 #!/bin/bash
+################################################################################
+# @file_name: user.sh
+# @version: 1.0.0
+# @project_name: MediaEase
+# @description: a library for internationalization functions
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
 
 ################################################################################
-# @description: Create a new user
-# @arg: $1: username
-# @arg: $2: password
-# @arg: $3: is_admin
-# @return_code: Returns 0 if the user is created, 1 otherwise
+# zen::user::create
+#
+# Creates a new system user with specified attributes.
+#
+# Arguments:
+#   username - The username for the new user.
+#   password - The password for the new user.
+#   is_admin - Indicates if the user should have admin privileges ('true' or 'false').
+# Returns:
+#   0 if the user is created successfully, 1 otherwise.
+# Notes:
+#   If the user is not an admin, the shell is restricted. For admin users, sudo
+#   privileges are added without a password requirement.
 ################################################################################
 zen::user::create() {
     local username="$1"
@@ -30,10 +51,17 @@ zen::user::create() {
 }
 
 ################################################################################
-# @description: Set a password for a user
-# @arg: $1: username
-# @arg: $2: password
-# @return_code: Returns 0 if the password is set, 1 otherwise
+# zen::user::password::set
+#
+# Sets a password for a specified user.
+#
+# Arguments:
+#   username - The username of the user for whom to set the password.
+#   password - The password to set for the user.
+# Returns:
+#   0 if the password is set successfully, 1 otherwise.
+# Notes:
+#   The password is also added to the system's htpasswd file for HTTP authentication.
 ################################################################################
 zen::user::password::set() {
     local username="$1"
@@ -47,9 +75,14 @@ zen::user::password::set() {
 }
 
 ################################################################################
-# @description: Generate a random password
-# @arg: $1: length
-# @return_code: Returns 0 if the password is generated, 1 otherwise
+# zen::user::password::generate
+#
+# Generates a random password of a specified length.
+#
+# Arguments:
+#   length - The length of the password to generate.
+# Returns:
+#   A randomly generated password.
 ################################################################################
 zen::user::password::generate() {
     local length="$1"
@@ -57,10 +90,17 @@ zen::user::password::generate() {
 }
 
 ################################################################################
-# @description: Add a user to a system group
-# @arg: $1: username
-# @arg: $2: group
-# @return_code: Returns 0 if the user is added to the group, 1 otherwise
+# zen::user::groups::upgrade
+#
+# Adds a user to a specified system group.
+#
+# Arguments:
+#   username - The username of the user to add to the group.
+#   group - The name of the group to which the user should be added.
+# Returns:
+#   0 if the user is added to the group successfully, 1 otherwise.
+# Notes:
+#   Handles different groups including sudo, media, download, and streaming.
 ################################################################################
 zen::user::groups::upgrade() {
     local username="$1"
@@ -90,9 +130,15 @@ zen::user::groups::upgrade() {
 }
 
 ################################################################################
-# @description: Create default groups
-# @noargs
-# @return_code: Returns 0 if the groups are created, 1 otherwise
+# zen::user::groups::create_groups
+#
+# Creates default system groups for application usage.
+#
+# No arguments.
+# Returns:
+#   0 if the groups are created successfully, 1 otherwise.
+# Notes:
+#   Creates a set of predefined groups like media, download, streaming, and default.
 ################################################################################
 zen::user::groups::create_groups() {
     local groups=("media" "download" "streaming" "default")
@@ -106,9 +152,18 @@ zen::user::groups::create_groups() {
 }
 
 ################################################################################
-# @description: zen user commands
-# @arg: $1: username
+# zen::user::check
+#
+# Checks if a specified user exists and is a valid MediaEase user.
+#
+# Arguments:
+#   username - The username of the user to check.
+# Returns:
+#   Exits with 1 if the user is not found or is not a valid MediaEase user.
+# Notes:
+#   This function is used to validate user existence before performing user-specific operations.
 # shellcheck disable=SC2154
+# Disable SC2154 because the variable is defined in the main script
 ################################################################################
 zen::user::check() {
     [[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "user.user_not_found" "${username}")" && zen::lock::cleanup && exit 1; }
@@ -116,11 +171,17 @@ zen::user::check() {
 }
 
 ################################################################################
-# @description: Check if the user is an admin
-# @return_code: Returns 0 if the user is an admin, 1 otherwise
-# @usage : if [[ $(zen::user::is::admin) ]]; then echo "I'm Admin !" ; else echo "I'm not Admin !" ; fi
-# @prerequesites : zen::user::load "$username"
-# shellcheck disable=SC2154
+# zen::user::is::admin
+#
+# Checks if the currently loaded user is an administrator.
+#
+# No arguments.
+# Returns:
+#   0 if the user is an admin, 1 otherwise.
+# Usage:
+#   if [[ $(zen::user::is::admin) ]]; then echo "I'm Admin!"; else echo "I'm not Admin!"; fi
+# Prerequisites:
+#   User must be loaded with zen::user::load before calling this function.
 ################################################################################
 zen::user::is::admin() {
     [[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]] && { mflibs::status::info "$(zen::i18n::translate "user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "user.user_is_not_admin")"; zen::lock::cleanup; exit 1;}
@@ -128,18 +189,35 @@ zen::user::is::admin() {
 }
 
 ################################################################################
-# @description: zen user commands
-# @arg: $1: username
-# shellcheck disable=SC2154
+# zen::multi::check::id
+#
+# Retrieves the ID of a specified user from the system.
+#
+# Arguments:
+#   username - The username for which to retrieve the ID.
+# Returns:
+#   The ID of the user if found.
 ################################################################################
 zen::multi::check::id() {
 	[[ -n $1 ]] && zen::database::select "id" "user" "username='${1}'"
 }
 
 ################################################################################
-# @description: zen user commands
-# @arg: $1: username
+# zen::user::load
+#
+# Loads a specified user's data into a globally accessible associative array.
+#
+# Arguments:
+#   username - The username of the user to load.
+# Globals:
+#   user - An associative array that will be populated with the user's data.
+# Returns:
+#   Exits with 1 if the user is not found.
+# Notes:
+#   This function queries the database and populates the 'user' global array with
+#   the user's data. It's used to access user-specific information in other functions.
 # shellcheck disable=SC2034
+# Disable SC2034 because the variable is defined in the main script
 ################################################################################
 zen::user::load(){
     declare -A -g user

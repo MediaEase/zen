@@ -1,14 +1,40 @@
 #!/usr/bin/env bash
 
 ################################################################################
-# @description: Manages apt dependencies based on the specified action.
-#               Supports actions like install, update, upgrade, check, etc.
-# @arg: $1: action - The action to be performed (install, update, upgrade, check, etc.)
-# @arg: $2: software_name - The name of the software whose dependencies are to be managed.
-# @arg: $3: option - Additional options like 'reinstall', 'non-interactive', 'inline' (optional).
-# @output: Executes the apt-get command based on the given parameters.
-# @return_code: Returns the exit status of the apt-get command.
-# @notes: Handles errors and specific use cases like reinstall and non-interactive mode.
+# @file_name: dependency.sh
+# @version: 1
+# @project_name: zen
+# @description: a library for managing dependencies
+#
+# @author: Thomas Chauveau (tomcdj71)
+# @author_contact: thomas.chauveau.pro@gmail.com
+#
+# @license: BSD-3 Clause (Included in LICENSE)
+# Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+################################################################################
+
+################################################################################
+# zen::dependency::apt::manage
+#
+# Manages APT dependencies for the specified software. This function supports a 
+# range of actions like install, update, upgrade, check, etc. It reads 
+# dependencies from a YAML file and performs the specified action.
+#
+# Globals:
+#   MEDIAEASE_HOME - The root directory for MediaEase configurations.
+# Arguments:
+#   action - The APT action to perform (install, update, upgrade, check, etc.).
+#   software_name - The name of the software whose dependencies are managed.
+#   option - Additional options such as 'reinstall', 'non-interactive', 'inline'.
+# Outputs:
+#   Executes various apt-get commands based on input parameters.
+# Returns:
+#   The exit status of the last executed apt-get command.
+# Notes:
+#   This function handles various APT actions and caters to specific use cases
+#   like reinstall and non-interactive mode. It uses the 'mflibs::status::error'
+#   function for error reporting.
 ################################################################################
 zen::dependency::apt::manage() {
     local dependencies_file="${MEDIAEASE_HOME}/dependencies.yaml"
@@ -53,10 +79,21 @@ zen::dependency::apt::manage() {
 }
 
 ################################################################################
-# @description: Installs dependencies inline, displaying each dependency with a colored indicator based on success or failure.
-# @arg: $@: A list of dependencies to install.
-# @output: Installs each dependency and echoes the dependency name with a color indicator.
-# @notes: Utilizes zen::dependency::apt::manage for installation. Colors are indicated by GREEN and RED variables.
+# zen::dependency::apt::install::inline
+#
+# Installs APT dependencies inline, displaying the installation progress for
+# each dependency. It uses colored indicators to show the success or failure
+# of each installation.
+#
+# Arguments:
+#   A space-separated list of dependencies to install.
+# Outputs:
+#   Installs each dependency and outputs the dependency name with a colored
+#   indicator for installation success or failure.
+# Notes:
+#   This function leverages zen::dependency::apt::manage for the installation.
+#   It uses 'tput' for coloring the output. GREEN and RED color codes are used
+#   to indicate success and failure respectively.
 ################################################################################
 zen::dependency::apt::install::inline() {
     local input_string="$*"
@@ -74,8 +111,20 @@ zen::dependency::apt::install::inline() {
 }
 
 ################################################################################
-# @description: updates server
-# @noargs
+# zen::dependency::apt::update
+#
+# Updates the server's package lists and upgrades all installed packages. It
+# also performs auto-removal and auto-cleaning of packages.
+#
+# Globals:
+#   None.
+# Arguments:
+#   None.
+# Outputs:
+#   Executes apt-get update, upgrade, autoremove, and autoclean commands.
+# Notes:
+#   The function handles locked dpkg situations by attempting to unlock and
+#   reconfigure dpkg. It uses 'mflibs::log' for logging command execution.
 ################################################################################
 zen::dependency::apt::update() {
     mflibs::shell::text::white "$(zen::i18n::translate 'dependency.updating_system')"
@@ -102,9 +151,22 @@ zen::dependency::apt::update() {
 }
 
 ################################################################################
-# @description: Removes dependencies for a specific software if it's no longer needed.
-# @arg: $1: software_name - The name of the software to remove dependencies for.
-# @usage: zen::dependency::apt::remove "radarr"
+# zen::dependency::apt::remove
+#
+# Removes APT dependencies associated with a given software if they are no
+# longer needed. It checks if the software is the only one using these
+# dependencies before removal.
+#
+# Globals:
+#   MEDIAEASE_HOME - The root directory for MediaEase configurations.
+# Arguments:
+#   software_name - The name of the software whose APT dependencies are to be
+#                   removed.
+# Outputs:
+#   Removes the unused APT dependencies of the specified software.
+# Notes:
+#   The function reads dependencies from a YAML file and performs removal only
+#   if they are not used by other software or essential for MediaEase.
 ################################################################################
 zen::dependency::apt::remove() {
     local software_name="$1"
@@ -127,10 +189,23 @@ zen::dependency::apt::remove() {
 }
 
 ################################################################################
-# @description: Builds and installs external dependencies from a YAML configuration file.
-# @arg: $1: software_name - The name of the software to install external dependencies for.
-# @output: Executes the installation commands for external dependencies.
-# @return_code: Returns 0 if all dependencies are installed successfully, 1 otherwise.
+# zen::dependency::external::build
+#
+# Installs external dependencies for a specified software based on a YAML
+# configuration. It supports custom install commands for each dependency.
+#
+# Globals:
+#   MEDIAEASE_HOME - The root directory for MediaEase configurations.
+# Arguments:
+#   software_name - The name of the software whose external dependencies are
+#                   to be installed.
+# Outputs:
+#   Executes custom installation commands for external dependencies.
+# Returns:
+#   0 if all dependencies are installed successfully, 1 otherwise.
+# Notes:
+#   This function parses a YAML file to get the installation commands for
+#   external dependencies. It uses 'eval' for executing these commands.
 ################################################################################
 zen::dependency::external::build() {
     local software_name="$1"
@@ -156,6 +231,50 @@ zen::dependency::external::build() {
             fi
         else
             mflibs::status::error "$(zen::i18n::translate 'dependency.no_install_command_found' "$dependency")"
+            exit_status=1
+        fi
+    done
+
+    return $exit_status
+}
+
+################################################################################
+# zen::dependency::python::build
+#
+# Builds and installs Python dependencies for a specified software based on a
+# YAML configuration. It uses 'pip' for installing each dependency.
+#
+# Globals:
+#   MEDIAEASE_HOME - The root directory for MediaEase configurations.
+# Arguments:
+#   software_name - The name of the software whose Python dependencies are to
+#                   be installed.
+# Outputs:
+#   Installs Python packages using pip.
+# Returns:
+#   0 if all Python dependencies are installed successfully, 1 otherwise.
+# Notes:
+#   The function extracts Python package names from a YAML file and uses 'pip'
+#   for their installation. It handles installation failures for each package.
+################################################################################
+zen::dependency::python::build(){
+    local software_name="$1"
+    local dependencies_file="${MEDIAEASE_HOME}/src/dependencies.yaml"
+    local python_dependencies
+
+    python_dependencies=$(yq e ".${software_name}.python" "$dependencies_file" 2>/dev/null)
+    if [[ -z "$python_dependencies" ]]; then
+        mflibs::status::error "$(zen::i18n::translate 'dependency.no_python_dependencies_found' "$software_name")"
+        return 1
+    fi
+
+    local exit_status=0
+    IFS=' ' read -ra DEPS <<< "$python_dependencies"
+    for dependency in "${DEPS[@]}"; do
+        pip install "$dependency"
+        local result=$?
+        if [[ "$result" -ne 0 ]]; then
+            mflibs::status::error "$(zen::i18n::translate 'dependency.python_dependency_install_failed' "$dependency")"
             exit_status=1
         fi
     done
