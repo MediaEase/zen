@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# @file software/sonarr4k/sonarr4k.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Sonarr4k handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::sonarr4k::add
+# @description Adds a Sonarr4k for a user, including downloading, configuring, and starting the service.
+# @arg $1 string The name of the application (Sonarr4k).
+# @arg $2 string A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# Disabling SC2154 because the variable is defined in the main script
+zen::software::sonarr4k::add(){
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::common::git::get_release "/opt/${user[username]}/$app_name" "Sonarr/Sonarr" "$is_prerelease" "linux-x64.tar.gz"
+    # configure the app. This will also generate the proxy file
+    zen::software::sonarr4k::config "$is_prerelease"
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    chmod a+x "/opt/${user[username]}/$app_name/Sonarr4k"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::sonarr4k::config
+# @description Configures Sonarr4k for a user, including setting up configuration files and proxy settings.
+# @arg $1 string The name of the application (Sonarr4k).
+# @arg $2 string A sanitized version of the application name for display.
+# @arg $3 string Indicates whether to use a prerelease version of Sonarr4k.
+# @global user An associative array containing user-specific information.
+# @example
+#   # the following disables pre-release (develop):
+#   zen::software::sonarr4k::config "false"
+#   # the following enables pre-release (nightly):
+#   zen::software::sonarr4k::config "true"
+zen::software::sonarr4k::config(){
+    local is_prerelease="$3"
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
+    zen::software::autogen
+    url_base="/${user[username]}/${app_name}"
+    [[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
+    mkdir -p "/home/${user[username]}/.config/${app_name}"
+    cat > "/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
+<Config>
+    <BindAddress>127.0.0.1</BindAddress>
+    <Port>${default_port}</Port>
+    <UrlBase>${url_base}</UrlBase>
+    <EnableSsl>False</EnableSsl>
+    <SslPort>${ssl_port}</SslPort>
+    <SslCertPath></SslCertPath>
+    <SslCertPassword></SslCertPassword>
+    <ApiKey>${apikey}</ApiKey>
+    <LogLevel>Info</LogLevel>
+    <AnalyticsEnabled>False</AnalyticsEnabled>
+    <Branch>${branch}</Branch>
+    <UpdateAutomatically>True</UpdateAutomatically>
+    <UpdateMechanism>BuiltIn</UpdateMechanism>
+    <LaunchBrowser>False</LaunchBrowser>
+    <InstanceName>${app_name_sanitized}</InstanceName>
+    <Theme>dark</Theme>
+</Config>
+RCON
+
+    # generate the proxy configuration
+    zen::common::fix::permissions "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    mflibs::shell::text::green "$(zen::i18n::translate "software.application_configured" "$app_name")"
+}
+
+# @function zen::software::sonarr4k::update
+# @description Updates Sonarr4k for a user, including stopping the service, downloading the latest release, and restarting.
+# @arg $1 string The name of the application (Sonarr4k).
+# @arg $2 string A sanitized version of the application name for display.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+zen::software::sonarr4k::update(){
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::common::git::get_release "/opt/${user[username]}/$app_name" "Sonarr4k/Sonarr4k" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::sonarr4k::remove
+# @description Removes Sonarr4k for a user, including disabling and deleting the service and cleaning up files.
+# @arg $1 string The name of the application (Sonarr4k).
+# @arg $2 string A sanitized version of the application name for display.
+# @global user An associative array containing user-specific information.
+zen::software::sonarr4k::remove(){
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::sonarr4k::backup
+# @description Creates a backup for Sonarr4k settings for a user.
+# @arg $1 string The username of the user.
+# @arg $2 string The name of the application (Sonarr4k).
+# @note This function is currently a placeholder and needs implementation.
+zen::software::sonarr4k::backup(){
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::sonarr4k::reset
+# @description Resets Sonarr4k settings for a user.
+# @arg $1 string The username of the user.
+# @arg $2 string The name of the application (Sonarr4k).
+# @note This function is currently a placeholder and needs implementation.
+zen::software::sonarr4k::reset(){
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::sonarr4k::reinstall
+# @description Reinstalls Sonarr4k for a user.
+# @arg $1 string The username of the user.
+# @arg $2 string The name of the application (Sonarr4k).
+# @note This function is currently a placeholder and needs implementation.
+zen::software::sonarr4k::reinstall(){
+    local username="$1"
+    local app_name="$2"
+}
