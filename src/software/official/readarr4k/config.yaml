@@ -5,8 +5,8 @@ arguments:
   mediaease_docs: https://mediaease.github.io/docs/software/official/readarr
   multi_user: true
   ports: 
-    - default: [7878-7928]
-    - ssl: [9898-9948]
+    - default: [12001-13999]
+    - ssl: [35001-35999]
   service_directives:
     - Type=simple
     - Environment=TMPDIR=/home/%i/tmp/$app_name
