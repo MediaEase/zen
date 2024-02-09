@@ -117,16 +117,16 @@ readarr:
 requestrr:
   apt: unzip sqlite3 gawk
 rtorrent:
-  apt: subversion screen zip unzip sysstat build-essential comerr-dev dstat automake libtool libcppunit-dev libssl-dev pkg-config libsigc++-2.0-dev curl libncurses5-dev libncursesw5-dev yasm fontconfig libfontconfig1 libfontconfig1-dev mediainfo rar unrar zlib1g-dev libcurl4-openssl-dev checkinstall autoconf-archive
+  apt: subversion screen zip unzip sysstat build-essential comerr-dev dstat automake libtool libcppunit-dev libssl-dev pkg-config libsigc++-2.0-dev curl libncurses5-dev libncursesw5-dev yasm fontconfig libfontconfig1 libfontconfig1-dev mediainfo rar zlib1g-dev libcurl4-openssl-dev checkinstall autoconf-archive
 rutorrent:
   apt: sox geoip-database ffmpeg p7zip-full
 sabnzbd:
-  apt: par2 unrar unzip zip python3-dev python3-setuptools python3-pip python3-openssl python3-pillow python3-venv libffi-dev screen p7zip-full par2-tbb python3-sabyenc python3-cheetah
+  apt: par2 unzip zip python3-dev python3-setuptools python3-pip python3-openssl python3-pillow python3-venv libffi-dev screen p7zip-full par2-tbb python3-sabyenc python3-cheetah
   python: pip idna cheetah3 configobj cryptography feedparser cherrypy chardet portend notify2 sabyenc3
 seedcross:
   apt: expect
 sickchill:
-  apt: git-core openssl libssl-dev rar unrar python3-venv
+  apt: git-core openssl libssl-dev rar python3-venv
 sickgear:
   apt: curl git-core build-essential libsqlite3-dev libbz2-dev libreadline-dev libssl-dev zlib1g-dev python3-venv
 sonarr:
