@@ -121,7 +121,7 @@ rtorrent:
 rutorrent:
   apt: sox geoip-database ffmpeg p7zip-full
 sabnzbd:
-  apt: par2 unzip zip python3-dev python3-setuptools python3-pip python3-openssl python3-pillow python3-venv libffi-dev screen p7zip-full par2-tbb python3-sabyenc python3-cheetah
+  apt: par2 unzip zip python3-dev python3-setuptools python3-pip python3-openssl python3-pillow python3-venv libffi-dev screen p7zip-full python3-sabyenc python3-cheetah
   python: pip idna cheetah3 configobj cryptography feedparser cherrypy chardet portend notify2 sabyenc3
 seedcross:
   apt: expect
