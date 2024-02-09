@@ -1,36 +1,22 @@
 #!/usr/bin/env bash
-################################################################################
-# @file_name: database.sh
-# @version: 1
-# @project_name: zen
-# @description: a library for database functions
-#
-# @author: Thomas Chauveau (tomcdj71)
-# @author_contact: thomas.chauveau.pro@gmail.com
-#
-# @license: BSD-3 Clause (Included in LICENSE)
-# Copyright (C) 2024, Thomas Chauveau
+# @file modules/database.sh
+# @project MediaEase
+# @version 1.0.0
+# @description Contains a library of database functions used in the MediaEase project.
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
-################################################################################
 
-################################################################################
-# zen::database::query
-#
-# Executes a given SQLite3 query on the database. This function is a general
-# utility for performing any SQLite3 query.
-#
-# Globals:
-#   sqlite3_db - Path to the SQLite3 database file.
-# Arguments:
-#   query - SQLite3 query to be executed.
-# Outputs:
-#   Outputs the query result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   The function checks for the presence of a query and the database file.
-#   It uses a .timeout of 20000 to handle database locks.
-################################################################################
+# @function zen::database::query
+# @description Executes a given SQLite3 query on the database.
+# @global sqlite3_db Path to the SQLite3 database file.
+# @arg $1 string SQLite3 query to be executed.
+# @stdout Outputs the query result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Checks for the presence of a query and the database file.
+#      Uses a .timeout of 20000 to handle database locks.
 zen::database::query() {
     local query="$1"
     
@@ -48,25 +34,15 @@ zen::database::query() {
     sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
 }
 
-################################################################################
-# zen::database::select
-#
-# Executes a SELECT operation on the database. This function is capable of
-# performing complex SELECT queries including WHERE and other additional clauses.
-#
-# Arguments:
-#   table - Name of the table to select from.
-#   select_clause - Columns to be selected (optional, defaults to '*').
-#   where_clause - Conditions for selection (optional).
-#   additional_clauses - Additional SQL clauses like ORDER BY, GROUP BY (optional).
-#   distinct_flag - Flag for DISTINCT selection (optional, set to '1' for DISTINCT).
-# Outputs:
-#   Outputs the query result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   Constructs a SELECT query based on the provided arguments.
-################################################################################
+# @function zen::database::select::count
+# @description Executes a SELECT COUNT operation on the database.
+# @arg $1 string Name of the table for counting records.
+# @arg $2 string Columns to be counted (optional, defaults to '*').
+# @arg $3 string Conditions for counting (optional).
+# @arg $4 string Additional SQL clauses like ORDER BY, GROUP BY (optional).
+# @stdout Outputs the count result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Constructs a SELECT COUNT query based on the provided arguments.
 zen::database::select() {
     local select_clause="$1"
     local table="$2"
@@ -91,24 +67,15 @@ zen::database::select() {
     zen::database::query "$query"
 }
 
-################################################################################
-# zen::database::select::count
-#
-# Executes a SELECT COUNT operation on the database. This function is used
-# to count the number of records that meet certain conditions.
-#
-# Arguments:
-#   table - Name of the table for counting records.
-#   select_clause - Columns to be counted (optional, defaults to '*').
-#   where_clause - Conditions for counting (optional).
-#   additional_clauses - Additional SQL clauses like ORDER BY, GROUP BY (optional).
-# Outputs:
-#   Outputs the count result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   Constructs a SELECT COUNT query based on the provided arguments.
-################################################################################
+# @function zen::database::select::count
+# @description Executes a SELECT COUNT operation on the database.
+# @arg $1 string Name of the table for counting records.
+# @arg $2 string Columns to be counted (optional, defaults to '*').
+# @arg $3 string Conditions for counting (optional).
+# @arg $4 string Additional SQL clauses like ORDER BY, GROUP BY (optional).
+# @stdout Outputs the count result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Constructs a SELECT COUNT query based on the provided arguments.
 zen::database::select::count() {
     local select_clause="$1"
     local table="$2"
@@ -129,26 +96,17 @@ zen::database::select::count() {
     zen::database::query "$query"
 }
 
-################################################################################
-# zen::database::select::inner_join
-#
-# Executes an INNER JOIN SELECT operation on the database. This function allows
-# for joining tables and selecting data based on complex relationships.
-#
-# Arguments:
-#   select_clause - Columns to be selected.
-#   table - Name of the primary table with alias.
-#   inner_join_clause - Inner join clause with the table and alias.
-#   where_clause - Conditions for selection (optional).
-#   additional_clauses - Additional SQL clauses like ORDER BY, GROUP BY (optional).
-#   distinct_flag - Flag for DISTINCT selection (optional, set to '1' for DISTINCT).
-# Outputs:
-#   Outputs the query result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   Constructs an INNER JOIN SELECT query based on the provided arguments.
-################################################################################
+# @function zen::database::select::inner_join
+# @description Executes an INNER JOIN SELECT operation on the database.
+# @arg $1 string Columns to be selected.
+# @arg $2 string Name of the primary table with alias.
+# @arg $3 string Inner join clause with the table and alias.
+# @arg $4 string Conditions for selection (optional).
+# @arg $5 string Additional SQL clauses like ORDER BY, GROUP BY (optional).
+# @arg $6 string Flag for DISTINCT selection (optional, set to '1' for DISTINCT).
+# @stdout Outputs the query result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Constructs an INNER JOIN SELECT query based on the provided arguments.
 zen::database::select::inner_join() {
     local select_clause="$1"
     local table="$2"
@@ -174,22 +132,14 @@ zen::database::select::inner_join() {
 }
 
 ################################################################################
-# zen::database::insert
-#
-# Executes an INSERT operation on the database. This function is used to insert
-# new records into a specified table.
-#
-# Arguments:
-#   table - Name of the table to insert into.
-#   columns - Comma-separated list of columns for the insert operation.
-#   values - Comma-separated list of values corresponding to the columns.
-# Outputs:
-#   Outputs the query result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   Constructs an INSERT INTO query based on the provided arguments.
-################################################################################
+# @function zen::database::insert
+# @description Executes an INSERT operation on the database.
+# @arg $1 string Name of the table to insert into.
+# @arg $2 string Comma-separated list of columns for the insert operation.
+# @arg $3 string Comma-separated list of values corresponding to the columns.
+# @stdout Outputs the query result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Constructs an INSERT INTO query based on the provided arguments.
 zen::database::insert() {
     local table="$1"
     local columns="$2"
@@ -205,23 +155,14 @@ zen::database::insert() {
     zen::database::query "$query"
 }
 
-################################################################################
-# zen::database::update
-#
-# Executes an UPDATE operation on the database. This function is used to update
-# existing records in a specified table.
-#
-# Arguments:
-#   table - Name of the table to update.
-#   update_clause - Column-value pairs for the update operation.
-#   where_clause - Conditions specifying which records to update.
-# Outputs:
-#   Outputs the query result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   Constructs an UPDATE query based on the provided arguments.
-################################################################################
+# @function zen::database::update
+# @description Executes an UPDATE operation on the database.
+# @arg $1 string Name of the table to update.
+# @arg $2 string Column-value pairs for the update operation.
+# @arg $3 string Conditions specifying which records to update.
+# @stdout Outputs the query result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Constructs an UPDATE query based on the provided arguments.
 zen::database::update() {
     local table="$1"
     local update_clause="$2"
@@ -237,22 +178,13 @@ zen::database::update() {
     zen::database::query "$query"
 }
 
-################################################################################
-# zen::database::delete
-#
-# Executes a DELETE operation on the database. This function is used to delete
-# records from a specified table.
-#
-# Arguments:
-#   table - Name of the table to delete from.
-#   where_clause - Conditions specifying which records to delete.
-# Outputs:
-#   Outputs the query result to stdout or errors to stderr.
-# Returns:
-#   Returns the exit status of the sqlite3 command.
-# Notes:
-#   Constructs a DELETE FROM query based on the provided arguments.
-################################################################################
+# @function zen::database::delete
+# @description Executes a DELETE operation on the database.
+# @arg $1 string Name of the table to delete from.
+# @arg $2 string Conditions specifying which records to delete.
+# @stdout Outputs the query result or errors.
+# @return Returns the exit status of the sqlite3 command.
+# @note Constructs a DELETE FROM query based on the provided arguments.
 zen::database::delete() {
     local table="$1"
     local where_clause="$2"
@@ -267,27 +199,14 @@ zen::database::delete() {
     zen::database::query "$query"
 }
 
-################################################################################
-# zen::database::load_config
-#
-# Parses SQL query results and populates an associative array with the results.
-# This function is designed to handle the output of SQL queries and format them
-# into a usable form in bash scripts.
-#
-# Arguments:
-#   query_result - A string containing the result of the SQL query.
-#   assoc_array - A reference to the associative array to be populated with the
-#                 query results.
-#   identifier_index - The index of the identifier column in the query result.
-#   column_names - An array of column names corresponding to the query result.
-# Outputs:
-#   Populates the provided associative array with key-value pairs where keys are
-#   the column names and values are the corresponding values from the query.
-# Notes:
-#   The function expects the query result to be in a specific format, typically
-#   obtained from a database query command. It sanitizes column names for bash
-#   compatibility.
-################################################################################
+# @function zen::database::load_config
+# @description Parses SQL query results into an associative array.
+# @arg $1 string Result of the SQL query.
+# @arg $2 string Reference to the associative array for query results.
+# @arg $3 string Index of the identifier column in the query result.
+# @arg $4 string Array of column names corresponding to the query result.
+# @stdout Populates the provided associative array with query results.
+# @note Expects query result in a specific format; sanitizes column names.
 zen::database::load_config() {
     local query_result="$1"
     local -n assoc_array="$2"
@@ -311,26 +230,13 @@ zen::database::load_config() {
     done
 }
 
-################################################################################
-# zen::database::load_joined_config
-#
-# Parses SQL inner join query results and populates global variables dynamically.
-# Each variable is named based on a combination of a prefix, identifier, and
-# column name, making it suitable for handling complex query results.
-#
-# Arguments:
-#   query_result - A string containing the result of the SQL inner join query.
-#   prefix - A prefix to be added to each global variable name.
-#   column_names - An array of column names corresponding to the query result.
-# Outputs:
-#   Sets global variables dynamically for each column value in the query result.
-#   The variable names are generated by concatenating the prefix, identifier,
-#   and column name, sanitized for bash compatibility.
-# Notes:
-#   This function is particularly useful for handling the results of inner join
-#   queries where multiple tables are involved. It assumes a specific format of
-#   the query result and requires an appropriate prefix for variable naming.
-################################################################################
+# @function zen::database::load_joined_config
+# @description Parses SQL inner join query results into global variables.
+# @arg $1 string Result of the SQL inner join query.
+# @arg $2 string Prefix for global variable names.
+# @arg $3 string Array of column names corresponding to the query result.
+# @stdout Sets global variables for each column value in the query result.
+# @note Assumes a specific format of the query result; requires an appropriate prefix.
 zen::database::load_joined_config() {
     local query_result="$1"
     local prefix="$2"

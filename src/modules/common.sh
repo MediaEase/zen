@@ -1,39 +1,24 @@
 #!/usr/bin/env bash
-################################################################################
-# @file_name: common.sh
-# @version: 1
-# @project_name: zen
-# @description: a library for common functions
-#
-# @author: Thomas Chauveau (tomcdj71)
-# @author_contact: thomas.chauveau.pro@gmail.com
-#
-# @license: BSD-3 Clause (Included in LICENSE)
-# Copyright (C) 2024, Thomas Chauveau
+# @file modules/common.sh
+# @project MediaEase
+# @version 1.0.0
+# @description Contains a library of common functions used in the MediaEase project.
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
-################################################################################
 
-################################################################################
-# zen::common::git::clone
-#
-# Clones a Git repository into the specified directory. This function clones
-# the specified branch of the repository, or the default branch if none is
-# specified.
-#
-# Arguments:
-#   repo_url - The full URL of the Git repository to clone.
-#   target_dir - The target directory where the repository will be cloned.
-#   branch (optional) - The specific branch to clone. Defaults to the main branch
-#                       if not specified.
-# Outputs:
-#   Clones the repository into the target directory.
-# Returns:
-#   0 on successful cloning, 1 on failure.
-# Notes:
-#   If the target directory already exists, the function will warn and exit
-#   without performing the clone. It also adjusts permissions based on the
-#   target directory's location.
-################################################################################
+# @section Git Functions
+# @description The following functions handle Git operations.
+
+# @description Clones a Git repository into the specified directory.
+# @arg $1 string Full URL of the Git repository to clone.
+# @arg $2 string Target directory where the repository will be cloned.
+# @arg $3 string Specific branch to clone (optional).
+# @exitcode 0 on successful cloning.
+# @exitcode 1 on failure.
+# @stdout Clones the repository into the target directory.
 zen::common::git::clone() {
     local repo_name="$1"
     local target_dir="$2"
@@ -65,26 +50,18 @@ zen::common::git::clone() {
     fi
 }
 
-################################################################################
-# zen::common::git::get_release
-#
-# Retrieves a release from a GitHub repository and extracts it into the
-# specified directory. This function can handle both stable and prerelease
-# versions, and supports various file formats for the release archive.
-#
-# Arguments:
-#   target_dir - The directory where the release will be extracted.
-#   repo_url - The full URL of the GitHub repository.
-#   is_prerelease - Boolean indicating whether to retrieve a prerelease (true)
-#                   or a stable release (false).
-#   release_name - The name or pattern of the release file to be retrieved.
-# Outputs:
-#   Downloads and extracts the specified release into the target directory.
-# Returns:
-#   0 on successful retrieval and extraction, 1 on failure.
-# Notes:
-#   The function cleans up the downloaded archive after extraction and sets
-#   appropriate permissions for the extracted files.
+
+# @description Retrieves and extracts a release from a GitHub repository.
+# @arg $1 string Directory where the release will be extracted.
+# @arg $2 string Full URL of the GitHub repository.
+# @arg $3 bool Retrieve a prerelease (true) or stable release (false).
+# @arg $4 string Name or pattern of the release file to be retrieved.
+# @exitcode 0 on successful retrieval and extraction.
+# @exitcode 1 on failure.
+# @stdout Downloads and extracts the specified release into the target directory.
+# @notes
+# The function cleans up the downloaded archive after extraction and sets
+# appropriate permissions for the extracted files.
 ################################################################################
 zen::common::git::get_release(){
     local target_dir="$1"
@@ -131,19 +108,14 @@ zen::common::git::get_release(){
     mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
 }
 
-################################################################################
-# zen::common::environment::get::variable
-#
-# Retrieves the value of a specified environment variable. If the variable is
-# not set, the function outputs an error message.
-#
-# Arguments:
-#   var_name - The name of the environment variable to retrieve.
-# Outputs:
-#   The value of the specified environment variable.
-# Returns:
-#   Echoes the variable's value if set, otherwise prints an error message.
-################################################################################
+# @section Environment Functions
+# @description The following functions are used for environment variable management.
+
+# @description Retrieves the value of a specified environment variable.
+# @arg $1 string Name of the environment variable to retrieve.
+# @exitcode 0 if the variable is found.
+# @exitcode 1 if the variable is not found.
+# @stdout Value of the specified environment variable.
 zen::common::environment::get::variable() {
     local var_name="$1"
     if [[ -n "${!var_name}" ]]; then
@@ -153,22 +125,14 @@ zen::common::environment::get::variable() {
     fi
 }
 
-################################################################################
-# zen::common::fix::permissions
-#
-# Fixes the permissions of a specified path for a given user and group. This
-# function recursively changes ownership and sets permissions for directories
-# and files within the given path.
-#
-# Arguments:
-#   path - The file system path whose permissions need to be fixed.
-#   user - The user to whom ownership of the files/directories should be set.
-#   group - The group to whom ownership of the files/directories should be set.
-#   dir_permissions - The permissions to apply to directories (e.g., '755').
-#   file_permissions - The permissions to apply to files (e.g., '644').
-# Returns:
-#   0 if permissions were successfully changed, 1 if the path doesn't exist.
-################################################################################
+# @description Fixes permissions of a specified path for a user and group.
+# @arg $1 string File system path whose permissions need fixing.
+# @arg $2 string User for file/directory ownership.
+# @arg $3 string Group for file/directory ownership.
+# @arg $4 string Permissions for directories (e.g., '755').
+# @arg $5 string Permissions for files (e.g., '644').
+# @exitcode 0 if successful.
+# @exitcode 1 if the path doesn't exist.
 zen::common::fix::permissions() {
     local path="$1"
     local user="$2"
@@ -186,20 +150,13 @@ zen::common::fix::permissions() {
     find "$path" -type f -exec chmod "$file_permissions" {} +
 }
 
-################################################################################
-# zen::common::setting::load
-#
-# Loads settings from the database into a globally accessible associative array.
-# This function is designed to retrieve application settings stored in a
-# database and make them available within the script.
-#
-# Globals:
-#   settings - An associative array that will be populated with the settings.
-# Returns:
-#   Populates the 'settings' global associative array with settings from the database.
-# Notes:
-#   This function relies on 'zen::database::load_config' for parsing the SQL
-#   query results and populating the 'settings' array.
+# @section Setting Functions
+# @description The following functions are used for managing application settings.
+
+# @description Loads settings from the database into a global associative array.
+# @global settings Associative array populated with settings from the database.
+# @exitcode 0 on successful loading.
+# @exitcode 1 on failure.
 # shellcheck disable=SC2034
 # Disable reason: 'settings' is used in other functions
 ################################################################################
@@ -209,17 +166,9 @@ zen::common::setting::load(){
     zen::database::load_config "$(zen::database::select "*" "setting" "")"  "settings" 0 "setting_columns"
 }
 
-################################################################################
-# zen::common::capitalize::first
-#
-# Capitalizes the first letter of the given string. This function is useful
-# for formatting output or user input where capitalization is required.
-#
-# Arguments:
-#   input_string - The string to be capitalized.
-# Returns:
-#   The transformed string with the first letter capitalized.
-################################################################################
+# @description Capitalizes the first letter of a given string.
+# @arg $1 string String to be capitalized.
+# @stdout Transformed string with the first letter capitalized.
 zen::common::capitalize::first() {
     local input_string="$1"
     local capitalized_string
@@ -228,20 +177,10 @@ zen::common::capitalize::first() {
     echo "$capitalized_string"
 }
 
-################################################################################
-# zen::common::dashboard::log
-#
-# Passes shell output to the dashboard log. This function is used for logging
-# messages to a file that can be displayed on a dashboard or web interface.
-#
-# Arguments:
-#   string - The message string to be logged.
-# Returns:
-#   None. Writes the message to the dashboard log file.
-# Notes:
-#   Creates the dashboard log file if it does not exist and sets appropriate
-#   permissions. Formats newlines in the log message as HTML line breaks.
-################################################################################
+# @description Logs messages to a file for dashboard display.
+# @arg $1 string Message to be logged.
+# @stdout None.
+# @notes Creates and manages the dashboard log file.
 zen::common::dashboard::log() {
 	if [[ ! -f "/srv/zen/logs/dashboard" ]]; then
 		mkdir -p /srv/zen/logs
@@ -251,17 +190,8 @@ zen::common::dashboard::log() {
 	echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
 }
 
-################################################################################
-# zen::common:shell::color::randomizer
-#
-# Selects a random color code for output styling.
-#
-# No arguments.
-# Outputs:
-#   Echoes a random color code (yellow, magenta, cyan).
-# Notes:
-#   Used to randomize the color of text output in the shell for visual variety.
-################################################################################
+# @description Selects a random color code for shell output styling.
+# @stdout Echoes a random color code (yellow, magenta, cyan).
 zen::common:shell::color::randomizer(){
     local color
     color=$((RANDOM % 3))
