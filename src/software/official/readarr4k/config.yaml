@@ -1,0 +1,27 @@
+arguments:
+  app_name: Readarr4k
+  docs: https://wiki.servarr.com/Readarr4k
+  homepage: https://github.com/Readarr4k/Readarr4k
+  mediaease_docs: https://mediaease.github.io/docs/software/official/readarr
+  multi_user: true
+  ports: 
+    - default: [7878-7928]
+    - ssl: [9898-9948]
+  service_directives:
+    - Type=simple
+    - Environment=TMPDIR=/home/%i/tmp/$app_name
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name
+    - ExecStart=/opt/%i/$app_name/Readarr4k -nobrowser -data=/home/%i/.config/$app_name -config=/home/%i/.config/$app_name/config.xml
+    - TimeoutStopSec=20
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config : /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port
