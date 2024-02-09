@@ -11,13 +11,10 @@
 
 # @function zen::software::lidarr::add
 # @description Adds a Lidarr for a user, including downloading, configuring, and starting the service.
-# @arg $1 string The name of the application (Lidarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-# Disabling SC2154 because the variable is defined in the main script
 zen::software::lidarr::add(){
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
@@ -35,9 +32,7 @@ zen::software::lidarr::add(){
 ################################################################################
 # @function zen::software::lidarr::config
 # @description Configures Lidarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Lidarr).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Lidarr.
+# @arg $1 string Indicates whether to use a prerelease version of Lidarr.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -45,7 +40,7 @@ zen::software::lidarr::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::lidarr::config "true"
 zen::software::lidarr::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
@@ -81,8 +76,6 @@ RCON
 
 # @function zen::software::lidarr::update
 # @description Updates Lidarr for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Lidarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::lidarr::update(){
@@ -100,8 +93,6 @@ zen::software::lidarr::update(){
 
 # @function zen::software::lidarr::remove
 # @description Removes Lidarr for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Lidarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::lidarr::remove(){
     local service_name
@@ -118,8 +109,6 @@ zen::software::lidarr::remove(){
 
 # @function zen::software::lidarr::backup
 # @description Creates a backup for Lidarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Lidarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::lidarr::backup(){
     local username="$1"
@@ -128,8 +117,6 @@ zen::software::lidarr::backup(){
 
 # @function zen::software::lidarr::reset
 # @description Resets Lidarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Lidarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::lidarr::reset(){
     local username="$1"
@@ -138,8 +125,6 @@ zen::software::lidarr::reset(){
 
 # @function zen::software::lidarr::reinstall
 # @description Reinstalls Lidarr for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Lidarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::lidarr::reinstall(){
     local username="$1"

@@ -35,9 +35,7 @@ zen::software::sonarr4k::add(){
 ################################################################################
 # @function zen::software::sonarr4k::config
 # @description Configures Sonarr4k for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Sonarr4k).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Sonarr4k.
+# @arg $1 string Indicates whether to use a prerelease version of Sonarr4k.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -45,7 +43,7 @@ zen::software::sonarr4k::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::sonarr4k::config "true"
 zen::software::sonarr4k::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
@@ -81,8 +79,6 @@ RCON
 
 # @function zen::software::sonarr4k::update
 # @description Updates Sonarr4k for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Sonarr4k).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::sonarr4k::update(){
@@ -100,8 +96,6 @@ zen::software::sonarr4k::update(){
 
 # @function zen::software::sonarr4k::remove
 # @description Removes Sonarr4k for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Sonarr4k).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::sonarr4k::remove(){
     local service_name
@@ -118,8 +112,6 @@ zen::software::sonarr4k::remove(){
 
 # @function zen::software::sonarr4k::backup
 # @description Creates a backup for Sonarr4k settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Sonarr4k).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::sonarr4k::backup(){
     local username="$1"
@@ -128,8 +120,6 @@ zen::software::sonarr4k::backup(){
 
 # @function zen::software::sonarr4k::reset
 # @description Resets Sonarr4k settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Sonarr4k).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::sonarr4k::reset(){
     local username="$1"
@@ -138,8 +128,6 @@ zen::software::sonarr4k::reset(){
 
 # @function zen::software::sonarr4k::reinstall
 # @description Reinstalls Sonarr4k for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Sonarr4k).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::sonarr4k::reinstall(){
     local username="$1"

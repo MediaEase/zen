@@ -11,13 +11,10 @@
 
 # @function zen::software::readarr::add
 # @description Adds a Readarr for a user, including downloading, configuring, and starting the service.
-# @arg $1 string The name of the application (Readarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-# Disabling SC2154 because the variable is defined in the main script
 zen::software::readarr::add(){
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
@@ -35,9 +32,7 @@ zen::software::readarr::add(){
 ################################################################################
 # @function zen::software::readarr::config
 # @description Configures Readarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Readarr).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Readarr.
+# @arg $1 string Indicates whether to use a prerelease version of Readarr.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -45,7 +40,7 @@ zen::software::readarr::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::readarr::config "true"
 zen::software::readarr::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
@@ -81,8 +76,6 @@ RCON
 
 # @function zen::software::readarr::update
 # @description Updates Readarr for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Readarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::readarr::update(){
@@ -100,8 +93,6 @@ zen::software::readarr::update(){
 
 # @function zen::software::readarr::remove
 # @description Removes Readarr for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Readarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::readarr::remove(){
     local service_name
@@ -118,8 +109,6 @@ zen::software::readarr::remove(){
 
 # @function zen::software::readarr::backup
 # @description Creates a backup for Readarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Readarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::readarr::backup(){
     local username="$1"
@@ -128,8 +117,6 @@ zen::software::readarr::backup(){
 
 # @function zen::software::readarr::reset
 # @description Resets Readarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Readarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::readarr::reset(){
     local username="$1"
@@ -138,8 +125,6 @@ zen::software::readarr::reset(){
 
 # @function zen::software::readarr::reinstall
 # @description Reinstalls Readarr for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Readarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::readarr::reinstall(){
     local username="$1"

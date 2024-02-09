@@ -17,7 +17,6 @@
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-# Disabling SC2154 because the variable is defined in the main script
 zen::software::sonarr::add(){
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
@@ -35,9 +34,7 @@ zen::software::sonarr::add(){
 ################################################################################
 # @function zen::software::sonarr::config
 # @description Configures Sonarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Sonarr).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Sonarr.
+# @arg $1 string Indicates whether to use a prerelease version of Sonarr.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -45,7 +42,7 @@ zen::software::sonarr::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::sonarr::config "true"
 zen::software::sonarr::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
@@ -81,8 +78,6 @@ RCON
 
 # @function zen::software::sonarr::update
 # @description Updates Sonarr for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Sonarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::sonarr::update(){
@@ -100,8 +95,6 @@ zen::software::sonarr::update(){
 
 # @function zen::software::sonarr::remove
 # @description Removes Sonarr for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Sonarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::sonarr::remove(){
     local service_name
@@ -118,8 +111,6 @@ zen::software::sonarr::remove(){
 
 # @function zen::software::sonarr::backup
 # @description Creates a backup for Sonarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Sonarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::sonarr::backup(){
     local username="$1"
@@ -128,8 +119,6 @@ zen::software::sonarr::backup(){
 
 # @function zen::software::sonarr::reset
 # @description Resets Sonarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Sonarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::sonarr::reset(){
     local username="$1"
@@ -138,8 +127,6 @@ zen::software::sonarr::reset(){
 
 # @function zen::software::sonarr::reinstall
 # @description Reinstalls Sonarr for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Sonarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::sonarr::reinstall(){
     local username="$1"

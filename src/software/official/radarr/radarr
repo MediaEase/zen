@@ -11,13 +11,12 @@
 
 # @function zen::software::radarr::add
 # @description Adds a Radarr for a user, including downloading, configuring, and starting the service.
-# @arg $1 string The name of the application (Radarr).
-# @arg $2 string A sanitized version of the application name for display.
+# @global app_name The name of the application (Radarr).
+# @global app_name_sanitized A sanitized version of the application name for display.
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-# Disabling SC2154 because the variable is defined in the main script
 zen::software::radarr::add(){
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
@@ -35,9 +34,7 @@ zen::software::radarr::add(){
 ################################################################################
 # @function zen::software::radarr::config
 # @description Configures Radarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Radarr).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Radarr.
+# @arg $1 string Indicates whether to use a prerelease version of Radarr.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -45,7 +42,7 @@ zen::software::radarr::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::radarr::config "true"
 zen::software::radarr::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
@@ -81,8 +78,6 @@ RCON
 
 # @function zen::software::radarr::update
 # @description Updates Radarr for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Radarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::radarr::update(){
@@ -100,8 +95,6 @@ zen::software::radarr::update(){
 
 # @function zen::software::radarr::remove
 # @description Removes Radarr for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Radarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::radarr::remove(){
     local service_name
@@ -118,8 +111,6 @@ zen::software::radarr::remove(){
 
 # @function zen::software::radarr::backup
 # @description Creates a backup for Radarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Radarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::radarr::backup(){
     local username="$1"
@@ -128,8 +119,6 @@ zen::software::radarr::backup(){
 
 # @function zen::software::radarr::reset
 # @description Resets Radarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Radarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::radarr::reset(){
     local username="$1"
@@ -138,8 +127,6 @@ zen::software::radarr::reset(){
 
 # @function zen::software::radarr::reinstall
 # @description Reinstalls Radarr for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Radarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::radarr::reinstall(){
     local username="$1"

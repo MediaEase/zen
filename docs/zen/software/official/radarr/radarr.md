@@ -18,11 +18,6 @@ Radarr handler
 
 Adds a Radarr for a user, including downloading, configuring, and starting the service.
 
-#### Arguments
-
-* **$1** (string): The name of the application (Radarr).
-* **$2** (string): A sanitized version of the application name for display.
-
 ### zen::software::radarr::config
 
 Configures Radarr for a user, including setting up configuration files and proxy settings.
@@ -38,52 +33,25 @@ zen::software::radarr::config "true"
 
 #### Arguments
 
-* **$1** (string): The name of the application (Radarr).
-* **$2** (string): A sanitized version of the application name for display.
-* **$3** (string): Indicates whether to use a prerelease version of Radarr.
+* **$1** (string): Indicates whether to use a prerelease version of Radarr.
 
 ### zen::software::radarr::update
 
 Updates Radarr for a user, including stopping the service, downloading the latest release, and restarting.
 
-#### Arguments
-
-* **$1** (string): The name of the application (Radarr).
-* **$2** (string): A sanitized version of the application name for display.
-
 ### zen::software::radarr::remove
 
 Removes Radarr for a user, including disabling and deleting the service and cleaning up files.
-
-#### Arguments
-
-* **$1** (string): The name of the application (Radarr).
-* **$2** (string): A sanitized version of the application name for display.
 
 ### zen::software::radarr::backup
 
 Creates a backup for Radarr settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Radarr).
-
 ### zen::software::radarr::reset
 
 Resets Radarr settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Radarr).
-
 ### zen::software::radarr::reinstall
 
 Reinstalls Radarr for a user.
-
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Radarr).
 

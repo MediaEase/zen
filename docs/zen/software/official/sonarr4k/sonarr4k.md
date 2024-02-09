@@ -38,52 +38,25 @@ zen::software::sonarr4k::config "true"
 
 #### Arguments
 
-* **$1** (string): The name of the application (Sonarr4k).
-* **$2** (string): A sanitized version of the application name for display.
-* **$3** (string): Indicates whether to use a prerelease version of Sonarr4k.
+* **$1** (string): Indicates whether to use a prerelease version of Sonarr4k.
 
 ### zen::software::sonarr4k::update
 
 Updates Sonarr4k for a user, including stopping the service, downloading the latest release, and restarting.
 
-#### Arguments
-
-* **$1** (string): The name of the application (Sonarr4k).
-* **$2** (string): A sanitized version of the application name for display.
-
 ### zen::software::sonarr4k::remove
 
 Removes Sonarr4k for a user, including disabling and deleting the service and cleaning up files.
-
-#### Arguments
-
-* **$1** (string): The name of the application (Sonarr4k).
-* **$2** (string): A sanitized version of the application name for display.
 
 ### zen::software::sonarr4k::backup
 
 Creates a backup for Sonarr4k settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Sonarr4k).
-
 ### zen::software::sonarr4k::reset
 
 Resets Sonarr4k settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Sonarr4k).
-
 ### zen::software::sonarr4k::reinstall
 
 Reinstalls Sonarr4k for a user.
-
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Sonarr4k).
 

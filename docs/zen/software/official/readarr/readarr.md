@@ -18,11 +18,6 @@ Readarr handler
 
 Adds a Readarr for a user, including downloading, configuring, and starting the service.
 
-#### Arguments
-
-* **$1** (string): The name of the application (Readarr).
-* **$2** (string): A sanitized version of the application name for display.
-
 ### zen::software::readarr::config
 
 Configures Readarr for a user, including setting up configuration files and proxy settings.
@@ -38,52 +33,25 @@ zen::software::readarr::config "true"
 
 #### Arguments
 
-* **$1** (string): The name of the application (Readarr).
-* **$2** (string): A sanitized version of the application name for display.
-* **$3** (string): Indicates whether to use a prerelease version of Readarr.
+* **$1** (string): Indicates whether to use a prerelease version of Readarr.
 
 ### zen::software::readarr::update
 
 Updates Readarr for a user, including stopping the service, downloading the latest release, and restarting.
 
-#### Arguments
-
-* **$1** (string): The name of the application (Readarr).
-* **$2** (string): A sanitized version of the application name for display.
-
 ### zen::software::readarr::remove
 
 Removes Readarr for a user, including disabling and deleting the service and cleaning up files.
-
-#### Arguments
-
-* **$1** (string): The name of the application (Readarr).
-* **$2** (string): A sanitized version of the application name for display.
 
 ### zen::software::readarr::backup
 
 Creates a backup for Readarr settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Readarr).
-
 ### zen::software::readarr::reset
 
 Resets Readarr settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Readarr).
-
 ### zen::software::readarr::reinstall
 
 Reinstalls Readarr for a user.
-
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Readarr).
 

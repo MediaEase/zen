@@ -11,13 +11,10 @@
 
 # @function zen::software::prowlarr::add
 # @description Adds a Prowlarr for a user, including downloading, configuring, and starting the service.
-# @arg $1 string The name of the application (Prowlarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-# Disabling SC2154 because the variable is defined in the main script
 zen::software::prowlarr::add(){
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
@@ -35,9 +32,6 @@ zen::software::prowlarr::add(){
 ################################################################################
 # @function zen::software::prowlarr::config
 # @description Configures Prowlarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Prowlarr).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Prowlarr.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -45,7 +39,7 @@ zen::software::prowlarr::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::prowlarr::config "true"
 zen::software::prowlarr::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
@@ -81,8 +75,6 @@ RCON
 
 # @function zen::software::prowlarr::update
 # @description Updates Prowlarr for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Prowlarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::prowlarr::update(){
@@ -100,8 +92,6 @@ zen::software::prowlarr::update(){
 
 # @function zen::software::prowlarr::remove
 # @description Removes Prowlarr for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Prowlarr).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::prowlarr::remove(){
     local service_name
@@ -118,8 +108,6 @@ zen::software::prowlarr::remove(){
 
 # @function zen::software::prowlarr::backup
 # @description Creates a backup for Prowlarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Prowlarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::prowlarr::backup(){
     local username="$1"
@@ -128,8 +116,6 @@ zen::software::prowlarr::backup(){
 
 # @function zen::software::prowlarr::reset
 # @description Resets Prowlarr settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Prowlarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::prowlarr::reset(){
     local username="$1"
@@ -138,8 +124,6 @@ zen::software::prowlarr::reset(){
 
 # @function zen::software::prowlarr::reinstall
 # @description Reinstalls Prowlarr for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Prowlarr).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::prowlarr::reinstall(){
     local username="$1"

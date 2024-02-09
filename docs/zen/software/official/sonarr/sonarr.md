@@ -38,52 +38,25 @@ zen::software::sonarr::config "true"
 
 #### Arguments
 
-* **$1** (string): The name of the application (Sonarr).
-* **$2** (string): A sanitized version of the application name for display.
-* **$3** (string): Indicates whether to use a prerelease version of Sonarr.
+* **$1** (string): Indicates whether to use a prerelease version of Sonarr.
 
 ### zen::software::sonarr::update
 
 Updates Sonarr for a user, including stopping the service, downloading the latest release, and restarting.
 
-#### Arguments
-
-* **$1** (string): The name of the application (Sonarr).
-* **$2** (string): A sanitized version of the application name for display.
-
 ### zen::software::sonarr::remove
 
 Removes Sonarr for a user, including disabling and deleting the service and cleaning up files.
-
-#### Arguments
-
-* **$1** (string): The name of the application (Sonarr).
-* **$2** (string): A sanitized version of the application name for display.
 
 ### zen::software::sonarr::backup
 
 Creates a backup for Sonarr settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Sonarr).
-
 ### zen::software::sonarr::reset
 
 Resets Sonarr settings for a user.
 
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Sonarr).
-
 ### zen::software::sonarr::reinstall
 
 Reinstalls Sonarr for a user.
-
-#### Arguments
-
-* **$1** (string): The username of the user.
-* **$2** (string): The name of the application (Sonarr).
 

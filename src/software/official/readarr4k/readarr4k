@@ -11,13 +11,10 @@
 
 # @function zen::software::readarr4k::add
 # @description Adds a Readarr4k for a user, including downloading, configuring, and starting the service.
-# @arg $1 string The name of the application (Readarr4k).
-# @arg $2 string A sanitized version of the application name for display.
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-# Disabling SC2154 because the variable is defined in the main script
 zen::software::readarr4k::add(){
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
@@ -35,9 +32,7 @@ zen::software::readarr4k::add(){
 ################################################################################
 # @function zen::software::readarr4k::config
 # @description Configures Readarr4k for a user, including setting up configuration files and proxy settings.
-# @arg $1 string The name of the application (Readarr4k).
-# @arg $2 string A sanitized version of the application name for display.
-# @arg $3 string Indicates whether to use a prerelease version of Readarr4k.
+# @arg $1 string Indicates whether to use a prerelease version of Readarr4k.
 # @global user An associative array containing user-specific information.
 # @example
 #   # the following disables pre-release (develop):
@@ -81,8 +76,6 @@ RCON
 
 # @function zen::software::readarr4k::update
 # @description Updates Readarr4k for a user, including stopping the service, downloading the latest release, and restarting.
-# @arg $1 string The name of the application (Readarr4k).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::readarr4k::update(){
@@ -100,8 +93,6 @@ zen::software::readarr4k::update(){
 
 # @function zen::software::readarr4k::remove
 # @description Removes Readarr4k for a user, including disabling and deleting the service and cleaning up files.
-# @arg $1 string The name of the application (Readarr4k).
-# @arg $2 string A sanitized version of the application name for display.
 # @global user An associative array containing user-specific information.
 zen::software::readarr4k::remove(){
     local service_name
@@ -118,8 +109,6 @@ zen::software::readarr4k::remove(){
 
 # @function zen::software::readarr4k::backup
 # @description Creates a backup for Readarr4k settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Readarr4k).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::readarr4k::backup(){
     local username="$1"
@@ -128,8 +117,6 @@ zen::software::readarr4k::backup(){
 
 # @function zen::software::readarr4k::reset
 # @description Resets Readarr4k settings for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Readarr4k).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::readarr4k::reset(){
     local username="$1"
@@ -138,8 +125,6 @@ zen::software::readarr4k::reset(){
 
 # @function zen::software::readarr4k::reinstall
 # @description Reinstalls Readarr4k for a user.
-# @arg $1 string The username of the user.
-# @arg $2 string The name of the application (Readarr4k).
 # @note This function is currently a placeholder and needs implementation.
 zen::software::readarr4k::reinstall(){
     local username="$1"
