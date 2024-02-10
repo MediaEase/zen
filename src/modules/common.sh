@@ -74,7 +74,7 @@ zen::common::git::get_release(){
     release_url="$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")"
     declare -g release_version
     release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
-    mflibs::shell::text::white::sl "$(zen::i18n::translate "common.release_found" "$repo_name"): $(mflibs::shell::text::cyan "$release_version")"
+    mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "common.release_found" "$repo_name"): $release_version")"
     [[ -d $target_dir ]] && rm -rf "$target_dir"
     mflibs::dir::mkcd "$target_dir"
     local file_extension="${release_url##*.}"
@@ -192,7 +192,7 @@ zen::common::dashboard::log() {
 
 # @description Selects a random color code for shell output styling.
 # @stdout Echoes a random color code (yellow, magenta, cyan).
-zen::common:shell::color::randomizer(){
+zen::common::shell::color::randomizer(){
     local color
     color=$((RANDOM % 3))
     case $color in
