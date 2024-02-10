@@ -40,7 +40,7 @@ zen::software::readarr4k::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::readarr4k::config "true"
 zen::software::readarr4k::config(){
-    local is_prerelease="$3"
+    local is_prerelease="$1"
     declare -g url_base
     mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
     zen::software::autogen
