@@ -6,15 +6,25 @@ A library for internationalization functions.
 
 ## Index
 
-* [zen::user::create](#zenusercreate)
-* [zen::user::password::set](#zenuserpasswordset)
-* [zen::user::password::generate](#zenuserpasswordgenerate)
-* [zen::user::groups::upgrade](#zenusergroupsupgrade)
-* [zen::user::groups::create_groups](#zenusergroupscreategroups)
-* [zen::user::check](#zenusercheck)
-* [zen::user::is::admin](#zenuserisadmin)
-* [zen::multi::check::id](#zenmulticheckid)
-* [zen::user::load](#zenuserload)
+- [modules/user.sh](#modulesusersh)
+  - [Overview](#overview)
+  - [Index](#index)
+    - [zen::user::create](#zenusercreate)
+      - [Arguments](#arguments)
+    - [zen::user::groups::upgrade](#zenusergroupsupgrade)
+      - [Arguments](#arguments-1)
+    - [zen::user::groups::create\_groups](#zenusergroupscreate_groups)
+    - [zen::user::check](#zenusercheck)
+    - [zen::user::is::admin](#zenuserisadmin)
+    - [zen::multi::check::id](#zenmulticheckid)
+      - [Arguments](#arguments-2)
+    - [zen::user::load](#zenuserload)
+      - [Arguments](#arguments-3)
+  - [Password Management](#password-management)
+    - [zen::user::password::generate](#zenuserpasswordgenerate)
+      - [Arguments](#arguments-4)
+    - [zen::user::password::set](#zenuserpasswordset)
+      - [Arguments](#arguments-5)
 
 ### zen::user::create
 
@@ -25,23 +35,6 @@ Creates a new system user with specified attributes.
 * **$1** (string): The username for the new user.
 * **$2** (string): The password for the new user.
 * **$3** (string): Indicates if the user should have admin privileges ('true' or 'false').
-
-### zen::user::password::set
-
-Sets a password for a specified user.
-
-#### Arguments
-
-* **$1** (string): The username of the user for whom to set the password.
-* **$2** (string): The password to set for the user.
-
-### zen::user::password::generate
-
-Generates a random password of a specified length.
-
-#### Arguments
-
-* **$1** (int): The length of the password to generate.
 
 ### zen::user::groups::upgrade
 
@@ -79,4 +72,25 @@ Loads a specified user's data into a globally accessible associative array.
 #### Arguments
 
 * **$1** (string): The username of the user to load.
+
+## Password Management
+
+Generates a random password of a specified length.
+
+### zen::user::password::generate
+
+Generates a random password of a specified length.
+
+#### Arguments
+
+* **$1** (int): The length of the password to generate.
+
+### zen::user::password::set
+
+Sets a password for a specified user.
+
+#### Arguments
+
+* **$1** (string): The username of the user for whom to set the password.
+* **$2** (string): The password to set for the user.
 

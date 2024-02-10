@@ -11,7 +11,6 @@ Contains a library of functions used in the MediaEase Project for managing depen
 * [zen::dependency::apt::update](#zendependencyaptupdate)
 * [zen::dependency::apt::remove](#zendependencyaptremove)
 * [zen::dependency::external::build](#zendependencyexternalbuild)
-* [zen::dependency::python::build](#zendependencypythonbuild)
 
 ### zen::dependency::apt::manage
 
@@ -72,16 +71,4 @@ Installs external dependencies based on YAML configuration.
 #### Output on stdout
 
 * Executes custom installation commands for external dependencies.
-
-### zen::dependency::python::build
-
-Installs Python dependencies based on YAML configuration.
-
-#### Arguments
-
-* **$1** (string): Name of the software for Python dependency installation.
-
-#### Output on stdout
-
-* Installs Python packages using pip.
 

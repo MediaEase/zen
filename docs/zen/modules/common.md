@@ -13,7 +13,7 @@ Contains a library of common functions used in the MediaEase project.
 * [zen::common::setting::load](#zencommonsettingload)
 * [zen::common::capitalize::first](#zencommoncapitalizefirst)
 * [zen::common::dashboard::log](#zencommondashboardlog)
-* [zen::common:shell::color::randomizer](#zencommonshellcolorrandomizer)
+* [zen::common::shell::color::randomizer](#zencommonshellcolorrandomizer)
 
 ## Git Functions
 
@@ -133,7 +133,7 @@ Logs messages to a file for dashboard display.
 
 * None.
 
-### zen::common:shell::color::randomizer
+### zen::common::shell::color::randomizer
 
 Selects a random color code for shell output styling.
 
