@@ -69,6 +69,14 @@ dependency:
   no_external_dependencies_found: "No external dependencies found."
   external_dependency_install_failed: "Failed to install external dependency."
   no_install_command_found: "No install commands found."
+python:
+  venv_install_no_path: "No path provided for virtual environment installation."
+  venv_install_no_requirements: "No requirements file provided for virtual environment installation."
+  venv_install_requirements_error: "Error occurred while installing requirements."
+  venv_install_success: "Virtual environment installed successfully."
+  venv_remove_no_path: "No path provided for virtual environment removal."
+  venv_remove_error: "Error occurred while removing virtual environment."
+  venv_remove_success: "Virtual environment removed successfully."
 common:
   repository_already_exists: "The repository already exists."
   repository_cloned: "Repository cloned."
@@ -89,4 +97,4 @@ common:
   unsupported_file_type: "Unsupported file type: {arg0}"
   release_downloaded: "Release downloaded."
   getting_release: "Getting release..."
-  release_found: "Release found."
+  release_found: "Release found"
