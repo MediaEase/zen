@@ -9,7 +9,6 @@
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
-################################################################################
 # @function zen::dependency::apt::manage
 # @description Manages APT dependencies for the specified software.
 # @global MEDIAEASE_HOME Path to MediaEase configurations.
@@ -40,6 +39,7 @@ zen::dependency::apt::manage() {
         install)
             cmd_options="-yqq --allow-unauthenticated install"
             [[ "$option" == "reinstall" ]] && cmd_options+=" --reinstall"
+            zen::dependency::apt::install::inline "${dependencies_string}" "$cmd_options" && return
             ;;
         update|upgrade|check)
             cmd_options="-yqq $action"
@@ -49,16 +49,6 @@ zen::dependency::apt::manage() {
             return 1
             ;;
     esac
-    [[ "$option" == "non-interactive" ]] && cmd_options="-o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" $cmd_options"
-    [[ "$option" == "inline" ]] && zen::dependency::apt::install::inline "${dependencies_string}" && return
-
-    DEBIAN_FRONTEND=noninteractive apt-get "${cmd_options}" "${dependencies_string}"
-    local result=$?
-    if [[ "$result" -ne 0 ]]; then
-        mflibs::status::error "$(zen::i18n::translate 'dependency.apt_command_failed' "$action")"
-        return $result
-    fi
-    mflibs::status::success "$(zen::i18n::translate 'dependency.apt_command_success' "$action")"
 }
 
 # @function zen::dependency::apt::install::inline
@@ -70,14 +60,7 @@ zen::dependency::apt::install::inline() {
     local input_string="$*"
     IFS=' ' read -r -a dependencies <<< "$input_string"
     for dep in "${dependencies[@]}"; do
-        export DEBIAN_FRONTEND=noninteractive 
-        if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") != "1" ]]; then
-            if mflibs::log "apt-get -yqq install ${dep}"; then
-                echo -n -e "$(tput setaf 2)$dep$(tput setaf 7)"
-            else
-                echo -n -e "$(tput setaf 1)$dep$(tput setaf 7)"
-            fi
-        fi
+        [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") != "1" ]] && mflibs::log "apt-get $cmd_options ${dep}"
     done
 }
 
@@ -119,7 +102,7 @@ zen::dependency::apt::update() {
 # @note Reads dependencies from a YAML file; checks for exclusive use.
 zen::dependency::apt::remove() {
     local software_name="$1"
-    local dependencies_file="${MEDIAEASE_HOME}/src/dependencies.yaml"
+    local dependencies_file="${MEDIAEASE_HOME}/dependencies.yaml"
     local installed_count
     installed_count=$(zen::software::is::installed "$software_name" "*" | wc -l)
     if [[ $installed_count -le 1 ]]; then
@@ -146,7 +129,7 @@ zen::dependency::apt::remove() {
 # @note Parses YAML file for installation commands; uses 'eval' for execution.
 zen::dependency::external::build() {
     local software_name="$1"
-    local dependencies_file="${MEDIAEASE_HOME}/src/dependencies.yaml"
+    local dependencies_file="${MEDIAEASE_HOME}/dependencies.yaml"
     local external_dependencies
     local install_command
 
@@ -168,38 +151,6 @@ zen::dependency::external::build() {
             fi
         else
             mflibs::status::error "$(zen::i18n::translate 'dependency.no_install_command_found' "$dependency")"
-            exit_status=1
-        fi
-    done
-
-    return $exit_status
-}
-
-# @function zen::dependency::python::build
-# @description Installs Python dependencies based on YAML configuration.
-# @global MEDIAEASE_HOME Path to MediaEase configurations.
-# @arg $1 string Name of the software for Python dependency installation.
-# @stdout Installs Python packages using pip.
-# @return 0 if successful, 1 otherwise.
-# @note Extracts package names from YAML file; handles installation failures.
-zen::dependency::python::build(){
-    local software_name="$1"
-    local dependencies_file="${MEDIAEASE_HOME}/src/dependencies.yaml"
-    local python_dependencies
-
-    python_dependencies=$(yq e ".${software_name}.python" "$dependencies_file" 2>/dev/null)
-    if [[ -z "$python_dependencies" ]]; then
-        mflibs::status::error "$(zen::i18n::translate 'dependency.no_python_dependencies_found' "$software_name")"
-        return 1
-    fi
-
-    local exit_status=0
-    IFS=' ' read -ra DEPS <<< "$python_dependencies"
-    for dependency in "${DEPS[@]}"; do
-        pip install "$dependency"
-        local result=$?
-        if [[ "$result" -ne 0 ]]; then
-            mflibs::status::error "$(zen::i18n::translate 'dependency.python_dependency_install_failed' "$dependency")"
             exit_status=1
         fi
     done
