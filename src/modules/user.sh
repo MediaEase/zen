@@ -16,6 +16,7 @@
 # @arg $3 string Indicates if the user should have admin privileges ('true' or 'false').
 # @return 0 if the user is created successfully, 1 otherwise.
 # @note For non-admin users, the shell is restricted; admin users get sudo privileges without a password requirement.
+declare -g credentials_file
 zen::user::create() {
     local username="$1"
     local password="$2"
@@ -31,37 +32,13 @@ zen::user::create() {
     else
         password=$(zen::user::password::generate 16)
         zen::user::password::set "${username}" "${password}"
+        zen::user::password::store "${password}" "main"
+        mkdir -p 
     fi
     [ "$is_admin" == "true" ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
     mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
     setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
     mflibs::status::success "$(zen::i18n::translate "user.user_created" "$username")"
-}
-
-# @function zen::user::password::set
-# @description Sets a password for a specified user.
-# @arg $1 string The username of the user for whom to set the password.
-# @arg $2 string The password to set for the user.
-# @return 0 if the password is set successfully, 1 otherwise.
-# @note The password is also added to the system's htpasswd file for HTTP authentication.
-zen::user::password::set() {
-    local username="$1"
-    local password="$2"
-    mflibs::status::info "$(zen::i18n::translate "user.setting_password_for" "$username")"
-    echo "${username}:${password}" | chpasswd 2>/dev/null
-    printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >> /etc/htpasswd
-    mkdir -p /etc/htpasswd.d
-    printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >> /etc/htpasswd.d/htpasswd."${username}"
-    mflibs::status::success "$(zen::i18n::translate "user.password_set" "$username")"
-}
-
-# @function zen::user::password::generate
-# @description Generates a random password of a specified length.
-# @arg $1 int The length of the password to generate.
-# @return A randomly generated password.
-zen::user::password::generate() {
-    local length="$1"
-    tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w "${length}" | head -n 1
 }
 
 # @function zen::user::groups::upgrade
@@ -161,4 +138,151 @@ zen::user::load(){
     # else 
         # mflibs::shell::text::green "$(zen::i18n::translate "user.user_found" "${username}")"
     fi
+}
+
+# @section Password Management
+# @function zen::user::password::generate
+# @description Generates a random password of a specified length.
+# @arg $1 int The length of the password to generate.
+# @return A randomly generated password.
+zen::user::password::generate() {
+    local length="$1"
+    tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w "${length}" | head -n 1
+}
+
+# @function zen::user::password::set
+# @description Sets a password for a specified user.
+# @arg $1 string The username of the user for whom to set the password.
+# @arg $2 string The password to set for the user.
+# @return 0 if the password is set successfully, 1 otherwise.
+# @note The password is also added to the system's htpasswd file for HTTP authentication.
+zen::user::password::set() {
+    local username="$1"
+    local password="$2"
+    mflibs::status::info "$(zen::i18n::translate "user.setting_password_for" "$username")"
+    echo "${username}:${password}" | chpasswd 2>/dev/null
+    printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >> /etc/htpasswd
+    mkdir -p /etc/htpasswd.d
+    printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >> /etc/htpasswd.d/htpasswd."${username}"
+    mflibs::status::success "$(zen::i18n::translate "user.password_set" "$username")"
+}
+
+# @function zen::vault::init
+# @internal
+# @description Initializes the vault by setting up the salt and secret key.
+# @global credentials_file Path to the credentials file.
+# @note Creates a salt file if not present and sets up the credentials
+zen::vault::init() {
+    local salt_file salt secret_key hash config_dir
+    salt_file="/root/.mediease/config"
+    if [[ -f "$salt_file" ]]; then
+        salt=$(head -n 1 "$salt_file")
+    else
+        mkdir -p "$(dirname "$salt_file")"
+        salt=$(tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w "32" | head -n 1)
+        echo "$salt" > "$salt_file" 
+        chmod 600 "$salt_file"
+    fi
+    secret_key=$(echo "TWVkaWFfeW9NemZNMHdGN0JiU2k2RG1aRU4xZGxYMFdaQnE1RG5HVDNfRWFzZQ==" | base64 --decode)
+    hash=$(echo -n "${secret_key}${salt}" | md5sum | cut -d' ' -f1)
+    config_dir="/etc/.mediease/.${hash:0:6}"
+    mkdir -p "$config_dir"
+    declare -g credentials_file
+    credentials_file="$config_dir/${hash:6:12}.yaml"
+    if [[ ! -f "$credentials_file" ]]; then
+        touch "$credentials_file"
+        chmod 600 "$credentials_file"
+    fi
+}
+
+# @function zen::vault::pass::encode
+# @internal
+# @description Encodes a given string using base64 encoding.
+# @arg $1 string The string to be encoded.
+# @return Encoded string in base64 format.
+# @note Returns an error if no string is provided.
+zen::vault::pass::encode() {
+    local str="$1"
+    if [[ -z "$str" ]]; then
+        mflibs::status::error "$(zen::i18n::translate "vault.encode.no_string")"
+        return 1
+    fi
+    echo -n "$str" | base64
+}
+
+# @function zen::vault::pass::decode
+# @internal
+# @description Decodes a base64-encoded key to reveal the stored password.
+# @arg $1 string The encoded key to decode.
+# @global credentials_file Path to the credentials file.
+# @return Decoded password if successful, exits with 1 otherwise.
+zen::vault::pass::decode() {
+    local key="$1"
+    local encoded_key
+    encoded_key=$(echo -n "$key" | base64)
+    local encoded_password
+    encoded_password=$(yq e ".$encoded_key" "$credentials_file")
+    if [[ -n "$encoded_password" ]]; then
+        echo -n "$encoded_password" | base64 --decode
+    else
+        return 1
+    fi
+}
+
+# @function zen::vault::pass::store
+# @internal
+# @description Stores a new password in the vault.
+# @arg $1 string The key for the password entry.
+# @arg $2 string The password to store.
+# @global credentials_file Path to the credentials file.
+# @note Returns an error if the key already exists.
+zen::vault::pass::store() {
+    local key="$1"
+    local password="$2"
+    local encoded_key
+    local encoded_password
+    zen::vault::init
+    encoded_key=$(echo -n "$key" | base64)
+    encoded_password=$(echo -n "$password" | base64)
+
+    if yq e ".$encoded_key" "$credentials_file" &>/dev/null; then
+        mflibs::status::error "$(zen::i18n::translate "vault.store.key_exists")"
+        return 1
+    else
+        yq e -i ".$encoded_key = \"$encoded_password\"" "$credentials_file"
+    fi
+}
+
+# @function zen::vault::pass::update
+# @internal
+# @description Updates an existing password in the vault.
+# @arg $1 string The key for the password entry.
+# @arg $2 string The new password to update.
+# @global credentials_file Path to the credentials file.
+# @note Returns an error if the key is not found.
+zen::vault::pass::update() {
+    local key="$1"
+    local password="$2"
+    local encoded_key
+    local encoded_password
+    zen::vault::init
+    encoded_key=$(echo -n "$key" | base64)
+    encoded_password=$(echo -n "$password" | base64)
+
+    if yq e ".$encoded_key" "$credentials_file" &>/dev/null; then
+        yq e -i ".$encoded_key = \"$encoded_password\"" "$credentials_file"
+    else
+        mflibs::status::error "$(zen::i18n::translate "vault.update.key_not_found")"
+        return 1
+    fi
+}
+
+# @function zen::vault::pass::reveal
+# @internal
+# @description Reveals the password associated with a given key from the vault.
+# @arg $1 string The key whose password is to be revealed.
+# @return Reveals the associated password if successful.
+zen::vault::pass::reveal() {
+    local key="$1"
+    zen::vault::pass::decode "$key"
 }
