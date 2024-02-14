@@ -1,4 +1,4 @@
-# handler/software_handler.sh
+# handlers/software_handler.sh
 
 ## Overview
 
