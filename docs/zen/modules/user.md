@@ -6,25 +6,16 @@ A library for internationalization functions.
 
 ## Index
 
-- [modules/user.sh](#modulesusersh)
-  - [Overview](#overview)
-  - [Index](#index)
-    - [zen::user::create](#zenusercreate)
-      - [Arguments](#arguments)
-    - [zen::user::groups::upgrade](#zenusergroupsupgrade)
-      - [Arguments](#arguments-1)
-    - [zen::user::groups::create\_groups](#zenusergroupscreate_groups)
-    - [zen::user::check](#zenusercheck)
-    - [zen::user::is::admin](#zenuserisadmin)
-    - [zen::multi::check::id](#zenmulticheckid)
-      - [Arguments](#arguments-2)
-    - [zen::user::load](#zenuserload)
-      - [Arguments](#arguments-3)
-  - [Password Management](#password-management)
-    - [zen::user::password::generate](#zenuserpasswordgenerate)
-      - [Arguments](#arguments-4)
-    - [zen::user::password::set](#zenuserpasswordset)
-      - [Arguments](#arguments-5)
+* [zen::user::create](#zenusercreate)
+* [zen::user::groups::upgrade](#zenusergroupsupgrade)
+* [zen::user::groups::create_groups](#zenusergroupscreategroups)
+* [zen::user::check](#zenusercheck)
+* [zen::user::is::admin](#zenuserisadmin)
+* [zen::multi::check::id](#zenmulticheckid)
+* [zen::user::load](#zenuserload)
+* [zen::user::ban](#zenuserban)
+* [zen::user::password::generate](#zenuserpasswordgenerate)
+* [zen::user::password::set](#zenuserpasswordset)
 
 ### zen::user::create
 
@@ -51,7 +42,7 @@ Creates default system groups for application usage.
 
 ### zen::user::check
 
-Creates default system groups for application usage.
+Checks if the currently loaded user is a valid MediaEase user.
 
 ### zen::user::is::admin
 
@@ -72,6 +63,15 @@ Loads a specified user's data into a globally accessible associative array.
 #### Arguments
 
 * **$1** (string): The username of the user to load.
+
+### zen::user::ban
+
+Bans a user either permanently or for a specified duration.
+
+#### Arguments
+
+* **$1** (string): The username to ban.
+* **$2** (string): Optional duration in days for the ban.
 
 ## Password Management
 

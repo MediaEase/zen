@@ -27,13 +27,14 @@ zen::user::create() {
     [ "$is_admin" == "false" ] && theshell="/bin/rbash"
     mflibs::status::info "$(zen::i18n::translate "user.creating_user" "$username")"
     mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
+    zen::vault::init
     if [[ -n "${password}" ]]; then
         zen::user::password::set "${username}" "${password}"
+        zen::vault::pass::store "${password}" "main"
     else
         password=$(zen::user::password::generate 16)
         zen::user::password::set "${username}" "${password}"
-        zen::user::password::store "${password}" "main"
-        mkdir -p 
+        zen::vault::pass::store "${password}" "main"
     fi
     [ "$is_admin" == "true" ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
     mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
@@ -79,7 +80,7 @@ zen::user::groups::upgrade() {
 # @return 0 if the groups are created successfully, 1 otherwise.
 # @note Creates predefined groups like media, download, streaming, and default.
 zen::user::groups::create_groups() {
-    local groups=("media" "download" "streaming" "default")
+    local groups=("full" "download" "streaming" "automation")
     mflibs::status::info "$(zen::i18n::translate "user.creating_default_groups")"
     for group in "${groups[@]}"; do
         if ! grep -q "^${group}:" /etc/group; then
@@ -89,10 +90,11 @@ zen::user::groups::create_groups() {
     mflibs::status::success "$(zen::i18n::translate "user.default_groups_created")"
 }
 
-# @function zen::user::groups::create_groups
-# @description Creates default system groups for application usage.
-# @return 0 if the groups are created successfully, 1 otherwise.
-# @note Creates predefined groups like media, download, streaming, and default.
+# @function zen::user::check
+# @description Checks if the currently loaded user is a valid MediaEase user.
+# @global username The username of the user to check.
+# @global users_all An array of all users on the system.
+# @return Exits with 1 if the user is not found or is not a MediaEase user.
 # shellcheck disable=SC2154
 # Disable SC2154 because the variable is defined in the main script
 zen::user::check() {
@@ -137,6 +139,23 @@ zen::user::load(){
         exit 1
     # else 
         # mflibs::shell::text::green "$(zen::i18n::translate "user.user_found" "${username}")"
+    fi
+}
+
+# @function zen::user::ban
+# @description Bans a user either permanently or for a specified duration.
+# @arg $1 string The username to ban.
+# @arg $2 string Optional duration in days for the ban.
+zen::user::ban() {
+    local username="$1"
+    local duration="$2"
+
+    if [[ -n "$duration" ]]; then
+        mflibs::status::info "$(zen::i18n::translate "user.banning_user" "$username" "$duration")"
+        zen::database::update "user" "is_banned=1, ban_end_date=DATE_ADD(NOW(), INTERVAL $duration DAY)" "username='$username'"
+    else
+        mflibs::status::info "$(zen::i18n::translate "user.banning_user" "$username")"
+        zen::database::update "user" "is_banned=1" "username='$username'"
     fi
 }
 
@@ -241,9 +260,8 @@ zen::vault::pass::store() {
     local password="$2"
     local encoded_key
     local encoded_password
-    zen::vault::init
     encoded_key=$(echo -n "$key" | base64)
-    encoded_password=$(echo -n "$password" | base64)
+    encoded_password=$(zen::vault::pass::encode "$password")
 
     if yq e ".$encoded_key" "$credentials_file" &>/dev/null; then
         mflibs::status::error "$(zen::i18n::translate "vault.store.key_exists")"
