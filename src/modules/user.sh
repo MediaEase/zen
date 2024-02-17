@@ -24,19 +24,19 @@ zen::user::create() {
     local theshell="/bin/bash"
 
     # If the user is not an admin, restrict the shell
-    [ "$is_admin" == "false" ] && theshell="/bin/rbash"
+    [ "$is_admin" == false ] && theshell="/bin/rbash"
     mflibs::status::info "$(zen::i18n::translate "user.creating_user" "$username")"
     mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
     zen::vault::init
     if [[ -n "${password}" ]]; then
         zen::user::password::set "${username}" "${password}"
-        zen::vault::pass::store "${password}" "main"
+        zen::vault::pass::store "${username}.main" "${password}"
     else
         password=$(zen::user::password::generate 16)
         zen::user::password::set "${username}" "${password}"
-        zen::vault::pass::store "${password}" "main"
+        zen::vault::pass::store "${username}.main" "${password}"
     fi
-    [ "$is_admin" == "true" ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
+    [ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
     mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
     setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
     mflibs::status::success "$(zen::i18n::translate "user.user_created" "$username")"
@@ -116,7 +116,7 @@ zen::user::is::admin() {
 # @arg $1 string The username for which to retrieve the ID.
 # @return The ID of the user if found.
 zen::multi::check::id() {
-	[[ -n $1 ]] && zen::database::select "id" "user" "username='${1}'"
+    [[ -n $1 ]] && zen::database::select "id" "user" "username='${1}'"
 }
 
 # @function zen::user::load
@@ -193,7 +193,7 @@ zen::user::password::set() {
 # @note Creates a salt file if not present and sets up the credentials
 zen::vault::init() {
     local salt_file salt secret_key hash config_dir
-    salt_file="/root/.mediease/config"
+    salt_file="/root/.mediaease/config"
     if [[ -f "$salt_file" ]]; then
         salt=$(head -n 1 "$salt_file")
     else
@@ -204,7 +204,7 @@ zen::vault::init() {
     fi
     secret_key=$(echo "TWVkaWFfeW9NemZNMHdGN0JiU2k2RG1aRU4xZGxYMFdaQnE1RG5HVDNfRWFzZQ==" | base64 --decode)
     hash=$(echo -n "${secret_key}${salt}" | md5sum | cut -d' ' -f1)
-    config_dir="/etc/.mediease/.${hash:0:6}"
+    config_dir="/etc/.mediaease/.${hash:0:6}"
     mkdir -p "$config_dir"
     declare -g credentials_file
     credentials_file="$config_dir/${hash:6:12}.yaml"
@@ -212,6 +212,7 @@ zen::vault::init() {
         touch "$credentials_file"
         chmod 600 "$credentials_file"
     fi
+    export credentials_file
 }
 
 # @function zen::vault::pass::encode
@@ -258,16 +259,18 @@ zen::vault::pass::decode() {
 zen::vault::pass::store() {
     local key="$1"
     local password="$2"
-    local encoded_key
-    local encoded_password
-    encoded_key=$(echo -n "$key" | base64)
+    local username type encoded_key encoded_password encoded_username
+    username=$(echo "$key" | cut -d'.' -f1)
+    type=$(echo "$key" | cut -d'.' -f2)
+    encoded_type=$(echo -n "$type" | base64)
+    encoded_username=$(echo -n "$username" | base64)
     encoded_password=$(zen::vault::pass::encode "$password")
 
-    if yq e ".$encoded_key" "$credentials_file" &>/dev/null; then
+    if yq e ".$encoded_username.$encoded_type" "$credentials_file" &>/dev/null; then
         mflibs::status::error "$(zen::i18n::translate "vault.store.key_exists")"
         return 1
     else
-        yq e -i ".$encoded_key = \"$encoded_password\"" "$credentials_file"
+        yq e -i ".\"$encoded_username\".\"$encoded_type\" = \"$encoded_password\"" "$credentials_file"
     fi
 }
 
