@@ -72,14 +72,16 @@ zen::dependency::apt::install::inline() {
 # @note Handles locked dpkg situations and logs command execution.
 zen::dependency::apt::update() {
     mflibs::shell::text::white "$(zen::i18n::translate 'dependency.updating_system')"
-    if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
-        mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked')"
-        mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked_info')"
-        lsof -t /var/lib/apt/lists/lock | xargs kill
-        rm -f /var/cache/debconf/{config.dat,passwords.dat,templates.dat}
-        rm -f /var/lib/dpkg/updates/0*
-        find /var/lib/dpkg/lock* /var/cache/apt/archives/lock* -exec rm -rf {} \;
-        mflibs::log "dpkg --configure -a"
+    # check if fuser is installed 
+    if command -v fuser >/dev/null 2>&1; then
+        if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
+            mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked')"
+            mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked_info')"
+            rm -f /var/cache/debconf/{config.dat,passwords.dat,templates.dat}
+            rm -f /var/lib/dpkg/updates/0*
+            find /var/lib/dpkg/lock* /var/cache/apt/archives/lock* -exec rm -rf {} \;
+            mflibs::log "dpkg --configure -a"
+        fi
     fi
     mflibs::log "apt-get -yqq update"
     mflibs::log "apt-get -yqq upgrade"
@@ -88,7 +90,6 @@ zen::dependency::apt::update() {
 
     if ! apt-get check >/dev/null 2>&1; then
         mflibs::shell::text::red "$(zen::i18n::translate 'dependency.apt_check_failed')"
-        quickbox::lock::cleanup
         exit 1
     fi
     mflibs::shell::text::green "$(zen::i18n::translate "dependency.system_updated")"
