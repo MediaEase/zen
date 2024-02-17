@@ -19,7 +19,7 @@
 # @return Exit status of the last executed apt-get command.
 # @note Handles APT actions, reinstall, and non-interactive mode.
 zen::dependency::apt::manage() {
-    local dependencies_file="${MEDIAEASE_HOME}/dependencies.yaml"
+    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/dependencies.yaml"
     local action="$1"
     local software_name="${2:-}"
     local option="$3"
@@ -103,7 +103,7 @@ zen::dependency::apt::update() {
 # @note Reads dependencies from a YAML file; checks for exclusive use.
 zen::dependency::apt::remove() {
     local software_name="$1"
-    local dependencies_file="${MEDIAEASE_HOME}/dependencies.yaml"
+    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/dependencies.yaml"
     local installed_count
     installed_count=$(zen::software::is::installed "$software_name" "*" | wc -l)
     if [[ $installed_count -le 1 ]]; then
@@ -130,7 +130,7 @@ zen::dependency::apt::remove() {
 # @note Parses YAML file for installation commands; uses 'eval' for execution.
 zen::dependency::external::build() {
     local software_name="$1"
-    local dependencies_file="${MEDIAEASE_HOME}/dependencies.yaml"
+    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/dependencies.yaml"
     local external_dependencies
     local install_command
 
