@@ -43,7 +43,7 @@ zen::i18n::load_locale_file() {
         MEDIAEASE_HOME="$(dirname "$(readlink -f "$0")")"
     fi
     MEDIAEASE_HOME="${MEDIAEASE_HOME%/}"
-    local locale_file="${MEDIAEASE_HOME}/translations/locales_${lang}.yaml"
+    local locale_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/translations/locales_${lang}.yaml"
     if [[ -f "$locale_file" ]]; then
         export LANG="$locale_setting"
         export LC_ALL="$locale_setting"
