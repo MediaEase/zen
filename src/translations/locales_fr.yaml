@@ -46,6 +46,18 @@ user:
   user_is_not_admin: "The user is not an administrator."
   user_id_not_found: "User ID not found: {arg0}"
   user_found: "User found: {arg0}"
+vault:
+  salt_not_found: "Salt not found."
+  salt_file_created: "Salt file created."
+  salt_not_created: "Salt file not created."
+  salt_not_generated: "Salt not generated."
+  credentials_file_not_found: "Credentials not found."
+  credentials_file_created: "Credentials file created."
+  encode_no_string: "No string provided for encoding."
+  storing_password: "Storing password..."
+  key_exists: "Key already exists... Exitting."
+  store_success: "Password stored successfully."
+  key_not_found: "Key not found."
 service:
   service_file_created: "Service file created."
   service_running: "Service started."
