@@ -15,25 +15,27 @@ zen::vault::init() {
         printf "Salt found\n"
     else
         zen::vault::create
+        return 0
     fi
-
-    # Hashing to determine vault path
-    # vault_name is a global variable
-    # shellcheck disable=SC2154 
-    hash=$(echo -n "${vault_name}${salt}" | sha256sum | cut -d' ' -f1)
-    local vault_dir="${vault_base_dir}/${hash:0:32}"
-    local vault_file="${hash:32}.yaml"
-
-    declare -g credentials_file="${vault_dir}/${vault_file}"
 
     if [[ -f "$credentials_file" ]]; then
         mflibs::status::info "$(zen::i18n::translate "vault.credentials_file_found")"
+        export credentials_file
     else
-        mflibs::status::error "$(zen::i18n::translate "vault.credentials_file_not_found")"
-        return 1
+        # Hashing to determine vault path
+        # vault_name is a global variable
+        # shellcheck disable=SC2154 
+        hash=$(echo -n "${vault_name}${salt}" | sha256sum | cut -d' ' -f1)
+        local vault_dir="${vault_base_dir}/${hash:0:32}"
+        local vault_file="${hash:32}.yaml"
+        declare -g credentials_file="${vault_dir}/${vault_file}"
+        if [[ ! -f "$credentials_file" ]]; then
+            mflibs::status::error "$(zen::i18n::translate "vault.credentials_file_not_found")"
+            return 1
+        fi
     fi
 
-    export credentials_file
+    
 }
 
 # @function zen::vault::create
@@ -64,7 +66,8 @@ zen::vault::create() {
     # Create the vault directory and file
     mkdir -p "$vault_dir"
     chmod 700 "$vault_dir"
-    declare -g credentials_file="${vault_dir}/${vault_file}"
+    declare -g credentials_file
+    credentials_file="${vault_dir}/${vault_file}"
     touch "$credentials_file"
     zen::vault::permissions "add"
 
