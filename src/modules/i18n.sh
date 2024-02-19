@@ -51,16 +51,19 @@ zen::i18n::load_locale_file() {
 zen::i18n::generate::system_locale(){
     local lang="$1"
     declare -A system_lang=(
-        ["en"]="en_US.utf8"
-        ["fr"]="fr_FR.utf8"
+        ["en"]="en_US.UTF-8"
+        ["fr"]="fr_FR.UTF-8"
     )
     if [[ -z "${system_lang[$lang]}" ]]; then
         mflibs::status::warn "${lang} is not a valid language, loading default language (en)"
         exit 1
     fi
-    declare -g locale_setting
-    locale_setting="${system_lang[$lang]}"
-    if ! locale -a | grep -q "${locale_setting%.*}"; then
+    declare -g locale_setting="${system_lang[$lang]}"
+
+    # Check if the intended locale is already in use
+    local current_locale
+    current_locale=$(locale | grep 'LANG=' | cut -d= -f2)
+    if [[ "$current_locale" != "$locale_setting" ]]; then
         echo "LANGUAGE=\"$locale_setting\"" >/etc/default/locale
         echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
         echo "$locale_setting UTF-8" >/etc/locale.gen
