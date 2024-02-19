@@ -26,7 +26,6 @@ zen::user::create() {
     [ "$is_admin" == false ] && theshell="/bin/rbash"
     mflibs::status::info "$(zen::i18n::translate "user.creating_user" "$username")"
     mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
-    zen::vault::init
     if [[ -n "${password}" ]]; then
         zen::user::password::set "${username}" "${password}"
         zen::vault::pass::store "${username}.main" "${password}"
