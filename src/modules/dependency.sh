@@ -142,9 +142,9 @@ zen::dependency::external::build() {
 
     local exit_status=0
     for dependency in $(echo "$external_dependencies" | yq e 'keys[]' -); do
-        install_command=$(echo "$external_dependencies" | yq e ".${dependency}.install" -)
+        install_command=$(echo "$external_dependencies" | yq e ".${dependency}.install" - | sed 's/^- //')
         if [[ -n "$install_command" ]]; then
-            (bash -c "$install_command")
+            eval "$install_command"
             local result=$?
             if [[ "$result" -ne 0 ]]; then
                 mflibs::status::error "$(zen::i18n::translate 'dependency.external_dependency_install_failed' "$dependency")"
