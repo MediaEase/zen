@@ -12,7 +12,6 @@ zen::vault::init() {
 
     if [[ -f "$salt_file" ]]; then
         salt=$(head -n 1 "$salt_file")
-        printf "Salt found\n"
     else
         zen::vault::create
         return 0
