@@ -21,18 +21,18 @@
 #      zen::i18n::load_locale_file "fr"
 zen::i18n::load_locale_file() {
     local lang="$1"
-    zen::i18n::generate::system_locale "$lang"
-    zen::i18n::set::timezone "$lang"
     if [[ -z "$MEDIAEASE_HOME" ]]; then
         MEDIAEASE_HOME="$(dirname "$(readlink -f "$0")")"
     fi
     MEDIAEASE_HOME="${MEDIAEASE_HOME%/}"
     local locale_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/translations/locales_${lang}.yaml"
     if [[ -f "$locale_file" ]]; then
+        zen::i18n::generate::system_locale "$lang"
         export LANG="$locale_setting"
         export LC_ALL="$locale_setting"
         export LANGUAGE="$locale_setting"
         export MEDIAEASE_LOCALE_FILE="$locale_file"
+        zen::i18n::set::timezone "$lang"
         mflibs::status::success "$(zen::i18n::translate "common.lang_loaded" "${lang}")"
     else
         mflibs::status::error "Locale file not found: $locale_file"
