@@ -71,6 +71,52 @@ zen::vault::create() {
     mflibs::status::success "$(zen::i18n::translate "vault.vault_created")"
 }
 
+# @function zen::vault::pass::encode
+# @internal
+# @description Encodes a given string using base64 encoding.
+# @arg $1 string The string to be encoded.
+# @return Encoded string in base64 format.
+# @note Returns an error if no string is provided.
+# @example zen::vault::pass::encode "password"
+zen::vault::pass::encode() {
+    local string="$1"
+    if [[ -z "$string" ]]; then
+        mflibs::status::error "$(zen::i18n::translate "vault.encode_no_string")"
+        return 1
+    fi
+    echo -n "$string" | base64
+}
+
+# @function zen::vault::pass::store
+# @internal
+# @description Stores a new password in the vault.
+# @arg $1 string The key for the password entry.
+# @arg $2 string The password to store.
+# @global credentials_file Path to the credentials file.
+# @note Returns an error if the key already exists.
+# @example zen::vault::pass::store "username.type" "password"
+zen::vault::pass::store() {
+    local key="$1"
+    local password="$2"
+    local username type hashed_key hashed_password hashed_username
+    username=$(echo "$key" | cut -d'.' -f1)
+    type=$(echo "$key" | cut -d'.' -f2)
+    hashed_type=$(zen::vault::pass::encode "$type")
+    hashed_username=$(zen::vault::pass::encode "$username")
+    hashed_password=$(zen::vault::pass::encode "$password")
+
+    mflibs::status::info "$(zen::i18n::translate "vault.storing_password" "$username" "$type")"
+    if yq e ".$hashed_username.$hashed_type" "$credentials_file" &>/dev/null; then
+        mflibs::status::error "$(zen::i18n::translate "vault.key_exists")"
+        return 1
+    else
+        zen::vault::permissions "remove"
+        yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
+        zen::vault::permissions "add"
+        mflibs::status::success "$(zen::i18n::translate "vault.store_success")"
+    fi
+}
+
 # @function zen::vault::permissions
 # @internal
 # @description Updates the permissions of the credentials file.
