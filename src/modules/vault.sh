@@ -66,6 +66,35 @@ zen::vault::create() {
     chmod 700 "$vault_dir"
     declare -g credentials_file="${vault_dir}/${vault_file}"
     touch "$credentials_file"
+    zen::vault::permissions "add"
 
     mflibs::status::success "$(zen::i18n::translate "vault.vault_created")"
+}
+
+# @function zen::vault::permissions
+# @internal
+# @description Updates the permissions of the credentials file.
+# @arg $1 string The action to be performed on the file.
+# @note Adds or removes permissions based on the action provided.
+# @example zen::vault::permissions "add"
+# @example zen::vault::permissions "remove"
+zen::vault::permissions(){
+    local action="$1"
+    
+    if [[ "$action" == "add" ]]; then
+        mflibs::status::info "$(zen::i18n::translate "vault.adding_permissions")"
+        mflibs::log "chown -R root:root $credentials_file"
+        mflibs::log "chmod -R 700 $credentials_file"
+        mflibs::log "chattr +i $credentials_file"
+    elif [[ "$action" == "remove" ]]; then
+        mflibs::status::info "$(zen::i18n::translate "vault.removing_permissions")"
+        mflibs::log "chattr -i $credentials_file"
+        mflibs::log "chmod -R 755 $credentials_file"
+        mflibs::log "chown -R root:root $credentials_file"
+    else
+        mflibs::status::error "$(zen::i18n::translate "vault.invalid_action" "$action")"
+        return 1
+    fi
+
+    mflibs::status::success "$(zen::i18n::translate "vault.permissions_updated")"
 }
