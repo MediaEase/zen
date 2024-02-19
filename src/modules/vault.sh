@@ -72,7 +72,6 @@ zen::vault::create() {
 }
 
 # @function zen::vault::pass::encode
-# @internal
 # @description Encodes a given string using base64 encoding.
 # @arg $1 string The string to be encoded.
 # @return Encoded string in base64 format.
@@ -108,7 +107,6 @@ zen::vault::pass::decode() {
 }
 
 # @function zen::vault::pass::store
-# @internal
 # @description Stores a new password in the vault.
 # @arg $1 string The key for the password entry.
 # @arg $2 string The password to store.
@@ -138,7 +136,6 @@ zen::vault::pass::store() {
 }
 
 # @function zen::vault::pass::update
-# @internal
 # @description Updates an existing password in the vault.
 # @arg $1 string The key for the password entry.
 # @arg $2 string The new password to update.
@@ -164,7 +161,6 @@ zen::vault::pass::update() {
 }
 
 # @function zen::vault::pass::reveal
-# @internal
 # @description Reveals the password associated with a given key from the vault.
 # @arg $1 string The key whose password is to be revealed.
 # @return Reveals the associated password if successful.
@@ -175,7 +171,6 @@ zen::vault::pass::reveal() {
 }
 
 # @function zen::vault::permissions
-# @internal
 # @description Updates the permissions of the credentials file.
 # @arg $1 string The action to be performed on the file.
 # @note Adds or removes permissions based on the action provided.
