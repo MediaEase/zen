@@ -41,7 +41,7 @@ zen::python::venv::create() {
 #      Reports success or failure for the installation of prebuild packages and requirements.
 zen::python::venv::build() {
     local path="$1"
-    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/dependencies.yaml"
+    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
     local python_dependencies
     local requirements_path="$path/requirements.txt"
 
