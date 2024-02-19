@@ -27,8 +27,8 @@ mediaease:
     - caddy:
         install: |
           sudo apt install caddy
-          mkdir -p /root/.MediaEase/caddy
-          cp -pR /etc/caddy/Caddyfile /root/.MediaEase/caddy/Caddyfile.bak
+          mkdir -p /root/.mediaease/caddy
+          cp -pR /etc/caddy/Caddyfile /root/.mediaease/caddy/Caddyfile.bak
           mkdir -p /etc/caddy/softwares
           CADDYFILE_OWNER=$(stat -c '%U:%G' /etc/caddy/Caddyfile)
           chown -R $CADDYFILE_OWNER /etc/caddy
