@@ -87,6 +87,26 @@ zen::vault::pass::encode() {
     echo -n "$string" | base64
 }
 
+# @function zen::vault::pass::decode
+# @internal
+# @description Finds and decodes the hashed password from the vault.
+# @arg $1 string The key for the password entry.
+# @return Decoded password if successful.
+# @note Returns an error if the key is not found.
+# @example zen::vault::pass::decode "username.type"
+zen::vault::pass::decode() {
+    local key="$1"
+    local hashed_key
+    hashed_key=$(zen::vault::pass::encode "$key")
+    local hashed_password
+    hashed_password=$(yq e ".$hashed_key" "$credentials_file")
+    if [[ -n "$hashed_password" ]]; then
+        echo -n "$hashed_password" | base64 --decode
+    else
+        return 1
+    fi
+}
+
 # @function zen::vault::pass::store
 # @internal
 # @description Stores a new password in the vault.
@@ -98,7 +118,7 @@ zen::vault::pass::encode() {
 zen::vault::pass::store() {
     local key="$1"
     local password="$2"
-    local username type hashed_key hashed_password hashed_username
+    local username type hashed_password hashed_username
     username=$(echo "$key" | cut -d'.' -f1)
     type=$(echo "$key" | cut -d'.' -f2)
     hashed_type=$(zen::vault::pass::encode "$type")
