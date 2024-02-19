@@ -63,6 +63,7 @@ vault:
   removing_permissions: "Removing permissions..."
   permissions_updated: "Permissions updated."
   adding_permissions: "Adding permissions..."
+  vault_created: "Vault created."
 service:
   service_file_created: "Service file created."
   service_running: "Service started."

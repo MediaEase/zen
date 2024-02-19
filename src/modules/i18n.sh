@@ -21,24 +21,8 @@
 #      zen::i18n::load_locale_file "fr"
 zen::i18n::load_locale_file() {
     local lang="$1"
-    local locale_setting
-    declare -A system_lang=(
-        ["en"]="en_US.utf8"
-        ["fr"]="fr_FR.utf8"
-    )
-    if [[ -z "${system_lang[$lang]}" ]]; then
-        mflibs::status::warn "${lang} is not a valid language file, loading default language (en)"
-        exit 1
-    fi
-
-    locale_setting="${system_lang[$lang]}"
-    if ! locale -a | grep -q "${locale_setting%.*}"; then
-        echo "LANGUAGE=\"$locale_setting\"" >/etc/default/locale
-        echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
-        echo "$locale_setting UTF-8" >/etc/locale.gen
-        mflibs::log "locale-gen $locale_setting"
-    fi
-
+    zen::i18n::generate::system_locale "$lang"
+    zen::i18n::set::timezone "$lang"
     if [[ -z "$MEDIAEASE_HOME" ]]; then
         MEDIAEASE_HOME="$(dirname "$(readlink -f "$0")")"
     fi
@@ -52,6 +36,62 @@ zen::i18n::load_locale_file() {
         mflibs::status::success "$(zen::i18n::translate "common.lang_loaded" "${lang}")"
     else
         mflibs::status::error "Locale file not found: $locale_file"
+    fi
+}
+
+# @function zen::i18n::generate::system_locale
+# @description Generates system locale settings based on the specified language code.
+# @arg $1 string Language code (e.g., 'en' for English, 'fr' for French).
+# @global locale_setting
+# @stdout Sets system locale settings based on language code.
+# @return 1 if language code not supported.
+# @note Validates language code, sets system locale settings based on language code.
+# @example
+#      zen::i18n::generate::system_locale "fr"
+zen::i18n::generate::system_locale(){
+    local lang="$1"
+    declare -A system_lang=(
+        ["en"]="en_US.utf8"
+        ["fr"]="fr_FR.utf8"
+    )
+    if [[ -z "${system_lang[$lang]}" ]]; then
+        mflibs::status::warn "${lang} is not a valid language, loading default language (en)"
+        exit 1
+    fi
+    declare -g locale_setting
+    locale_setting="${system_lang[$lang]}"
+    if ! locale -a | grep -q "${locale_setting%.*}"; then
+        echo "LANGUAGE=\"$locale_setting\"" >/etc/default/locale
+        echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
+        echo "$locale_setting UTF-8" >/etc/locale.gen
+        mflibs::log "locale-gen $locale_setting" >/dev/null 2>&1
+    fi
+}
+
+# @function zen::i18n::set::timezone
+# @description Sets the system timezone based on the specified language code.
+# @arg $1 string Language code (e.g., 'en' for English, 'fr' for French).
+# @global TIMEZONE
+# @stdout Sets system timezone based on language code.
+# @return None.
+# @note Validates language code, sets system timezone based on language code.
+# @example
+#      zen::i18n::set::timezone "fr"
+zen::i18n::set::timezone(){
+    local lang="$1"
+    if command -v tzdata >/dev/null; then
+        default_timezone="UTC"
+        declare -A lang_to_timezone=(
+            ["en"]="America/New_York"
+            ["fr"]="Europe/Paris"
+        )
+        TIMEZONE="${lang_to_timezone[$lang]:-$default_timezone}"
+        IFS='/' read -r AREA LOCATION <<< "$TIMEZONE"
+        rm -f /etc/localtime
+        ln -s "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+        echo "tzdata tzdata/Areas select $AREA" | debconf-set-selections
+        echo "tzdata tzdata/Zones/$AREA select $LOCATION" | debconf-set-selections
+        dpkg-reconfigure -f noninteractive tzdata
     fi
 }
 
