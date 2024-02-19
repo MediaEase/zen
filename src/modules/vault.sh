@@ -137,6 +137,32 @@ zen::vault::pass::store() {
     fi
 }
 
+# @function zen::vault::pass::update
+# @internal
+# @description Updates an existing password in the vault.
+# @arg $1 string The key for the password entry.
+# @arg $2 string The new password to update.
+# @global credentials_file Path to the credentials file.
+# @note Returns an error if the key is not found.
+# @example zen::vault::pass::update "username.type" "password"
+zen::vault::pass::update() {
+    local key="$1"
+    local password="$2"
+    local hashed_key hashed_password
+    zen::vault::init
+    hashed_key=$(zen::vault::pass::encode "$key")
+    hashed_password=$(zen::vault::pass::encode "$password")
+
+    if yq e ".$hashed_key" "$credentials_file" &>/dev/null; then
+        zen::vault::permissions "remove"
+        yq e -i ".$hashed_key = \"$hashed_password\"" "$credentials_file"
+        zen::vault::permissions "add"
+    else
+        mflibs::status::error "$(zen::i18n::translate "vault.key_not_found")"
+        return 1
+    fi
+}
+
 # @function zen::vault::permissions
 # @internal
 # @description Updates the permissions of the credentials file.
