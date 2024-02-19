@@ -48,6 +48,7 @@ user:
   user_found: "User found: {arg0}"
 vault:
   salt_not_found: "Salt not found."
+  salt_stored: "Salt stored."
   salt_file_created: "Salt file created."
   salt_not_created: "Salt file not created."
   salt_not_generated: "Salt not generated."
@@ -58,6 +59,10 @@ vault:
   key_exists: "Key already exists... Exitting."
   store_success: "Password stored successfully."
   key_not_found: "Key not found."
+  credentials_file_found: "Credentials file found."
+  removing_permissions: "Removing permissions..."
+  permissions_updated: "Permissions updated."
+  adding_permissions: "Adding permissions..."
 service:
   service_file_created: "Service file created."
   service_running: "Service started."
