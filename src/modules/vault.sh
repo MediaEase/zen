@@ -47,8 +47,10 @@ zen::vault::create() {
     declare salt_file="/root/.mediaease/config"
     declare vault_base_dir="/etc/.mediaease"
 
-    read -r -sp "Enter your salt key: " user_salt
-    echo
+    if [[ -z "$user_salt" ]]; then
+        read -r -sp "Enter your salt key: " user_salt
+        echo
+    fi
 
     # Encode user provided salt in base64 and store it
     salt=$(echo -n "$user_salt" | base64)
