@@ -88,13 +88,25 @@ zen::i18n::set::timezone(){
             ["en"]="America/New_York"
             ["fr"]="Europe/Paris"
         )
-        TIMEZONE="${lang_to_timezone[$lang]:-$default_timezone}"
-        IFS='/' read -r AREA LOCATION <<< "$TIMEZONE"
-        rm -f /etc/localtime
-        ln -s "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
-        echo "tzdata tzdata/Areas select $AREA" | debconf-set-selections
-        echo "tzdata tzdata/Zones/$AREA select $LOCATION" | debconf-set-selections
-        dpkg-reconfigure -f noninteractive tzdata
+        local intended_timezone="${lang_to_timezone[$lang]:-$default_timezone}"
+
+        # Read the current timezone setting
+        local current_timezone
+        if [[ -f "/etc/timezone" ]]; then
+            current_timezone=$(cat /etc/timezone)
+        else
+            current_timezone=$(timedatectl | grep "Time zone" | awk '{print $3}')
+        fi
+
+        # Update the timezone only if it's different from the intended timezone
+        if [[ "$current_timezone" != "$intended_timezone" ]]; then
+            IFS='/' read -r AREA LOCATION <<< "$intended_timezone"
+            rm -f /etc/localtime
+            ln -s "/usr/share/zoneinfo/$intended_timezone" /etc/localtime
+            echo "tzdata tzdata/Areas select $AREA" | debconf-set-selections
+            echo "tzdata tzdata/Zones/$AREA select $LOCATION" | debconf-set-selections
+            dpkg-reconfigure -f noninteractive tzdata
+        fi
     fi
 }
 
