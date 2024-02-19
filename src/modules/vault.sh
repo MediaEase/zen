@@ -163,6 +163,17 @@ zen::vault::pass::update() {
     fi
 }
 
+# @function zen::vault::pass::reveal
+# @internal
+# @description Reveals the password associated with a given key from the vault.
+# @arg $1 string The key whose password is to be revealed.
+# @return Reveals the associated password if successful.
+# @example zen::vault::pass::reveal "username.type"
+zen::vault::pass::reveal() {
+    local key="$1"
+    zen::vault::pass::decode "$key"
+}
+
 # @function zen::vault::permissions
 # @internal
 # @description Updates the permissions of the credentials file.
