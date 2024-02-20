@@ -121,40 +121,44 @@ zen::dependency::apt::remove() {
     fi
 }
 
-# @function zen::dependency::external::build
-# @description Installs external dependencies based on YAML configuration.
+# @function zen::dependency::external::install
+# @description Installs all external dependencies for a specified application as defined in the YAML configuration.
 # @global MEDIAEASE_HOME Path to MediaEase configurations.
-# @arg $1 string Name of the software for external dependency installation.
-# @stdout Executes custom installation commands for external dependencies.
-# @return 0 if successful, 1 otherwise.
-# @note Parses YAML file for installation commands; uses 'eval' for execution.
-zen::dependency::external::build() {
-    local software_name="$1"
+# @arg $1 string The name of the application for which to install external dependencies.
+# @stdout Executes custom installation commands for each external dependency of the specified application.
+# @note Iterates over the external dependencies for the given application in the YAML file and creates temporary scripts to execute their install commands.
+zen::dependency::external::install() {
+    local app_name="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
-    local external_dependencies
-    local install_command
-
-    external_dependencies=$(yq e ".${software_name}.external" "$dependencies_file" 2>/dev/null)
-    if [[ -z "$external_dependencies" ]]; then
-        mflibs::status::error "$(zen::i18n::translate 'dependency.no_external_dependencies_found' "$software_name")"
+    if [[ -z "$app_name" ]]; then
+        echo "Application name not specified."
         return 1
     fi
+    # Parsing each external dependency
+    mflibs::shell::text::white "$(zen::i18n::translate "dependency.installing_external_dependencies" "$app_name")"
+    local entries
+    entries=$(yq e ".${app_name}.external[] | to_entries[]" "$dependencies_file")
+    local software_name install_command
+    while IFS= read -r line; do
+        if [[ $line == key* ]]; then
+            software_name=$(echo "$line" | awk '{print $2}')
+        elif [[ $line == value* ]]; then
+            install_command=$(yq e ".${app_name}.external[] | select(has(\"$software_name\")) | .${software_name}.install" "$dependencies_file")
+            local temp_script="temp_install_$software_name.sh"
+            echo "#!/bin/bash" > "$temp_script"
+            echo "$install_command" >> "$temp_script"
+            chmod +x "$temp_script"
 
-    local exit_status=0
-    for dependency in $(echo "$external_dependencies" | yq e 'keys[]' -); do
-        install_command=$(echo "$external_dependencies" | yq e ".${dependency}.install" - | sed 's/^- //')
-        if [[ -n "$install_command" ]]; then
-            eval "$install_command"
-            local result=$?
-            if [[ "$result" -ne 0 ]]; then
-                mflibs::status::error "$(zen::i18n::translate 'dependency.external_dependency_install_failed' "$dependency")"
-                exit_status=1
+            echo "Installing $software_name"
+            mflibs::log "./$temp_script"
+            local install_status=$?
+            rm "$temp_script"
+
+            if [[ $install_status -ne 0 ]]; then
+                echo "Installation failed for $software_name in $app_name with status $install_status"
+                return 1
             fi
-        else
-            mflibs::status::error "$(zen::i18n::translate 'dependency.no_install_command_found' "$dependency")"
-            exit_status=1
         fi
-    done
-
-    return $exit_status
+    done <<< "$entries"
+    mflibs::status::success "$(zen::i18n::translate "dependency.external_dependencies_installed" "$app_name")"
 }

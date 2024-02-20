@@ -87,6 +87,8 @@ dependency:
   no_external_dependencies_found: "No external dependencies found."
   external_dependency_install_failed: "Failed to install external dependency."
   no_install_command_found: "No install commands found."
+  adding_sources: "Adding sources..."
+  sources_added: "Sources added."
 python:
   venv_install_no_path: "No path provided for virtual environment installation."
   venv_install_no_requirements: "No requirements file provided for virtual environment installation."
