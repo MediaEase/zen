@@ -6,7 +6,7 @@
 # @note Creates a salt file if not present and sets up the credentials
 # @note $vault_name is a global variable
 zen::vault::init() {
-    local salt hash
+    local hash
     declare salt_file="/root/.mediaease/config"
     declare vault_base_dir="/etc/.mediaease"
 
@@ -43,7 +43,7 @@ zen::vault::init() {
 # @global vault_name The name of the vault.
 # @note The salt key is stored in a file and the vault is created in the /etc/.mediaease directory.
 zen::vault::create() {
-    local user_salt salt hash vault_dir vault_file
+    local salt hash vault_dir vault_file
     declare salt_file="/root/.mediaease/config"
     declare vault_base_dir="/etc/.mediaease"
 
