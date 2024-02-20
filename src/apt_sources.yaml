@@ -13,9 +13,9 @@ sources:
   jellyfin:
     url: "https://repo.jellyfin.org/debian $(lsb_release -sc) main"
     options:
-      deb-src: false
-      gpg-key: "https://repo.jellyfin.org/jellyfin_team.gpg"
       arch: "amd64"
+      deb-src: false
+      gpg-key: "https://repo.jellyfin.org/jellyfin_team.gpg.key"
   node21:
     url: "https://deb.nodesource.com/node_21.x nodistro main"
     options:
@@ -64,7 +64,7 @@ sources:
     url: "https://apt.ombi.app/develop jessie main"
     options:
       deb-src: false
-      gpg-key: "https://downloads.plex.tv/plex-keys/PlexSign.key"
+      gpg-key: "https://apt.ombi.app/pub.key"
   php:
     url: "https://packages.sury.org/php/ $(lsb_release -sc) main"
     options:
@@ -79,7 +79,7 @@ sources:
     url: "http://linux-packages.resilio.com/resilio-sync/deb resilio-sync non-free"
     options:
       deb-src: false
-      trusted-gpg-key: https://linux-packages.resilio.com/resilio-sync/key.asc
+      trusted-key: https://linux-packages.resilio.com/resilio-sync/key.asc
   syncthing:
     url: "https://apt.syncthing.net/ syncthing stable"
     options:
