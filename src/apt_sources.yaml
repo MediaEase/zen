@@ -1,0 +1,101 @@
+sources:
+  caddy:
+    url: "https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+    options:
+      deb-src: true
+      gpg-key: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+  filebot:
+    url: "https://get.filebot.net/deb/ stable main"
+    options:
+      arch: "amd64"
+      deb-src: false
+      gpg-key: "https://raw.githubusercontent.com/filebot/plugins/master/gpg/maintainer.pub"
+  jellyfin:
+    url: "https://repo.jellyfin.org/debian $(lsb_release -sc) main"
+    options:
+      deb-src: false
+      gpg-key: "https://repo.jellyfin.org/jellyfin_team.gpg"
+      arch: "amd64"
+  node21:
+    url: "https://deb.nodesource.com/node_21.x nodistro main"
+    options:
+      arch: "amd64"
+      deb-src: false
+      gpg-key: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key"
+      preferences: |
+        echo "Package: nsolid" | tee /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Package: nodejs" | tee /etc/apt/preferences.d/nodejs > /dev/null
+        echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
+        echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
+  node20:
+    url: "https://deb.nodesource.com/node_20.x nodistro main"
+    options:
+      arch: "amd64"
+      deb-src: false
+      gpg-key: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key"
+      preferences: |
+        echo "Package: nsolid" | tee /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Package: nodejs" | tee /etc/apt/preferences.d/nodejs > /dev/null
+        echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
+        echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
+  node18:
+    url: "https://deb.nodesource.com/node_18.x nodistro main"
+    options:
+      arch: "amd64"
+      deb-src: false
+      gpg-key: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key"
+      preferences: |
+        echo "Package: nsolid" | tee /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nsolid > /dev/null
+        echo "Package: nodejs" | tee /etc/apt/preferences.d/nodejs > /dev/null
+        echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
+        echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
+  mono:
+    url: "https://download.mono-project.com/repo/debian stable-buster main"
+    options:
+      deb-src: false
+      recv-keys: "3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
+  ombi:
+    url: "https://apt.ombi.app/develop jessie main"
+    options:
+      deb-src: false
+      gpg-key: "https://downloads.plex.tv/plex-keys/PlexSign.key"
+  php:
+    url: "https://packages.sury.org/php/ $(lsb_release -sc) main"
+    options:
+      deb-src: false
+      gpg-key: "https://packages.sury.org/php/apt.gpg"
+  plex:
+    url: "http://downloads.plex.tv/repo/deb public main"
+    options:
+      deb-src: false
+      gpg-key: "https://downloads.plex.tv/plex-keys/PlexSign.key"
+  resiliosync:
+    url: "http://linux-packages.resilio.com/resilio-sync/deb resilio-sync non-free"
+    options:
+      deb-src: false
+      trusted-gpg-key: https://linux-packages.resilio.com/resilio-sync/key.asc
+  syncthing:
+    url: "https://apt.syncthing.net/ syncthing stable"
+    options:
+      deb-src: false
+      gpg-key: "https://syncthing.net/release-key.gpg"
+      preferences: |
+        echo "Package: syncthing" | tee /etc/apt/preferences.d/syncthing > /dev/null
+        echo "Pin: origin apt.syncthing.net" | tee -a /etc/apt/preferences.d/syncthing > /dev/null
+        echo "Pin-Priority: 990" | tee -a /etc/apt/preferences.d/syncthing > /dev/null
+  x2go:
+    url: "http://packages.x2go.org/debian $(lsb_release -sc) extras main"
+    options:
+      deb-src: true
+      recv-keys: "E1F958385BFE2B6E"
+  yarn:
+    url: "https://dl.yarnpkg.com/debian/ stable main"
+    options:
+      deb-src: false
+      gpg-key: https://dl.yarnpkg.com/debian/pubkey.gpg

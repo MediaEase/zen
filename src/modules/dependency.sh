@@ -148,8 +148,6 @@ zen::dependency::external::install() {
             echo "#!/bin/bash" > "$temp_script"
             echo "$install_command" >> "$temp_script"
             chmod +x "$temp_script"
-
-            echo "Installing $software_name"
             mflibs::log "./$temp_script"
             local install_status=$?
             rm "$temp_script"
@@ -161,4 +159,114 @@ zen::dependency::external::install() {
         fi
     done <<< "$entries"
     mflibs::status::success "$(zen::i18n::translate "dependency.external_dependencies_installed" "$app_name")"
+}
+
+# @function zen::apt::add_source
+# @description Adds a new APT source and its GPG key from a YAML configuration.
+# @arg $1 string Name of the source as specified in the YAML configuration.
+# @global MEDIAEASE_HOME Path to MediaEase configurations.
+# @stdout Adds new APT source and GPG key based on the YAML configuration.
+# @example
+#   zen::apt::add_source "php"
+zen::apt::add_source() {
+    local source_name="$1"
+    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/apt_sources.yaml"
+
+    if [[ -z "$source_name" ]]; then
+        echo "Source name is required."
+        return 1
+    fi
+    local source_url  gpg_key_url trusted_key_url  include_deb_src
+    source_url=$(yq e ".sources.${source_name}.url" "$dependencies_file")
+    gpg_key_url=$(yq e ".sources.${source_name}.options.key" "$dependencies_file")
+    trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file")
+    include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file")
+    if [[ -z "$source_url" ]]; then
+        echo "URL for $source_name not found in YAML file."
+        return 1
+    fi
+    echo "deb $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+    if [[ "$include_deb_src" == "true" ]]; then
+        echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+    fi
+
+    if [[ -n "$gpg_key_url" ]]; then
+        wget -qO - "$gpg_key_url" | gpg --dearmor > "/usr/share/keyrings/${source_name}.gpg"
+        echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+    elif [[ -n "$trusted_key_url" ]]; then
+        wget -qO - "$trusted_key_url" | gpg --dearmor > "/etc/apt/trusted.gpg.d/${source_name}.gpg"
+    fi
+    if [[ -n "$recv_keys" ]]; then
+        gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys"
+        echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+    fi
+    if [[ -n "$preferences" ]]; then
+        eval "$preferences"
+    fi
+    if [[ -n "$recv_keys" ]]; then
+        gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys"
+        echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+    fi
+
+    echo "APT source for $source_name added successfully."
+}
+
+# @function zen::apt::remove_source
+# @description Removes an APT source and its GPG key.
+# @arg $1 string Name of the source to be removed.
+# @stdout Removes specified APT source and its GPG key.
+zen::apt::remove_source() {
+    local source_name="$1"
+
+    if [[ -z "$source_name" ]]; then
+        echo "Source name is required."
+        return 1
+    fi
+    local files_to_remove=(
+        "/etc/apt/sources.list.d/${source_name}.list"
+        "/usr/share/keyrings/${source_name}.gpg"
+        "/etc/apt/trusted.gpg.d/${source_name}.gpg"
+    )
+
+    for file in "${files_to_remove[@]}"; do
+        rm -f "$file"
+    done
+
+    echo "APT source for $source_name removed successfully."
+}
+
+
+# @function zen::apt::update_source
+# @description Updates APT sources based on the apt_sources.yaml file.
+# @global MEDIAEASE_HOME Path to MediaEase configurations.
+# @stdout Updates APT sources and GPG keys based on the YAML configuration.
+# @note Recreates source list files and GPG keys for each source defined in the YAML file.
+zen::apt::update_source() {
+    local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/apt_sources.yaml"
+    local source_names
+    source_names=$(yq e '.sources | keys' "$dependencies_file")
+    for source_name in $source_names; do
+        local source_url gpg_key_url include_deb_src trusted_key_url recv_keys
+        source_url=$(yq e ".sources.${source_name}.url" "$dependencies_file")
+        gpg_key_url=$(yq e ".sources.${source_name}.gpg-key" "$dependencies_file")
+        trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file")
+        include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file")
+        recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file")
+        echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+        if [[ "$include_deb_src" == "true" ]]; then
+            echo "deb-src [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+        fi
+        if [[ -n "$gpg_key_url" ]]; then
+            if [ -f "/usr/share/keyrings/${source_name}.gpg" ]; then
+                rm -f "/usr/share/keyrings/${source_name}.gpg"
+            fi
+            wget -qO - "$gpg_key_url" | gpg --dearmor > "/usr/share/keyrings/${source_name}.gpg"
+        fi
+        if [[ -n "$trusted_key_url" ]]; then
+            if [ -f "/etc/apt/trusted.gpg.d/${source_name}.gpg" ]; then
+                rm -f "/etc/apt/trusted.gpg.d/${source_name}.gpg"
+            fi
+            wget -qO - "$trusted_key_url" | gpg --dearmor > "/etc/apt/trusted.gpg.d/${source_name}.gpg"
+        fi
+    done
 }
