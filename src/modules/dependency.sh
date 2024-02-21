@@ -23,8 +23,8 @@ zen::dependency::apt::manage() {
     local action="$1"
     local software_name="${2:-}"
     local option="$3"
-    local cmd_options=""
-    local dependencies_string
+    declare -g cmd_options=""
+    declare -g dependencies_string
 
     # Extracting dependencies from the YAML file
     if [[ -n "$software_name" ]]; then
@@ -56,9 +56,8 @@ zen::dependency::apt::manage() {
 # @arg $@ string Space-separated list of dependencies to install.
 # @stdout Installs dependencies with colored success/failure indicators.
 # @note Uses zen::dependency::apt::manage and 'tput' for colored output.
-zen::dependency::apt::install::inline() {
-    local input_string="$*"
-    IFS=' ' read -r -a dependencies <<< "$input_string"
+zen::dependency::apt::install::inline() {    
+    IFS=' ' read -r -a dependencies <<< "$dependencies_string"
     for dep in "${dependencies[@]}"; do
         [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") != "1" ]] && mflibs::log "apt-get $cmd_options ${dep}"
     done
