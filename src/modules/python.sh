@@ -118,3 +118,14 @@ zen::python::venv::remove(){
 
     mflibs::status::success "$(zen::i18n::translate "python.venv_remove_success" "$app_name")"
 }
+
+zen::python::add::profile(){
+    local target_file="$1"
+    {
+        printf "export PYENV_ROOT=\"/opt/pyenv\"\n"
+        printf "export PATH=\"/opt/pyenv/bin:\$PATH\"\n"
+        printf "eval \"\$(pyenv init -)\"\n"
+        printf "eval \"\$(pyenv virtualenv-init -)\"\n"
+        printf "source %s/.cargo/env\n" "$HOME"
+    } >> "$target_file"
+}
