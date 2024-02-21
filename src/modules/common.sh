@@ -36,12 +36,15 @@ zen::common::git::clone() {
 
     if mflibs::log "git clone --branch $branch $repo_url $target_dir"; then
         mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
-        if [[ "$target_dir" == /opt/* ]]; then
+        if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
             local username
             username=$(echo "$target_dir" | cut -d'/' -f3)
             local group
             zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
         else 
+            zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+        fi
+        if [[ "$target_dir" == /opt/pyenv* && "$target_dir" == /opt/MediaEase* ]]; then
             zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
         fi
     else
