@@ -194,7 +194,7 @@ zen::common::dashboard::log() {
 }
 
 # @description Selects a random color code for shell output styling.
-# @stdout Echoes a random color code (yellow, magenta, cyan).
+# @stdout Random color code.
 zen::common::shell::color::randomizer(){
     local color
     color=$((RANDOM % 3))
@@ -203,4 +203,16 @@ zen::common::shell::color::randomizer(){
         1) echo "magenta";;
         2) echo "cyan";;
     esac
+}
+
+# @description Adds a path to the system PATH environment variable.
+# @arg $1 string Path to be added to the system PATH.
+# @stdout None.
+# @notes Adds the specified path to the system PATH if it is not already present.
+zen::common::path::add() {
+    local path_string
+    path_string="${1:-}"
+    if [[ ! "$PATH" == *"$path_string"* ]]; then
+        export PATH="$path_string:$PATH"
+    fi
 }
