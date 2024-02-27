@@ -22,7 +22,7 @@ mediaease:
     - symfony:
         install: |
           wget https://get.symfony.com/cli/installer -O - | bash
-          mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+          cp -pR /root/.symfony5/bin/symfony /usr/local/bin/symfony
           chmod +x /usr/local/bin/symfony
     - caddy:
         install: |
