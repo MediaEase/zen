@@ -149,7 +149,7 @@ zen::dependency::external::install() {
             chmod +x "$temp_script"
             mflibs::log "./$temp_script"
             local install_status=$?
-            rm "$temp_script"
+            rm "$temp_script" 2>/dev/null
 
             if [[ $install_status -ne 0 ]]; then
                 echo "Installation failed for $software_name in $app_name with status $install_status"
@@ -200,7 +200,7 @@ zen::apt::add_source() {
         wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { echo "Failed to process trusted key for $source_name"; }
     fi
 
-    echo "APT source for $source_name added successfully."
+    mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_added" "$source_name")"
 }
 
 # @function zen::apt::remove_source
@@ -224,7 +224,7 @@ zen::apt::remove_source() {
         rm -f "$file"
     done
 
-    echo "APT source for $source_name removed successfully."
+    mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_removed" "$source_name")"
 }
 
 
