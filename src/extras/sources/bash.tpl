@@ -184,6 +184,13 @@ transfer(){
     fi
 }
 
+commandprompt_on
+powerprompt_on
+basicprompt_on
+prompt_OFF
+
+powerprompt_on; export powerprompt_on
+
 # Aliases and completions
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
