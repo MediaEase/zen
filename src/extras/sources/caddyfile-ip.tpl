@@ -9,7 +9,6 @@
             level debug
         }
     }
-    ocsp_stappling off
 }
 SERVER_NAME {
     header {
