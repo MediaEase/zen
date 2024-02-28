@@ -34,7 +34,7 @@ mediaease:
     - pnpm:
         install: |
           curl -fsSL https://get.pnpm.io/install.sh | sh
-          cp -pR /root/.pnpm/bin/pnpm /usr/local/bin/pnpm
+          cp -pR /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm
           chmod +x /usr/local/bin/pnpm
 airsonic:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default ffmpeg
