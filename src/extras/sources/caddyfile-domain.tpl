@@ -3,7 +3,7 @@
     log {
         output file /var/log/caddy/access.log {
             roll_size 50MiB
-            roll_local_time true
+            roll_local_time
             roll_keep_for 720h
             roll_keep 5
             level debug
