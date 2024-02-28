@@ -94,6 +94,8 @@ dependency:
   external_dependencies_installed: "External dependencies installed."
   apt_source_added: "APT source for {arg0} added."
   apt_source_removed: "APT source for {arg0} removed."
+  removing_unnecessary_packages: "Removing unnecessary packages..."
+  removed_unnecessary_packages: "Unnecessary packages removed."
 python:
   venv_install_no_path: "No path provided for virtual environment installation."
   venv_install_no_requirements: "No requirements file provided for virtual environment installation."
