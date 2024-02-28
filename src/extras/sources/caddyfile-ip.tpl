@@ -1,11 +1,4 @@
 {
-    header {
-        Strict-Transport-Security "max-age=31536000;"
-        X-XSS-Protection "1; mode=block"
-        X-Frame-Options "DENY"
-        X-Robots-Tag "none"
-        -Server
-    }
     persist_config off
     log {
         output file /var/log/caddy/access.log {
@@ -16,9 +9,20 @@
             level debug
         }
     }
+    ocsp_stappling off
 }
 SERVER_NAME {
-    TLS_CONFIG
+    header {
+        Strict-Transport-Security "max-age=31536000;"
+        X-XSS-Protection "1; mode=block"
+        X-Frame-Options "DENY"
+        X-Robots-Tag "none"
+        -Server
+    }
+    bind {$ADDRESS}
+    tls internal
+    tls EMAIL_ADDRESS
+    tls /etc/ssl/certs/mediaease.crt /etc/ssl/private/mediaease.key
     root * /srv/harmonyui/public
 
     encode zstd gzip
