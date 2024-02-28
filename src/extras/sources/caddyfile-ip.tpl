@@ -21,7 +21,7 @@ SERVER_NAME {
     bind {$ADDRESS}
     tls internal
     tls EMAIL_ADDRESS
-    tls /etc/ssl/certs/mediaease.crt /etc/ssl/private/mediaease.key
+    tls /etc/pki/tls/certs/mediaease.pem /etc/pki/tls/private/mediaease.pem
     root * /srv/harmonyui/public
 
     encode zstd gzip
