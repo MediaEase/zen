@@ -11,6 +11,7 @@ Contains the main entry point for the zen command line tool.
 * [zen::environment::global::variables](#zenenvironmentglobalvariables)
 * [zen::software::args::process](#zensoftwareargsprocess)
 * [zen::software::handle_action](#zensoftwarehandleaction)
+* [zen::pull::args::process](#zenpullargsprocess)
 
 ### zen::environment::init
 
@@ -62,4 +63,22 @@ zen::software::handle_action "add" "jason" "radarr"
 #### Output on stdout
 
 * Executes the appropriate action for the specified software.
+
+### zen::pull::args::process
+
+Processes command-line arguments for pull commands.
+
+#### Example
+
+```bash
+zen::pull::args::process "$@"
+```
+
+#### Arguments
+
+* **...** (string): Command-line argument.
+
+#### Output on stdout
+
+* Parses action, username, and other options from the arguments.
 
