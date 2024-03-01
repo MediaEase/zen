@@ -64,6 +64,7 @@ zen::dependency::apt::install::inline() {
     local dep_install_output
     local failed_deps=()
     local installed_count=0
+    mflibs::shell::text::white "$(zen::i18n::translate 'dependency.install_required_dependencies')"
     for dep in "${dependencies[@]}"; do
         if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
             # shellcheck disable=SC2154
@@ -87,6 +88,7 @@ zen::dependency::apt::install::inline() {
     if [[ ${#failed_deps[@]} -gt 0 ]]; then
         echo -e "\033[0;38;5;208m⚠ Failed to install the following dependencies: ${failed_deps[*]}\033[0m"
     fi
+    mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
 }
 
 # @function zen::dependency::apt::update
