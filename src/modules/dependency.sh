@@ -53,14 +53,40 @@ zen::dependency::apt::manage() {
 
 # @function zen::dependency::apt::install::inline
 # @description Installs APT dependencies inline with progress display.
-# @arg $@ string Space-separated list of dependencies to install.
-# @stdout Installs dependencies with colored success/failure indicators.
-# @note Uses zen::dependency::apt::manage and 'tput' for colored output.
-zen::dependency::apt::install::inline() {    
+# @arg $dependencies_string string Space-separated list of dependencies to install.
+# @stdout On success, displays the number of installed packages; on failure, shows failed package names.
+# @note This function uses apt-get for installation and checks for existing installations with dpkg-query.
+#       It provides visual feedback with colored output: red for failures and green for the count of successful installations.
+# @example
+#   zen::dependency::apt::install::inline "package1 package2 package3"
+zen::dependency::apt::install::inline() {
     IFS=' ' read -r -a dependencies <<< "$dependencies_string"
+    local dep_install_output
+    local failed_deps=()
+    local installed_count=0
     for dep in "${dependencies[@]}"; do
-        [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") != "1" ]] && mflibs::log "apt-get $cmd_options ${dep}"
+        if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
+            # shellcheck disable=SC2154
+            if [[ $verbose -eq 1 ]]; then
+                mflibs::log "Installing ${dep}..."
+                dep_install_output=$(apt-get "${cmd_options}" "${dep}" 2>&1)
+                mflibs::log "$dep_install_output"
+            else
+                echo -n "${dep} | "
+                dep_install_output=$(apt-get "${cmd_options}" "${dep}" 2>&1)
+            fi
+            if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+                ((installed_count++))
+            else
+                failed_deps+=("${dep}")
+                echo -ne "\033[0;38;5;203m✗ \033[0m"
+            fi
+        fi
     done
+    echo -e "\n\033[0;38;5;34mNumber of packages successfully installed: ${installed_count}\033[0m"
+    if [[ ${#failed_deps[@]} -gt 0 ]]; then
+        echo -e "\033[0;38;5;208m⚠ Failed to install the following dependencies: ${failed_deps[*]}\033[0m"
+    fi
 }
 
 # @function zen::dependency::apt::update
