@@ -23,7 +23,7 @@ zen::dependency::apt::manage() {
     local action="$1"
     local software_name="${2:-}"
     local option="$3"
-    declare -g cmd_options=""
+    declare -g cmd_options
     declare -g dependencies_string
 
     # Extracting dependencies from the YAML file
@@ -37,12 +37,13 @@ zen::dependency::apt::manage() {
 
     case "$action" in
         install)
-            cmd_options="-yqq --allow-unauthenticated install"
-            [[ "$option" == "reinstall" ]] && cmd_options+=" --reinstall"
-            zen::dependency::apt::install::inline "${dependencies_string}" "$cmd_options" && return
+            cmd_options=(-yqq --allow-unauthenticated)
+            [[ "$option" == "reinstall" ]] && cmd_options+=(--reinstall)
+            zen::dependency::apt::install::inline "${dependencies_string}" "${cmd_options[@]}" && return
             ;;
         update|upgrade|check)
-            cmd_options="-yqq $action"
+            cmd_options=("$action" -yqq)
+            apt-get "${cmd_options[@]}" && return
             ;;
         *)
             mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action")"
@@ -60,33 +61,38 @@ zen::dependency::apt::manage() {
 # @example
 #   zen::dependency::apt::install::inline "package1 package2 package3"
 zen::dependency::apt::install::inline() {
+    local dependencies_string="$1"
+    local cmd_options=("${@:2}")
     IFS=' ' read -r -a dependencies <<< "$dependencies_string"
-    local dep_install_output
     local failed_deps=()
     local installed_count=0
-    mflibs::shell::text::white "$(zen::i18n::translate 'dependency.install_required_dependencies')"
+
     for dep in "${dependencies[@]}"; do
         if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
             # shellcheck disable=SC2154
             if [[ $verbose -eq 1 ]]; then
                 mflibs::log "Installing ${dep}..."
-                dep_install_output=$(apt-get "${cmd_options}" "${dep}" 2>&1)
-                mflibs::log "$dep_install_output"
+                if apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
+                    mflibs::log "Dependency ${dep} installed."
+                    ((installed_count++))
+                else
+                    mflibs::log "Failed to install ${dep}."
+                    failed_deps+=("${dep}")
+                fi
             else
                 echo -n "${dep} | "
-                apt-get "${cmd_options}" "${dep}" 2>&1
-            fi
-            if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-                ((installed_count++))
-            else
-                failed_deps+=("${dep}")
-                echo -ne "\033[0;38;5;203m✗ \033[0m"
+                if ! apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
+                    failed_deps+=("${dep}")
+                    echo -ne "$(tput setaf 1)✗ $(tput sgr0)"
+                else
+                    ((installed_count++))
+                fi
             fi
         fi
     done
-    echo -e "\n\033[0;38;5;34mNumber of packages successfully installed: ${installed_count}\033[0m"
+    echo -e "\n$(tput setaf 6)Number of packages successfully installed: ${installed_count}$(tput sgr0)"
     if [[ ${#failed_deps[@]} -gt 0 ]]; then
-        echo -e "\033[0;38;5;208m⚠ Failed to install the following dependencies: ${failed_deps[*]}\033[0m"
+        echo -e "\n⚠ Failed to install the following dependencies: ${failed_deps[*]}$(tput sgr0)"
     fi
     mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
 }
@@ -107,6 +113,7 @@ zen::dependency::apt::update() {
             rm -f /var/cache/debconf/{config.dat,passwords.dat,templates.dat}
             rm -f /var/lib/dpkg/updates/0*
             find /var/lib/dpkg/lock* /var/cache/apt/archives/lock* -exec rm -rf {} \;
+            dpkg --configure -a
             mflibs::log "dpkg --configure -a"
         fi
     fi
