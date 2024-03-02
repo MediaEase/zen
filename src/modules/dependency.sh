@@ -74,7 +74,7 @@ zen::dependency::apt::install::inline() {
                 mflibs::log "$dep_install_output"
             else
                 echo -n "${dep} | "
-                dep_install_output=$(apt-get "${cmd_options}" "${dep}" 2>&1)
+                apt-get "${cmd_options}" "${dep}" 2>&1
             fi
             if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
                 ((installed_count++))
