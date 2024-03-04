@@ -24,7 +24,7 @@ zen::user::create() {
 
     # If the user is not an admin, restrict the shell
     [ "$is_admin" == false ] && theshell="/bin/rbash"
-    mflibs::status::info "$(zen::i18n::translate "user.creating_user" "$username")"
+    mflibs::status::header "$(zen::i18n::translate "user.creating_user" "$username")"
     mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
     if [[ -n "${password}" ]]; then
         zen::user::password::set "${username}" "${password}"
@@ -79,7 +79,7 @@ zen::user::groups::upgrade() {
 # @note Creates predefined groups like media, download, streaming, and default.
 zen::user::groups::create_groups() {
     local groups=("full" "download" "streaming" "automation")
-    mflibs::status::info "$(zen::i18n::translate "user.creating_default_groups")"
+    mflibs::status::header "$(zen::i18n::translate "user.creating_default_groups")"
     for group in "${groups[@]}"; do
         if ! grep -q "^${group}:" /etc/group; then
             mflibs::log "groupadd ${group}"
