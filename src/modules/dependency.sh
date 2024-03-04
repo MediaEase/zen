@@ -66,8 +66,10 @@ zen::dependency::apt::install::inline() {
     IFS=' ' read -r -a dependencies <<< "$dependencies_string"
     local failed_deps=()
     local installed_count=0
+    local last_index=$(( ${#dependencies[@]} - 1 ))
 
-    for dep in "${dependencies[@]}"; do
+    for i in "${!dependencies[@]}"; do
+        local dep="${dependencies[i]}"
         if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
             # shellcheck disable=SC2154
             if [[ $verbose -eq 1 ]]; then
@@ -80,12 +82,14 @@ zen::dependency::apt::install::inline() {
                     failed_deps+=("${dep}")
                 fi
             else
-                echo -n "${dep} | "
                 if ! apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
                     failed_deps+=("${dep}")
                     echo -ne "$(tput setaf 1)✗ $(tput sgr0)"
                 else
                     ((installed_count++))
+                fi
+                if [[ $i -ne $last_index ]]; then
+                    echo -n " | "
                 fi
             fi
         fi
