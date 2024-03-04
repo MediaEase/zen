@@ -46,7 +46,7 @@ zen::vault::create() {
     local salt hash vault_dir vault_file
     declare salt_file="/root/.mediaease/config"
     declare vault_base_dir="/etc/.mediaease"
-
+    mflibs::status::header "$(zen::i18n::translate "vault.create_vault")"
     if [[ -z "$user_salt" ]]; then
         read -r -sp "Enter your salt key: " user_salt
         printf "\n"
@@ -184,12 +184,10 @@ zen::vault::permissions(){
     local action="$1"
     
     if [[ "$action" == "add" ]]; then
-        mflibs::status::info "$(zen::i18n::translate "vault.adding_permissions")"
         mflibs::log "chown -R root:root $credentials_file"
         mflibs::log "chmod -R 700 $credentials_file"
         mflibs::log "chattr +i $credentials_file"
     elif [[ "$action" == "remove" ]]; then
-        mflibs::status::info "$(zen::i18n::translate "vault.removing_permissions")"
         mflibs::log "chattr -i $credentials_file"
         mflibs::log "chmod -R 755 $credentials_file"
         mflibs::log "chown -R root:root $credentials_file"
@@ -197,6 +195,4 @@ zen::vault::permissions(){
         mflibs::status::error "$(zen::i18n::translate "vault.invalid_action" "$action")"
         return 1
     fi
-
-    mflibs::status::success "$(zen::i18n::translate "vault.permissions_updated")"
 }

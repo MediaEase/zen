@@ -33,7 +33,7 @@ zen::i18n::load_locale_file() {
         export LANGUAGE="$locale_setting"
         export MEDIAEASE_LOCALE_FILE="$locale_file"
         zen::i18n::set::timezone "$lang"
-        mflibs::status::success "$(zen::i18n::translate "common.lang_loaded" "${lang}")"
+        mflibs::status::info "$(zen::i18n::translate "common.lang_loaded" "${lang}")"
     else
         mflibs::status::error "Locale file not found: $locale_file"
     fi
