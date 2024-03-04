@@ -49,7 +49,7 @@ zen::vault::create() {
 
     if [[ -z "$user_salt" ]]; then
         read -r -sp "Enter your salt key: " user_salt
-        echo
+        printf "\n"
     fi
 
     # Encode user provided salt in base64 and store it

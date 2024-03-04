@@ -83,20 +83,21 @@ zen::dependency::apt::install::inline() {
                 fi
             else
                 if ! apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
+                    printf "%s$(tput setaf 1)✗ $(tput sgr0)" "${dep}"
                     failed_deps+=("${dep}")
-                    echo -ne "$(tput setaf 1)✗ $(tput sgr0)"
                 else
                     ((installed_count++))
+                    printf "%s" "${dep}"
                 fi
                 if [[ $i -ne $last_index ]]; then
-                    echo -n " | "
+                    printf " | "
                 fi
             fi
         fi
     done
-    echo -e "\n$(tput setaf 6)Number of packages successfully installed: ${installed_count}$(tput sgr0)"
+    printf "\n%sNumber of packages successfully installed: %d%s\n" "$(tput setaf 6)" "${installed_count}" "$(tput sgr0)"
     if [[ ${#failed_deps[@]} -gt 0 ]]; then
-        echo -e "\n⚠ Failed to install the following dependencies: ${failed_deps[*]}$(tput sgr0)"
+        printf "\n⚠ Failed to install the following dependencies: %s%s\n" "${failed_deps[*]}" "$(tput sgr0)"
     fi
     mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
 }
@@ -169,7 +170,7 @@ zen::dependency::external::install() {
     local app_name="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
     if [[ -z "$app_name" ]]; then
-        echo "Application name not specified."
+        printf "Application name is required.\n"
         return 1
     fi
     # Parsing each external dependency
@@ -191,7 +192,7 @@ zen::dependency::external::install() {
             rm "$temp_script" 2>/dev/null
 
             if [[ $install_status -ne 0 ]]; then
-                echo "Installation failed for $software_name in $app_name with status $install_status"
+                printf "Installation failed for %s in %s with status %d\n" "$software_name" "$app_name" "$install_status"
                 return 1
             fi
         fi
@@ -212,7 +213,7 @@ zen::apt::add_source() {
     local source_name="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/apt_sources.yaml"
     
-    [[ -z "$source_name" ]] && { echo "Source name is required."; return 1; }
+    [[ -z "$source_name" ]] && { printf "Source name is required.\n"; return 1; }
 
     local source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
     local source_url=$(eval echo "$source_url_template")
@@ -222,10 +223,10 @@ zen::apt::add_source() {
     local recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
     local trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 
-    [[ -z "$source_url" ]] && { echo "URL for $source_name not found in YAML file."; return 1; }
-    [[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && { echo "Architecture $arch does not match the current system architecture."; return 1; }
+    [[ -z "$source_url" ]] && { printf "URL for %s not found in YAML file.\n" "$source_name"; return 1; }
+    [[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && { printf "Architecture %s not supported for %s\n" "$arch" "$source_name"; return 1; }
     if [[ -n "$gpg_key_url" ]]; then
-        wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "/usr/share/keyrings/${source_name}.gpg" || { echo "Failed to process GPG key for $source_name"; }
+        wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "/usr/share/keyrings/${source_name}.gpg" || { printf "Failed to process GPG key for %s\n" "$source_name"; }
         echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
         [[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
     else
@@ -233,10 +234,10 @@ zen::apt::add_source() {
         [[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
     fi
     if [[ -n "$recv_keys" ]]; then
-        sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { echo "Failed to receive keys for $source_name"; }
+        sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { printf "Failed to receive keys for %s\n" "$source_name"; }
     fi
     if [[ -n "$trusted_key_url" ]]; then
-        wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { echo "Failed to process trusted key for $source_name"; }
+        wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { printf "Failed to process trusted key for %s\n" "$source_name"; }
     fi
 
     mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_added" "$source_name")"
@@ -250,7 +251,7 @@ zen::apt::remove_source() {
     local source_name="$1"
 
     if [[ -z "$source_name" ]]; then
-        echo "Source name is required."
+        printf "Source name is required.\n"
         return 1
     fi
     local files_to_remove=(
@@ -279,11 +280,11 @@ zen::apt::update_source() {
 
     for source_name in $source_names; do
         source_url=$(yq e ".sources.${source_name}.url" "$dependencies_file" | grep -v 'null')
-        [[ -z "$source_url" ]] && { echo "URL for $source_name not found in YAML file."; continue; }
+        [[ -z "$source_url" ]] && { printf "URL for %s not found in YAML file.\n" "$source_name"; continue; }
         include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
         gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
         if [[ -n "$gpg_key_url" ]]; then
-            wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "/usr/share/keyrings/${source_name}.gpg" || { echo "Failed to process GPG key for $source_name"; continue; }
+            wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "/usr/share/keyrings/${source_name}.gpg" || { printf "Failed to process GPG key for %s\n" "$source_name"; continue; }
             echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
             [[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
         else
@@ -292,11 +293,11 @@ zen::apt::update_source() {
         fi
         trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
         if [[ -n "$trusted_key_url" ]]; then
-            wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { echo "Failed to process trusted key for $source_name"; continue; }
+            wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { printf "Failed to process trusted key for %s\n" "$source_name"; continue; }
         fi
         recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
         if [[ -n "$recv_keys" ]]; then
-            sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { echo "Failed to receive keys for $source_name"; continue; }
+            sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { printf "Failed to receive keys for %s\n" "$source_name"; continue; }
         fi
         unset source_url include_deb_src gpg_key_url trusted_key_url recv_keys
     done

@@ -166,11 +166,11 @@ zen::software::infobox() {
             $shell "################################################################################"
             ;;
         *)
-            echo "Invalid infobox type: $infobox_type"
+            printf "Invalid infobox type specified %s\n" "$infobox_type"
             return 1
             ;;
     esac
-    echo ""
+    printf "\n"
 }
 
 # @function zen::software::options::process
@@ -316,7 +316,7 @@ zen::software::autogen() {
                 password=$(zen::user::password::generate 16)
                 ;;
             *)
-                echo "Unknown key for autogeneration: $key"
+                mflibs::status::error "$(zen::i18n::translate "software.invalid_autogen_key" "$key")"
                 ;;
         esac
     done
