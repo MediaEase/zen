@@ -43,30 +43,15 @@ _white_bold='\e[1;37m'
 _red_bg='\e[41m'
 _nc='\e[m'
 _alert=${_white_bold}${_red_bg}
-date=$(date)
 
-echo ""
-echo -e "${_blue_bold}|========================================================================|${_nc}"
-echo -e "${_blue_bold}|------------------------------------------------------------------------|${_nc}"
-echo -e "${_blue_bold}|  ###################  Welcome to MediaEase Server  ################### |${_nc}"
-echo -e "${_blue_bold}|------------------------------------------------------------------------|${_nc}"
-echo -e "${_blue_bold}|${_white_bold}       You are logged in as ${_red_bold}root${_nc}${_blue_bold}                                        |${_nc}"
-echo -e "${_blue_bold}|${_white_bold}       Current date and time: ${_green_bold}${date}${_nc}${_blue_bold}           |${_nc}"
-echo -e "${_blue_bold}|========================================================================|${_nc}"
-echo -e "${_blue_bold}|========================================================================|${_nc}"
-echo -e "${_blue_bold}|------------------------------------------------------------------------|${_nc}"
-echo -e "${_blue_bold}|  Select a command prompt style by typing one of the following commands |${_nc}"
-echo -e "${_blue_bold}|------------------------------------------------------------------------|${_nc}"
-echo -e "${_blue_bold}|  ${_green_bold}command_on${_nc}${_blue_bold}                                                            |${_nc}"
-echo -e "${_blue_bold}|  This prompt shows the last command used & more                        |${_nc}"
-echo -e "${_blue_bold}|  ${_green_bold}power_on${_nc} (default)${_blue_bold}                                                    |${_nc}"
-echo -e "${_blue_bold}|  This prompt shows colorful system data - CPU, load, etc.              |${_nc}"
-echo -e "${_blue_bold}|  ${_green_bold}basic_on${_nc}${_blue_bold}                                                              |${_nc}"
-echo -e "${_blue_bold}|  This prompt shows color-coded load & CPU average                      |${_nc}"
-echo -e "${_blue_bold}|  ${_green_bold}custom_off${_nc}${_blue_bold}                                                            |${_nc}"
-echo -e "${_blue_bold}|  This turns off custom prompts and reverts to the default              |${_nc}"
-echo -e "${_blue_bold}|========================================================================|${_nc}"
-echo ""
+echo -e "\n${_blue_bold}+------------------------------- MediaEase Server -------------------------------+${_nc}"
+echo -e "${_blue_bold}|${_nc} You are logged in as: ${_red_bold}root${_nc}                                                     ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}+--------------------------------------------------------------------------------+${_nc}"
+echo -e "${_blue_bold}|${_nc} Prompt Style Options:                                                          ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}|${_nc}  - ${_green_bold}basic_on${_nc}: Color-coded load & CPU average (default)                          ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}|${_nc}  - ${_green_bold}custom_off${_nc}: Revert to the default prompt                                    ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}+--------------------------------------------------------------------------------+${_nc}\n"
+
 
 # Function to display exit message
 function on::exit {
@@ -125,28 +110,16 @@ function job_color {
     fi
 }
 
-function command_on {
-    export PROMPT_COMMAND='export H1="$(history 1 | sed -e "s/^[\ 0-9]*//; s/[\d0\d31\d34\d39\d96\d127]*//g; s/\(.\{1,50\}\).*$/\1/g")"; history -a; echo -e "sgr0\ncnorm\nrmso" | tput -S'
-    PS1='\n\[\e[1;30m\][\j:\!\[\e[1;30m\]]\[\e[0;36m\] \T \d \[\e[1;30m\][\[\e[1;34m\]\u@\H\[\e[1;30m\]:\[\e[0;37m\]`tty 2>/dev/null` \[\e[0;32m\]+${SHLVL}\[\e[1;30m\]] \[\e[1;37m\]\w\[\e[0;37m\]\[\033]0;[ ${H1}... ] \w - \u@\H +$SHLVL @`tty 2>/dev/null` - [ `uptime` ]\007\]\n\[\]\$ '
-}
-
-function power_on {
-    export AA_P="export PVE=\"\\033[m\\033[38;5;2m\"\$(( \`sed -n \"s/MemFree:[\\t ]\\+\\([0-9]\\+\\) kB/\\1/p\" /proc/meminfo\` / 1024 ))\"\\033[38;5;22m/\"\$((\`sed -n \"s/MemTotal:[\\t ]\\+\\([0-9]\\+\\) kB/\\1/p\" /proc/meminfo\`/ 1024 ))MB\"\\t\\033[m\\033[38;5;55m\$(< /proc/loadavg)\\033[m\";echo -en \"\""
-    export PROMPT_COMMAND="history -a;((\$SECONDS % 10==0 ))&&eval \"\$AA_P\";echo -en \"\$PVE\";"
-    PS1="\\[\\e[m\\n\\e[1;30m\\][\$\$:\$PPID \\j:\\!\\[\\e[1;30m\\]]\\[\\e[0;36m\\] \\T \\d \\[\\e[1;30m\\][\\[\\e[1;34m\\]\\u@\\H\\[\\e[1;30m\\]\\[\\e[1;30m\\]] \\[\\e[1;37m\\]\\w\\[\\e[0;37m\\] \\n(\$SHLVL:\\!)\\\$ "
-    export PVE="\\033[m\\033[38;5;2m813\\033[38;5;22m/1024MB\\t\\033[m\\033[38;5;55m0.25 0.22 0.18 1/66 26820\\033[m" && eval "$AA_P"
-}
-
 function basic_on() {
-PROMPT_COMMAND="history -a"
-case ${TERM} in
-    *term | rxvt | linux)
-        PS1="\[\$(load_color)\][\A\[${_nc}\] \[\$(load_color)\][\A\[${_nc}\] \[${SU}\]\u\[${_nc}\]@\[${CNX}\]\h\[${_nc}\] \[\$(disk_color)\]\W]\[${_nc}\] \[\$(job_color)\]>\[${_nc}\] \[\e]0;[\u@\h] \w\a\]"
-        ;;
-    *)
-        PS1="(\A \u@\h \W) > "
-        ;;
-esac
+    PROMPT_COMMAND="history -a"
+    case ${TERM} in
+        *term | rxvt | linux)
+            PS1="\[\$(load_color)\][\A \u@\h]\[\]${_white_bold}\[\][\w]${_nc} "
+            ;;
+        *)
+            PS1="[\u@\h \A][\w] "
+            ;;
+    esac
 }
 
 function custom_off {
@@ -184,12 +157,10 @@ transfer(){
     fi
 }
 
-commandprompt_on
-powerprompt_on
-basicprompt_on
-prompt_OFF
+basic_on
+custom_off
 
-powerprompt_on; export powerprompt_on
+basic_on; export basic_on
 
 # Aliases and completions
 alias ls='ls --color=auto'
