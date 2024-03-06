@@ -181,6 +181,10 @@ raid:
   disk_already_mounted: "Disk {arg0} is already mounted to {arg1}... Skipping..."
   error_mounting_raid_disk: "Failed to mount disk {arg0} to {arg1}."
   created_not_mounted: "Disk {arg0} created but not mounted."
+  raid_possible: "Proceed with RAID{arg0} (Y), abort (N), or choose from possible RAID levels (C)"
+  choose_raid_level: "Choose from possible RAID levels: {arg0}"
+  creation_aborted: "RAID creation aborted."
+  no_raid_possible: "No RAID configuration is possible with {arg1} disks."
 mediaease:
   mediaease_configured: "MediaEase configured."
   mediaease_configuring: "Configuring MediaEase..."

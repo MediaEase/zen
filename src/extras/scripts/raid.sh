@@ -2,34 +2,45 @@
 # @file extras/scripts/raid.sh
 # @project MediaEase
 # @version 1.0.0
-# @description Automatically creates a RAID array and mounts it to the specified mount point.
+# @brief Automatically creates a RAID array and mounts it to the specified mount point.
+# @description This script facilitates the creation and mounting of a RAID array.
+# It includes functions to process command-line arguments, detect system disks, format and create the RAID array, and mount it.
+# The script checks for minimum disk requirements, validates RAID levels and filesystem types, and provides feedback to the user.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
+# @section RAID Processing Functions
+# @description Functions related to processing RAID array creation.
+
 # @function raid::process::args
-# @description Processes command-line arguments for creating a new RAID array.
-# @arg $1 string The RAID level to be created (0, 5, 6, 10).
-# @arg $2 string The mount point for the RAID array (default: /home).
-# @arg $3 string The filesystem type for the RAID array (default: ext4).
-# @arg $4 string The name of the RAID array (default: md0).
-# @stdout Parses the RAID level, mount point, filesystem type, and disk name from the arguments.
-# @note Processes command-line arguments and performs necessary operations.
+# @description This function handles the parsing and validation of command-line arguments passed to the script.
+# It sets global variables for RAID level, mount point, filesystem type, and disk name.
+# The function also checks for valid RAID levels and filesystem types, and ensures there are enough disks for the chosen RAID level.
+# If the arguments are incorrect or insufficient, it provides feedback and exits.
+# @arg $1 string The desired RAID level (0, 5, 6, 10).
+# @arg $2 string Optional. The mount point for the RAID array. Default: /home.
+# @arg $3 string Optional. The filesystem type for the RAID array. Default: ext4.
+# @arg $4 string Optional. The name of the RAID array. Default: md0.
+# @exitcode 0 Success.
+# @exitcode 1 Error due to incorrect number of arguments, invalid RAID level, invalid filesystem type, insufficient number of disks, or user cancellation.
 function raid::process::args() {
+    # Check if the number of arguments is not equal to 3
     if [ "$#" -ne 3 ]; then
         echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
         exit 1
     fi
-
+    # Declare global variables and set their default values if not provided
     declare -g raid_level=$1
     declare -g mount_point=${2:-/home}
     declare -g filesystem_type=${3:-ext4}
     declare -g disk_name=${4:-md0}
+    # Define valid RAID levels and filesystem types
     local raid_levels=("0" "5" "6" "10")
     local types=("ext4" "btrfs")
-
+    # Check if the RAID level is valid and set the minimum disks required for the RAID
     case $raid_level in
         0) min_disks=2 ;;
         5) min_disks=3 ;;
@@ -37,16 +48,17 @@ function raid::process::args() {
         10) min_disks=4 ;;
         *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_raid_level" "${raid_levels[@]}")"; exit 1 ;;
     esac
+    # Check if the filesystem type is valid
     case $filesystem_type in
         ext4|btrfs) ;;
         *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"; exit 1 ;;
     esac
-
+    # Call the disk detection function to initialize related variables
     raid::disk::detection
-
+    # Check if the number of disks is less than the minimum required for the chosen RAID level
     if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
         mflibs::status::error "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$min_disks")" >&2
-
+        # Calculate possible RAID levels based on the number of disks available
         local possible_raids=()
         if [ "$NUMBER_DISKS" -ge 4 ] && (( NUMBER_DISKS % 2 == 0 )); then
             possible_raids+=("10")
@@ -60,7 +72,7 @@ function raid::process::args() {
         if [ "$NUMBER_DISKS" -ge 2 ]; then
             possible_raids+=("0")
         fi
-
+        # Suggest alternative RAID levels to the user based on available disks
         if [ ${#possible_raids[@]} -gt 0 ]; then
             mflibs::shell::text::yellow "$(zen::i18n::translate "raid.raid_possible" "${possible_raids[*]}")"
             echo "Proceed with RAID${possible_raids[0]} (Y), abort (N), or choose (C)?"
@@ -86,7 +98,6 @@ function raid::process::args() {
             mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
         fi
     fi
-
     # If valid selections are made, proceed with RAID setup
     raid::format::disk
     raid::create::mdadm::disk
@@ -94,8 +105,11 @@ function raid::process::args() {
 }
 
 # @function raid::disk::detection
-# @description Detects the system disk and the disks to be formatted for creating a new RAID array.
-# @stdout Prints the system disk and the disks to be formatted.
+# Detects and lists disks for RAID array creation.
+# @description This function identifies the root device and then enumerates all other storage devices that are not part of any existing RAID array.
+# This detection is crucial to determine which disks are available for formatting and inclusion in the new RAID array.
+# The function sets global variables for the disks to be formatted and their count.
+# @stdout Informs about the system disk, disks to be formatted, and their count.
 function raid::disk::detection() {
     ROOT_DEVICE=$(findmnt -n -o SOURCE --target /)
     if [[ $ROOT_DEVICE == /dev/md* ]]; then
@@ -122,8 +136,10 @@ function raid::disk::detection() {
 }
 
 # @function raid::format::disk
-# @description Formats the disks to be used for creating a new RAID array.
-# @stdout Prompts the user to confirm formatting the disks and formats the disks if the user confirms.
+# Formats disks for RAID array creation.
+# @description This function prompts the user to confirm disk formatting and proceeds to wipe and partition each disk in preparation for RAID array creation.
+# It ensures that each disk is properly prepared and partitioned with the specified filesystem type.
+# @stdout Guides the user through disk formatting process and reports on the status of each disk.
 function raid::format::disk(){
     echo ""
     mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow::sl "Continue ? [";mflibs::shell::text::green::sl "Y";mflibs::shell::text::yellow::sl "] or [";mflibs::shell::text::red::sl "N";mflibs::shell::text::yellow::sl "] (default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::yellow::sl " )"
@@ -152,8 +168,11 @@ function raid::format::disk(){
 }
 
 # @function raid::create::mdadm::disk
-# @description Creates a new RAID array using the formatted disks.
-# @stdout Creates a new RAID array and formats it with the specified filesystem type.
+# Creates a RAID array using mdadm.
+# @description This function creates a RAID array with the specified RAID level using the mdadm utility.
+# It handles different RAID levels and configures the RAID array accordingly.
+# The RAID array is created using the disks that were formatted in the previous step.
+# @stdout Details the RAID creation process and reports any errors encountered.
 function raid::create::mdadm::disk(){
     local data_raid_level
     local metadata_raid_level
@@ -202,8 +221,10 @@ function raid::create::mdadm::disk(){
 }
 
 # @function raid::mount::mdadm::disk
-# @description Mounts the RAID array to the specified mount point.
-# @stdout Mounts the RAID array to the specified mount point and adds an entry to /etc/fstab.
+# Mounts the RAID array to a specified mount point.
+# @description After creating the RAID array, this function mounts it to the provided mount point.
+# It also updates the /etc/fstab file to ensure the RAID array is mounted automatically on boot.
+# @stdout Indicates the mounting process of the RAID array and updates the /etc/fstab file.
 function raid::mount::mdadm::disk(){
     local RAID_UUID
     RAID_UUID=$(find /dev/disk/by-uuid/ -maxdepth 1 -type l -name 'md*' -printf '%l\n' | sed 's/ ->.*//')
