@@ -75,7 +75,7 @@ zen::dependency::apt::install::inline() {
             if [[ $verbose -eq 1 ]]; then
                 mflibs::shell::text::white "Installing ${dep}..."
                 if apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
-                    mflibs::shell::text::green "Dependency ${dep} installed."
+                    mflibs::shell::text::green "$(zen::i18n::translate 'dependency.dependency_installed' "${dep}")"
                     ((installed_count++))
                 else
                     mflibs::shell::text::red "Failed to install ${dep}."
@@ -95,9 +95,9 @@ zen::dependency::apt::install::inline() {
             fi
         fi
     done
-    printf "\n%sNumber of packages successfully installed: %d%s\n" "$(tput setaf 6)" "${installed_count}" "$(tput sgr0)"
+    mflibs::status::info "$(zen::i18n::translate 'dependency.installed_count' "$installed_count")"
     if [[ ${#failed_deps[@]} -gt 0 ]]; then
-        printf "\n⚠ Failed to install the following dependencies: %s%s\n" "${failed_deps[*]}" "$(tput sgr0)"
+        mflibs::status::warn "$(zen::i18n::translate 'dependency.failed_dependencies' "${failed_deps[*]}")"
     fi
     mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
 }

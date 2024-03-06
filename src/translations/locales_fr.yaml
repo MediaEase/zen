@@ -64,6 +64,7 @@ vault:
   permissions_updated: "Permissions updated."
   adding_permissions: "Adding permissions..."
   vault_created: "Vault created."
+  create_vault: "Creating vault..."
 service:
   service_file_created: "Service file created."
   service_running: "Service started."
@@ -75,12 +76,12 @@ service:
   service_bypassed: "Bypass mode is active - Installation will not be persisted in database."
 dependency:
   apt_check_failed: "'apt-get check' failed, you may have broken packages."
-  apt_command_success: "Dependencies successfully {arg0}."
   installing_dependencies: "Installing dependencies..."
   dependencies_installed: "Dependencies installed."
   upgrading_dependencies: "Upgrading dependencies..."
   no_dependencies_found: "No dependencies found."
   updating_system: "Updating system..."
+  installation_complete: "Installation complete."
   system_updated: "System updated."
   dpkg_locked: "The dpkg database is locked."
   dpkg_locked_info: "Repairing dpkg database..."
@@ -96,6 +97,9 @@ dependency:
   apt_source_removed: "APT source for {arg0} removed."
   removing_unnecessary_packages: "Removing unnecessary packages..."
   removed_unnecessary_packages: "Unnecessary packages removed."
+  dependency_installed: "Dependency {arg0} installed."
+  installed_count: "Number of dependencies installed: {arg0}"
+  failed_dependencies: "Failed to install {arg0}."
 python:
   venv_install_no_path: "No path provided for virtual environment installation."
   venv_install_no_requirements: "No requirements file provided for virtual environment installation."
@@ -143,8 +147,9 @@ common:
   unsupported_file_type: "Unsupported file type: {arg0}"
   release_downloaded: "Release downloaded."
   getting_release: "Getting release..."
-  release_found: "Release found"
+  release_found: "Release found."
   failed_to_change_directory: "Failed to change directory {arg0}."
+  total_execution_time: "Total execution time: {arg0}h {arg1}min {arg2}sec."
 system:
   securing_ssh: "Securing SSH..."
   securing_ssh_success: "SSH secured."
@@ -176,3 +181,6 @@ raid:
   disk_already_mounted: "Disk {arg0} is already mounted to {arg1}... Skipping..."
   error_mounting_raid_disk: "Failed to mount disk {arg0} to {arg1}."
   created_not_mounted: "Disk {arg0} created but not mounted."
+mediaease:
+  mediaease_configured: "MediaEase configured."
+  mediaease_configuring: "Configuring MediaEase..."
