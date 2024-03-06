@@ -12,13 +12,16 @@
 # @section Git Functions
 # @description The following functions handle Git operations.
 
-# @description Clones a Git repository into the specified directory.
+# @function zen::common::git::clone
+# Clones a Git repository into the specified directory.
+# @description This function clones a Git repository from a given URL into a specified directory.
+# It checks if the directory already exists to avoid re-cloning. Optionally, a specific branch can be cloned.
 # @arg $1 string Full URL of the Git repository to clone.
 # @arg $2 string Target directory where the repository will be cloned.
 # @arg $3 string Specific branch to clone (optional).
 # @exitcode 0 on successful cloning.
 # @exitcode 1 on failure.
-# @stdout Clones the repository into the target directory.
+# @stdout Informs about the cloning process and results.
 zen::common::git::clone() {
     local repo_name="$1"
     local target_dir="$2"
@@ -53,19 +56,17 @@ zen::common::git::clone() {
     fi
 }
 
-
-# @description Retrieves and extracts a release from a GitHub repository.
+# @function zen::common::git::get_release
+# Retrieves and extracts a release from a GitHub repository.
+# @description This function downloads and extracts a specific release (stable or prerelease) from a GitHub repository.
+# It supports various file types for the release archive and sets appropriate permissions for the extracted files.
 # @arg $1 string Directory where the release will be extracted.
 # @arg $2 string Full URL of the GitHub repository.
 # @arg $3 bool Retrieve a prerelease (true) or stable release (false).
 # @arg $4 string Name or pattern of the release file to be retrieved.
 # @exitcode 0 on successful retrieval and extraction.
 # @exitcode 1 on failure.
-# @stdout Downloads and extracts the specified release into the target directory.
-# @notes
-# The function cleans up the downloaded archive after extraction and sets
-# appropriate permissions for the extracted files.
-################################################################################
+# @stdout Details the process of downloading and extracting the release.
 zen::common::git::get_release(){
     local target_dir="$1"
     local repo_name="$2"
@@ -114,7 +115,9 @@ zen::common::git::get_release(){
 # @section Environment Functions
 # @description The following functions are used for environment variable management.
 
-# @description Retrieves the value of a specified environment variable.
+# @function zen::common::environment::get::variable
+# Retrieves the value of a specified environment variable.
+# @description This function fetches the value of a specified environment variable, displaying an error if not found.
 # @arg $1 string Name of the environment variable to retrieve.
 # @exitcode 0 if the variable is found.
 # @exitcode 1 if the variable is not found.
@@ -128,7 +131,31 @@ zen::common::environment::get::variable() {
     fi
 }
 
-# @description Fixes permissions of a specified path for a user and group.
+# @function zen::common::environment::set::variable
+# Exports a variable and adds it to the .bash_profile.
+# @description This function exports a given variable and its value, appending it to the root user's .bash_profile if it's not already present.
+# It ensures that the variable will be set and available in future shell sessions for the root user.
+# The function splits the input into a variable name and value, then checks and appends the export statement to .bash_profile.
+# @arg $1 string The variable assignment in 'NAME=VALUE' format.
+# @stdout None.
+# @notes If the variable is already exported in the .bash_profile, this function does not duplicate it.
+zen::common::export::var() {
+    local var_name="${1%%=*}"
+    local var_value="${1#*=}"
+    local bashrc_file="/root/.bash_profile"
+
+    if ! grep -q "export $var_name=" "$bashrc_file"; then
+        echo "export $var_name=\"$var_value\"" >> "$bashrc_file"
+    fi
+}
+
+# @section File System Functions
+# @description The following functions are used for file system operations.
+
+# @function zen::common::environment::set::variable
+# Fixes permissions of a specified path for a user and group.
+# @description This function sets the ownership and permissions of a specified file system path for a given user and group.
+# It applies different permissions for directories and files within the path.
 # @arg $1 string File system path whose permissions need fixing.
 # @arg $2 string User for file/directory ownership.
 # @arg $3 string Group for file/directory ownership.
@@ -156,31 +183,23 @@ zen::common::fix::permissions() {
 # @section Setting Functions
 # @description The following functions are used for managing application settings.
 
-# @description Loads settings from the database into a global associative array.
+# Loads settings from the database into a global associative array.
+# @description This function loads various settings from the database and populates a global associative array with these settings.
+# The function is crucial for configuring the application based on database-stored preferences.
 # @global settings Associative array populated with settings from the database.
 # @exitcode 0 on successful loading.
 # @exitcode 1 on failure.
 # shellcheck disable=SC2034
 # Disable reason: 'settings' is used in other functions
-################################################################################
 zen::common::setting::load(){
     declare -A -g settings
     setting_columns=("id" "site_name" "root_url" "site_description" "backdrop" "logo" "default_quota" "net_interface" "registration_enabled" "welcome_email")
     zen::database::load_config "$(zen::database::select "*" "setting" "")"  "settings" 0 "setting_columns"
 }
 
-# @description Capitalizes the first letter of a given string.
-# @arg $1 string String to be capitalized.
-# @stdout Transformed string with the first letter capitalized.
-zen::common::capitalize::first() {
-    local input_string="$1"
-    local capitalized_string
-
-    capitalized_string="${input_string^}"
-    echo "$capitalized_string"
-}
-
-# @description Logs messages to a file for dashboard display.
+# Logs messages to a file for dashboard display.
+# @description This function logs given messages to a file, which can be used for displaying logs on a dashboard.
+# It creates and manages the log file, ensuring it's owned by the appropriate user.
 # @arg $1 string Message to be logged.
 # @stdout None.
 # @notes Creates and manages the dashboard log file.
@@ -193,7 +212,25 @@ zen::common::dashboard::log() {
 	echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
 }
 
-# @description Selects a random color code for shell output styling.
+# @section Shell Functions
+# @description The following functions are used for shell operations.
+
+# @function zen::common::capitalize::first
+# Capitalizes the first letter of a given string.
+# @description This function transforms a string by capitalizing its first letter, useful for formatting display text.
+# @arg $1 string String to be capitalized.
+# @stdout Transformed string with the first letter capitalized.
+zen::common::capitalize::first() {
+    local input_string="$1"
+    local capitalized_string
+
+    capitalized_string="${input_string^}"
+    echo "$capitalized_string"
+}
+
+# @function zen::common::shell::color::randomizer
+# Selects a random color code for shell output styling.
+# @description This function randomly selects a color code for styling shell outputs, adding visual diversity to command line interfaces.
 # @stdout Random color code.
 zen::common::shell::color::randomizer(){
     local color
@@ -203,16 +240,4 @@ zen::common::shell::color::randomizer(){
         1) echo "magenta";;
         2) echo "cyan";;
     esac
-}
-
-# @description Adds a path to the system PATH environment variable.
-# @arg $1 string Path to be added to the system PATH.
-# @stdout None.
-# @notes Adds the specified path to the system PATH if it is not already present.
-zen::common::path::add() {
-    local path_string
-    path_string="${1:-}"
-    if [[ ! "$PATH" == *"$path_string"* ]]; then
-        export PATH="$path_string:$PATH"
-    fi
 }

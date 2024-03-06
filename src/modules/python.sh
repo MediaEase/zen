@@ -8,11 +8,14 @@
 # All rights reserved.
 
 # @function zen::python::venv::create
-# @description Creates a Python virtual environment in the specified path.
+# Creates a Python virtual environment at the specified path.
+# @description This function creates a Python virtual environment in a given filesystem path.
+# It ensures that the path is valid and then proceeds to create the virtual environment under the context of a specified user.
 # @arg $1 string The filesystem path where the virtual environment should be created.
-# @global user Associative array containing user-specific information.
-# @return 1 if no path is specified or if the directory change fails.
-# @note The virtual environment is created from the perspective of the specified user.
+# @global user Associative array containing user-specific information (particularly 'username').
+# @return 1 If no path is specified or if the directory change fails.
+# @exitcode 0 Success in creating the virtual environment.
+# @exitcode 1 Failure due to missing path or directory change failure.
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
 zen::python::venv::create() {
@@ -31,14 +34,17 @@ zen::python::venv::create() {
 }
 
 # @function zen::python::venv::install
-# @description Installs Python packages in a virtual environment from a requirements file.
+# Installs Python packages in a virtual environment from a requirements file.
+# @description This function activates a specified Python virtual environment and installs packages.
+# It reads a requirements file and optional pre-installed packages, installing them as required.
+# It reports on the success or failure of installing these packages.
 # @arg $1 string The path to the virtual environment.
 # @arg $2 string The path to the requirements file.
 # @arg $3 string Space-separated string of packages to pre-install.
 # @global user Associative array containing user-specific information.
 # @return 1 if no path is specified, or if an error occurs during installation.
-# @note Activates the virtual environment and installs packages as the specified user.
-#      Reports success or failure for the installation of prebuild packages and requirements.
+# @exitcode 0 Success in installing packages.
+# @exitcode 1 Failure due to missing path or installation error.
 zen::python::venv::build() {
     local path="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
@@ -96,11 +102,15 @@ zen::python::venv::build() {
 }
 
 # @function zen::python::venv::remove
-# @description Removes a Python virtual environment from the filesystem.
+# Removes a Python virtual environment.
+# @description This function removes an existing Python virtual environment from the specified filesystem path.
+# It ensures that the path is valid and performs the removal under the context of a specified user.
+# The function also handles the uninstallation of any packages installed within the virtual environment.
 # @arg $1 string The filesystem path where the virtual environment should be removed.
-# @global user Associative array containing user-specific information.
+# @global user Associative array containing user-specific information (particularly 'username').
 # @return 1 if no path is specified or if the directory change fails.
-# @note The virtual environment is removed from the perspective of the specified user.
+# @exitcode 0 Success in removing the virtual environment.
+# @exitcode 1 Failure due to missing path or directory change failure.
 zen::python::venv::remove(){
     local path="$1"
     if [[ -z "$path" ]]; then
@@ -119,6 +129,13 @@ zen::python::venv::remove(){
     mflibs::status::success "$(zen::i18n::translate "python.venv_remove_success" "$app_name")"
 }
 
+# @function zen::python::add::profile
+# Adds Python environment configuration to a profile file.
+# @description This function appends Python environment configuration settings to a specified profile file.
+# It sets environment variables and initializes pyenv and pyenv virtualenv, allowing for Python version management and virtual environment handling.
+# @arg $1 string The target file to which the Python environment configuration should be appended.
+# @exitcode 0 Success in appending the configuration.
+# @exitcode 1 Failure in file operation.
 zen::python::add::profile(){
     local target_file="$1"
     {

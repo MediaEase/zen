@@ -77,10 +77,12 @@ zen::vault::create() {
 
 # @function zen::vault::pass::encode
 # @description Encodes a given string using base64 encoding.
-# @arg $1 string The string to be encoded.
-# @return Encoded string in base64 format.
-# @note Returns an error if no string is provided.
-# @example zen::vault::pass::encode "password"
+# @arg $1 string "The string to be encoded."
+# @return "Encoded string in base64 format."
+# @exitcode 0 "If the string is encoded successfully."
+# @exitcode 1 "If no string is provided."
+# @example
+#    zen::vault::pass::encode "password"
 zen::vault::pass::encode() {
     local string="$1"
     if [[ -z "$string" ]]; then
@@ -93,10 +95,11 @@ zen::vault::pass::encode() {
 # @function zen::vault::pass::decode
 # @internal
 # @description Finds and decodes the hashed password from the vault.
-# @arg $1 string The key for the password entry.
-# @return Decoded password if successful.
-# @note Returns an error if the key is not found.
-# @example zen::vault::pass::decode "username.type"
+# @arg $1 string "The key for the password entry."
+# @return "Decoded password if successful."
+# @exitcode 1 "If the key is not found."
+# @example
+#    zen::vault::pass::decode "username.type"
 zen::vault::pass::decode() {
     local key="$1"
     local hashed_key
@@ -112,11 +115,13 @@ zen::vault::pass::decode() {
 
 # @function zen::vault::pass::store
 # @description Stores a new password in the vault.
-# @arg $1 string The key for the password entry.
-# @arg $2 string The password to store.
-# @global credentials_file Path to the credentials file.
-# @note Returns an error if the key already exists.
-# @example zen::vault::pass::store "username.type" "password"
+# @arg $1 string "The key for the password entry."
+# @arg $2 string "The password to store."
+# @global credentials_file "Path to the credentials file."
+# @exitcode 0 "If the password is stored successfully."
+# @exitcode 1 "If the key already exists."
+# @example
+#    zen::vault::pass::store "username.type" "password"
 zen::vault::pass::store() {
     local key="$1"
     local password="$2"
@@ -141,11 +146,13 @@ zen::vault::pass::store() {
 
 # @function zen::vault::pass::update
 # @description Updates an existing password in the vault.
-# @arg $1 string The key for the password entry.
-# @arg $2 string The new password to update.
-# @global credentials_file Path to the credentials file.
-# @note Returns an error if the key is not found.
-# @example zen::vault::pass::update "username.type" "password"
+# @arg $1 string "The key for the password entry."
+# @arg $2 string "The new password to update."
+# @global credentials_file "Path to the credentials file."
+# @exitcode 0 "If the password is updated successfully."
+# @exitcode 1 "If the key is not found."
+# @example
+#    zen::vault::pass::update "username.type" "password"
 zen::vault::pass::update() {
     local key="$1"
     local password="$2"
@@ -166,9 +173,10 @@ zen::vault::pass::update() {
 
 # @function zen::vault::pass::reveal
 # @description Reveals the password associated with a given key from the vault.
-# @arg $1 string The key whose password is to be revealed.
-# @return Reveals the associated password if successful.
-# @example zen::vault::pass::reveal "username.type"
+# @arg $1 string "The key whose password is to be revealed."
+# @return "Reveals the associated password if successful."
+# @example
+#    zen::vault::pass::reveal "username.type"
 zen::vault::pass::reveal() {
     local key="$1"
     zen::vault::pass::decode "$key"
@@ -176,10 +184,14 @@ zen::vault::pass::reveal() {
 
 # @function zen::vault::permissions
 # @description Updates the permissions of the credentials file.
-# @arg $1 string The action to be performed on the file.
-# @note Adds or removes permissions based on the action provided.
-# @example zen::vault::permissions "add"
-# @example zen::vault::permissions "remove"
+# @arg $1 string "The action to be performed on the file."
+# @global credentials_file "Path to the credentials file."
+# @exitcode 0 "If the permissions are updated successfully."
+# @exitcode 1 "If an invalid action is provided."
+# @example
+#    zen::vault::permissions "add"
+# @example
+#    zen::vault::permissions "remove"
 zen::vault::permissions(){
     local action="$1"
     

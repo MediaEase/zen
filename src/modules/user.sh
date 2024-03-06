@@ -9,8 +9,14 @@
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
+# @section User Management Functions
+# @description Functions related to managing users in the system.
+
 # @function zen::user::create
-# @description Creates a new system user with specified attributes.
+# Creates a new system user with specified attributes.
+# @description This function creates a new system user with the given username, password, and admin status.
+# It sets restricted shells for non-admin users and grants sudo privileges for admin users.
+# Additionally, it handles the creation of necessary directories and sets appropriate permissions.
 # @arg $1 string The username for the new user.
 # @arg $2 string The password for the new user.
 # @arg $3 string Indicates if the user should have admin privileges ('true' or 'false').
@@ -41,7 +47,9 @@ zen::user::create() {
 }
 
 # @function zen::user::groups::upgrade
-# @description Adds a user to a specified system group.
+# Adds a user to a specified system group.
+# @description This function adds a user to one of the predefined system groups.
+# The supported groups include sudo, media, download, streaming, and default.
 # @arg $1 string The username of the user to add to the group.
 # @arg $2 string The name of the group to which the user should be added.
 # @return 0 if the user is added to the group successfully, 1 otherwise.
@@ -74,7 +82,9 @@ zen::user::groups::upgrade() {
 }
 
 # @function zen::user::groups::create_groups
-# @description Creates default system groups for application usage.
+# Creates default system groups for application usage.
+# @description This function creates predefined groups like media, download, streaming, and default for application usage.
+# It checks if the groups already exist before creating them.
 # @return 0 if the groups are created successfully, 1 otherwise.
 # @note Creates predefined groups like media, download, streaming, and default.
 zen::user::groups::create_groups() {
@@ -89,7 +99,9 @@ zen::user::groups::create_groups() {
 }
 
 # @function zen::user::check
-# @description Checks if the currently loaded user is a valid MediaEase user.
+# Checks if the currently loaded user is a valid MediaEase user.
+# @description This function checks if the specified user exists and is a valid MediaEase user.
+# It relies on global variables for the username and the list of all system users.
 # @global username The username of the user to check.
 # @global users_all An array of all users on the system.
 # @return Exits with 1 if the user is not found or is not a MediaEase user.
@@ -101,7 +113,9 @@ zen::user::check() {
 }
 
 # @function zen::user::is::admin
-# @description Checks if the currently loaded user is an administrator.
+# Checks if the currently loaded user is an administrator.
+# @description This function checks if the specified user, whose data is loaded into a global array, is an administrator.
+# It examines the user's roles to determine admin status.
 # @return 0 if the user is an admin, 1 otherwise.
 # @note User must be loaded with zen::user::load before calling this function.
 zen::user::is::admin() {
@@ -110,7 +124,9 @@ zen::user::is::admin() {
 }
 
 # @function zen::multi::check::id
-# @description Retrieves the ID of a specified user from the system.
+# Retrieves the ID of a specified user from the system.
+# @description This function fetches the system ID of a specified user by querying the database.
+# It is part of the multi-user management functionality.
 # @arg $1 string The username for which to retrieve the ID.
 # @return The ID of the user if found.
 zen::multi::check::id() {
@@ -118,7 +134,9 @@ zen::multi::check::id() {
 }
 
 # @function zen::user::load
-# @description Loads a specified user's data into a globally accessible associative array.
+# Loads a specified user's data into a globally accessible associative array.
+# @description This function queries the database for a user's data and loads it into a globally accessible associative array named 'user'.
+# It prepares the user's data for further processing in other functions.
 # @arg $1 string The username of the user to load.
 # @global user An associative array populated with the user's data.
 # @return Exits with 1 if the user is not found.
@@ -141,7 +159,9 @@ zen::user::load(){
 }
 
 # @function zen::user::ban
-# @description Bans a user either permanently or for a specified duration.
+# Bans a user either permanently or for a specified duration.
+# @description This function bans a specified user, either permanently or for a given duration.
+# It updates the user's status in the database to reflect the ban.
 # @arg $1 string The username to ban.
 # @arg $2 string Optional duration in days for the ban.
 zen::user::ban() {
@@ -158,8 +178,12 @@ zen::user::ban() {
 }
 
 # @section Password Management
+# @description Functions related to managing user passwords.
+
 # @function zen::user::password::generate
-# @description Generates a random password of a specified length.
+# Generates a random password of a specified length.
+# @description This function generates a secure, random password of the specified length using system utilities.
+# It is used for creating default passwords for new users.
 # @arg $1 int The length of the password to generate.
 # @return A randomly generated password.
 zen::user::password::generate() {
@@ -168,7 +192,9 @@ zen::user::password::generate() {
 }
 
 # @function zen::user::password::set
-# @description Sets a password for a specified user.
+# Sets a password for a specified user.
+# @description This function sets a password for a given user.
+# It updates the system's password record and adds the password to the system's HTTP authentication file.
 # @arg $1 string The username of the user for whom to set the password.
 # @arg $2 string The password to set for the user.
 # @return 0 if the password is set successfully, 1 otherwise.

@@ -10,12 +10,14 @@
 # All rights reserved.
 
 # @function zen::dependency::apt::manage
-# @description Manages APT dependencies for the specified software.
-# @global MEDIAEASE_HOME Path to MediaEase configurations.
-# @arg $1 string The APT action to perform (install, update, upgrade, check, etc.).
+# Manages APT dependencies for specified software.
+# @description This function manages APT (Advanced Packaging Tool) dependencies based on the input action, software name, and additional options.
+# It processes various APT actions like install, update, upgrade, and check. The function uses a YAML file for dependency definitions.
+# @global MEDIAEASE_HOME string Path to MediaEase configurations.
+# @arg $1 string APT action to perform (install, update, upgrade, check, etc.).
 # @arg $2 string Name of the software for dependency management.
 # @arg $3 string Additional options (reinstall, non-interactive, inline).
-# @stdout Executes various apt-get commands based on input parameters.
+# @stdout Executes apt-get commands based on input parameters.
 # @return Exit status of the last executed apt-get command.
 # @note Handles APT actions, reinstall, and non-interactive mode.
 zen::dependency::apt::manage() {
@@ -53,11 +55,12 @@ zen::dependency::apt::manage() {
 }
 
 # @function zen::dependency::apt::install::inline
-# @description Installs APT dependencies inline with progress display.
+# Installs APT dependencies inline with progress display.
+# @description This function installs APT dependencies inline, showing the progress. It uses apt-get for installation and dpkg-query to check existing installations.
+# Visual feedback is provided with colored output: red for failures and green for successful installations.
 # @arg $dependencies_string string Space-separated list of dependencies to install.
 # @stdout On success, displays the number of installed packages; on failure, shows failed package names.
-# @note This function uses apt-get for installation and checks for existing installations with dpkg-query.
-#       It provides visual feedback with colored output: red for failures and green for the count of successful installations.
+# @note The function checks for existing installations before proceeding with installation.
 # @example
 #   zen::dependency::apt::install::inline "package1 package2 package3"
 zen::dependency::apt::install::inline() {
@@ -103,11 +106,13 @@ zen::dependency::apt::install::inline() {
 }
 
 # @function zen::dependency::apt::update
-# @description Updates package lists and upgrades installed packages.
+# Updates package lists and upgrades installed packages.
+# @description This function performs system updates using apt-get commands. It updates the package lists and upgrades the installed packages.
+# Additionally, it handles locked dpkg situations and logs command execution for troubleshooting.
 # @global None.
 # @noargs
 # @stdout Executes apt-get update, upgrade, autoremove, and autoclean commands.
-# @note Handles locked dpkg situations and logs command execution.
+# @note The function checks for and resolves locked dpkg situations before proceeding.
 zen::dependency::apt::update() {
     mflibs::shell::text::white "$(zen::i18n::translate 'dependency.updating_system')"
     # check if fuser is installed 
@@ -135,11 +140,13 @@ zen::dependency::apt::update() {
 }
 
 # @function zen::dependency::apt::remove
-# @description Removes APT dependencies not needed by other software.
-# @global MEDIAEASE_HOME Path to MediaEase configurations.
+# Removes APT dependencies not needed by other software.
+# @description This function removes APT dependencies that are no longer needed by other installed software.
+# It reads dependencies from a YAML file and checks for exclusive use before removing them.
+# @global MEDIAEASE_HOME string Path to MediaEase configurations.
 # @arg $1 string Name of the software for dependency removal.
 # @stdout Removes unused APT dependencies of the specified software.
-# @note Reads dependencies from a YAML file; checks for exclusive use.
+# @note The function considers dependencies listed for the specified software in the YAML configuration.
 zen::dependency::apt::remove() {
     local software_name="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
@@ -161,11 +168,13 @@ zen::dependency::apt::remove() {
 }
 
 # @function zen::dependency::external::install
-# @description Installs all external dependencies for a specified application as defined in the YAML configuration.
-# @global MEDIAEASE_HOME Path to MediaEase configurations.
+# Installs all external dependencies for a specified application.
+# @description This function installs external dependencies for a specified application as defined in a YAML configuration file.
+# It creates temporary scripts for each external dependency's install command and executes them.
+# @global MEDIAEASE_HOME string Path to MediaEase configurations.
 # @arg $1 string The name of the application for which to install external dependencies.
-# @stdout Executes custom installation commands for each external dependency of the specified application.
-# @note Iterates over the external dependencies for the given application in the YAML file and creates temporary scripts to execute their install commands.
+# @stdout Executes installation commands for each external dependency of the specified application.
+# @note Iterates over the external dependencies in the YAML file and executes their install commands.
 zen::dependency::external::install() {
     local app_name="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
@@ -201,14 +210,17 @@ zen::dependency::external::install() {
 }
 
 # @function zen::apt::add_source
-# @description Adds a new APT source and its GPG key from a YAML configuration.
+# # Adds a new APT source and its GPG key.
+# @description This function adds a new APT source and its corresponding GPG key from a YAML configuration file.
+# It handles different options like architecture, inclusion of source repositories, and GPG key processing.
+# @global MEDIAEASE_HOME string Path to MediaEase configurations.
 # @arg $1 string Name of the source as specified in the YAML configuration.
-# @global MEDIAEASE_HOME Path to MediaEase configurations.
 # @stdout Adds new APT source and GPG key based on the YAML configuration.
-# shellcheck disable=SC2155
-# Disable SC2155 because if the command fails, it will exit the script.
+# @note The function evaluates and applies settings from the YAML configuration for the specified source.
 # @example
 #   zen::apt::add_source "php"
+# shellcheck disable=SC2155
+# Disable SC2155 because if the command fails, it will exit the script.
 zen::apt::add_source() {
     local source_name="$1"
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/apt_sources.yaml"
@@ -244,7 +256,9 @@ zen::apt::add_source() {
 }
 
 # @function zen::apt::remove_source
-# @description Removes an APT source and its GPG key.
+# Removes an APT source and its GPG key.
+# @description This function removes an APT source and its GPG key.
+# It deletes the corresponding source list files and GPG keys for the specified source.
 # @arg $1 string Name of the source to be removed.
 # @stdout Removes specified APT source and its GPG key.
 zen::apt::remove_source() {
@@ -269,10 +283,12 @@ zen::apt::remove_source() {
 
 
 # @function zen::apt::update_source
-# @description Updates APT sources based on the apt_sources.yaml file.
-# @global MEDIAEASE_HOME Path to MediaEase configurations.
+# Updates APT sources based on a YAML configuration.
+# @description This function updates APT sources based on the definitions in the apt_sources.yaml file.
+# It recreates source list files and GPG keys for each source defined in the configuration.
+# @global MEDIAEASE_HOME string Path to MediaEase configurations.
 # @stdout Updates APT sources and GPG keys based on the YAML configuration.
-# @note Recreates source list files and GPG keys for each source defined in the YAML file.
+# @note The function iterates over all sources defined in the YAML file and applies their configurations.
 zen::apt::update_source() {
     local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/apt_sources.yaml"
     local source_names

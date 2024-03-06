@@ -22,6 +22,8 @@
 # @note Handles both single-user and multi-user service scenarios.
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
+# @example
+#    zen::service::generate "app_name" "false" "true"
 zen::service::generate() {
     local app_name="$1"
     local is_child="$2"
@@ -95,6 +97,8 @@ zen::service::generate() {
 # @stdout Performs the specified action on the systemd service.
 # @return Exits with a status code if an invalid action is provided.
 # @note Wrapper around systemctl commands for service management.
+# @example
+#    zen::service::manage "start" "app_name.service"
 zen::service::manage() {
     local action=$1
     local service_name=$2
@@ -151,6 +155,8 @@ zen::service::build::add_entry() {
 # @arg $2 string The sanitized name of the application.
 # @stdout Validates service configuration and inserts it into the database.
 # @note Constructs JSON objects for service configuration and stores them in the database.
+# @example
+#    zen::service::validate "true" "app_name_sanitized"
 zen::service::validate() {
     local is_child="$1"
     local app_name_sanitized="$2"

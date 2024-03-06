@@ -10,16 +10,19 @@
 # All rights reserved.
 
 # @function zen::proxy::generate
-# @description Generates a Caddy proxy configuration file for an application.
+# Generates a Caddy proxy configuration file for an application.
+# @description This function creates a Caddy configuration file for a specified application. 
+# It generates the configuration file based on the application name, port number, and base URL. 
+# The configuration will differ based on whether the application is in multi-user mode or not.
 # @arg $1 string The name of the application.
 # @arg $2 number The port on which the application is running.
 # @arg $3 string The base URL for routing to the application.
-# @global software_config_file string Path to the software's configuration file.
+# @global software_config_file string The path to the software's configuration file, used to determine multi-user mode.
 # @stdout Creates or overwrites a Caddy configuration file.
-# @note Checks if the application is multi-user; adjusts file path and headers.
+# @exitcode 0 Success.
+# @exitcode 1 Failure due to directory creation errors or file writing errors.
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
-################################################################################
 zen::proxy::generate() {
     local app_name="$1"
     local port="$2"
@@ -46,12 +49,16 @@ EOF
 }
 
 # @function zen::proxy::add_directive
-# @description Adds a directive to an application's Caddy proxy configuration.
+# Adds a directive to an application's Caddy proxy configuration.
+# @description This function appends a new directive to the Caddy proxy configuration of a specified application. 
+# It is useful for adding custom rules or modifications to the existing proxy settings.
 # @arg $1 string The name of the application.
-# @arg $2 string The username associated with the application (multi-user mode).
+# @arg $2 string The username associated with the application (used in multi-user mode).
 # @arg $3 string The directive to be added to the proxy configuration.
-# @global software_config_file string Path to the software's configuration file.
-# @stdout Appends the directive to the application's proxy configuration file.
+# @global software_config_file string The path to the software's configuration file, used to determine the file location.
+# @stdout Appends the specified directive to the application's Caddy configuration file.
+# @exitcode 0 Success.
+# @exitcode 1 Failure due to file access or append errors.
 zen::proxy::add_directive() {
     local app_name="$1"
     local username="$2"
@@ -64,11 +71,15 @@ zen::proxy::add_directive() {
 }
 
 # @function zen::proxy::remove
-# @description Removes the proxy configuration file for a specified application.
+# Removes the proxy configuration file for a specified application.
+# @description This function deletes the Caddy proxy configuration file associated with a given application. 
+# It's used when an application's proxy is no longer needed or when the application is being uninstalled or moved.
 # @arg $1 string The name of the application.
-# @arg $2 string The username associated with the application (multi-user mode).
-# @global software_config_file string Path to the software's configuration file.
+# @arg $2 string The username associated with the application (used in multi-user mode).
+# @global software_config_file string The path to the software's configuration file, used to determine the file location.
 # @stdout Deletes the Caddy configuration file for the specified application.
+# @exitcode 0 Success.
+# @exitcode 1 Failure due to file not found or deletion errors.
 zen::proxy::remove() {
     local app_name="$1"
     local username="$2"

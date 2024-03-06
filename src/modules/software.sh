@@ -176,10 +176,10 @@ zen::software::infobox() {
 # @function zen::software::options::process
 # @description Processes software options from a comma-separated string.
 # @arg $1 string String of options in "option1=value1,option2=value2" format.
-# @example
 # @note Variables are exported and used in other functions.
 # shellcheck disable=SC2034
 # Disable SC2034 because the variables are exported and used in other functions
+# @example
 #   zen::software::options::process "branch=beta,email=test@example.com"
 zen::software::options::process() {
     local options="$1"
