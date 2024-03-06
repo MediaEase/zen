@@ -111,6 +111,9 @@ function raid::process::args() {
 # The function sets global variables for the disks to be formatted and their count.
 # @stdout Informs about the system disk, disks to be formatted, and their count.
 function raid::disk::detection() {
+    local raid_packages
+    raid_packages=("mdadm" "parted" "util-linux")
+    zen::dependency::apt::install::inline "${raid_packages[@]}"
     ROOT_DEVICE=$(findmnt -n -o SOURCE --target /)
     if [[ $ROOT_DEVICE == /dev/md* ]]; then
         SYSTEM_DISK=$ROOT_DEVICE
@@ -129,7 +132,6 @@ function raid::disk::detection() {
     DISK_ARRAY=("${DISKS_TO_FORMAT[@]}")
     NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
     
-    # Warning outputs
     mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "${DISK_ARRAY[*]}")"
     mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
     mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "${DISK_ARRAY[*]}")"
@@ -244,6 +246,9 @@ function raid::mount::mdadm::disk(){
         fi
     else
         mflibs::status::error "$(zen::i18n::translate "raid.created_not_mounted" "$disk_name")"
+        local raid_packages
+        raid_packages=("mdadm" "parted" "util-linux")
+        zen::dependency::apt::remove "${raid_packages[@]}"
     fi
 }
 
