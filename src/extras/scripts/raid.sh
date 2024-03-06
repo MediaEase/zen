@@ -28,7 +28,7 @@
 # @exitcode 1 Error due to incorrect number of arguments, invalid RAID level, invalid filesystem type, insufficient number of disks, or user cancellation.
 function raid::process::args() {
     # Check if the number of arguments is not equal to 3
-    if [ "$#" -ne 3 ]; then
+    if [ "$#" -ne 4 ]; then
         echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
         exit 1
     fi
