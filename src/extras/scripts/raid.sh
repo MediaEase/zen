@@ -17,7 +17,7 @@
 # @arg $4 string The name of the RAID array (default: md0).
 # @stdout Parses the RAID level, mount point, filesystem type, and disk name from the arguments.
 # @note Processes command-line arguments and performs necessary operations.
-function raid::process::args(){
+function raid::process::args() {
     if [ "$#" -ne 3 ]; then
         echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
         exit 1
@@ -26,39 +26,71 @@ function raid::process::args(){
     declare -g raid_level=$1
     declare -g mount_point=${2:-/home}
     declare -g filesystem_type=${3:-ext4}
+    declare -g disk_name=${4:-md0}
     local raid_levels=("0" "5" "6" "10")
     local types=("ext4" "btrfs")
-    declare -g disk_name=${4:-md0}
 
     case $raid_level in
         0) min_disks=2 ;;
         5) min_disks=3 ;;
         6) min_disks=4 ;;
         10) min_disks=4 ;;
-        *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_raid_level" "${raid_levels[@]}")"
+        *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_raid_level" "${raid_levels[@]}")"; exit 1 ;;
     esac
-
     case $filesystem_type in
         ext4|btrfs) ;;
-        *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"
+        *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"; exit 1 ;;
     esac
 
     raid::disk::detection
+
     if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
         mflibs::status::error "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$min_disks")" >&2
-        exit 1
+
+        local possible_raids=()
+        if [ "$NUMBER_DISKS" -ge 4 ] && (( NUMBER_DISKS % 2 == 0 )); then
+            possible_raids+=("10")
+        fi
+        if [ "$NUMBER_DISKS" -ge 4 ]; then
+            possible_raids+=("6")
+        fi
+        if (( NUMBER_DISKS % 3 == 0 )) && [ "$NUMBER_DISKS" -ge 3 ]; then
+            possible_raids+=("5")
+        fi
+        if [ "$NUMBER_DISKS" -ge 2 ]; then
+            possible_raids+=("0")
+        fi
+
+        if [ ${#possible_raids[@]} -gt 0 ]; then
+            mflibs::shell::text::yellow "$(zen::i18n::translate "raid.raid_possible" "${possible_raids[*]}")"
+            echo "Proceed with RAID${possible_raids[0]} (Y), abort (N), or choose (C)?"
+            read -r user_confirmation
+            case $user_confirmation in
+                [Yy])
+                    raid_level=${possible_raids[0]}
+                    ;;
+                [Cc])
+                    mflibs::shell::text::yellow "$(zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")"
+                    read -r chosen_raid
+                    if [[ " ${possible_raids[*]} " =~ ${chosen_raid} ]]; then
+                        raid_level=$chosen_raid
+                    else
+                        mflibs::status::warn "Invalid selection."; exit 1
+                    fi
+                    ;;
+                *)
+                    mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1
+                    ;;
+            esac
+        else
+            mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
+        fi
     fi
 
-    packages=("mdadm" "util-linux" "parted")
-    for package in "${packages[@]}"; do
-        if [[ $(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-                apt-get install -y "${package}" &> /dev/null || { mflibs::status::error "$(zen::i18n::translate "raid.package_not_installed" "${package}")"; continue; }
-        fi
-    done
-    
-    raid::format::disk "$raid_level"
-    raid::create::mdadm::disk "$mount_point" "$filesystem_type"
-    raid::mount::mdadm::disk "$mount_point" "$filesystem_type"
+    # If valid selections are made, proceed with RAID setup
+    raid::format::disk
+    raid::create::mdadm::disk
+    raid::mount::mdadm::disk
 }
 
 # @function raid::disk::detection
