@@ -27,7 +27,7 @@
 # @exitcode 0 Success.
 # @exitcode 1 Error due to incorrect number of arguments, invalid RAID level, invalid filesystem type, insufficient number of disks, or user cancellation.
 function raid::process::args() {
-    # Check if the number of arguments is not equal to 3
+    # Check if the number of arguments is not equal to 4
     if [ "$#" -ne 4 ]; then
         echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
         exit 1
@@ -117,6 +117,7 @@ function raid::disk::detection() {
     ROOT_DEVICE=$(findmnt -n -o SOURCE --target /)
     if [[ $ROOT_DEVICE == /dev/md* ]]; then
         SYSTEM_DISK=$ROOT_DEVICE
+        RAID_MEMBERS=$(mdadm --detail "$SYSTEM_DISK" | grep '^[[:space:]]\+[0-9]\+.*active' | awk '{print $7}')
     else
         SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
     fi
@@ -125,7 +126,7 @@ function raid::disk::detection() {
     DISKS_TO_FORMAT=()
     for disk in $(lsblk -nd -o NAME,TYPE | awk '$2 == "disk" {print $1}'); do
         disk_path="/dev/$disk"
-        if [[ $disk_path != "$SYSTEM_DISK" ]] && ! grep -q "$disk_path" /proc/mdstat; then
+        if [[ $disk_path != "$SYSTEM_DISK" ]] && [[ ! $RAID_MEMBERS =~ $disk_path ]]; then
             DISKS_TO_FORMAT+=("$disk_path")
         fi
     done
