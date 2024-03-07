@@ -77,11 +77,11 @@ raid::process::args() {
         fi
         # Suggest alternative RAID levels to the user based on available disks
         if [ ${#possible_raids[@]} -gt 0 ]; then
-            mflibs::shell::text::yellow "$(zen::i18n::translate "raid.raid_possible" "${possible_raids[*]}")"
             local prompt_message
-            prompt_message=$(mflibs::shell::icon::ask::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.select_raid_level") ?")
-            mflibs::shell::prompt "$prompt_message" C "${#possible_raids[@]}" possible_raids
-            raid_level=$C
+            prompt_message=$(mflibs::shell::text::cyan::sl;mflibs::shell::icon::ask::cyan;mflibs::shell::text::yellow;zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")
+            zen::prompt::choices "${#possible_raids[@]}" raid_level "$prompt_message"
+            echo "$raid_level"
+            exit 1
         else
             mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
         fi
@@ -125,7 +125,7 @@ raid::format::disk(){
     echo ""
     local prompt_message
     prompt_message=$(mflibs::shell::icon::ask::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue_prompt") ?")
-    mflibs::shell::prompt "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
+    zen::prompt::yn "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
 
     mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
     for disk in "${DISKS_TO_FORMAT[@]}"; do
