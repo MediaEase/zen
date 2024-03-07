@@ -56,6 +56,7 @@ raid::process::args() {
         *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"; exit 1 ;;
     esac
     # Call the disk detection function to initialize related variables
+    mflibs::status::header "$(zen::i18n::translate "raid.initializing_raid_creation")"
     raid::disk::detection
     # Check if the number of disks is less than the minimum required for the chosen RAID level
     if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
@@ -68,7 +69,7 @@ raid::process::args() {
         if [ "$NUMBER_DISKS" -ge 4 ]; then
             possible_raids+=("6")
         fi
-        if (( NUMBER_DISKS % 3 == 0 )) && [ "$NUMBER_DISKS" -ge 3 ]; then
+        if [ "$NUMBER_DISKS" -ge 3 ]; then
             possible_raids+=("5")
         fi
         if [ "$NUMBER_DISKS" -ge 2 ]; then
@@ -77,25 +78,10 @@ raid::process::args() {
         # Suggest alternative RAID levels to the user based on available disks
         if [ ${#possible_raids[@]} -gt 0 ]; then
             mflibs::shell::text::yellow "$(zen::i18n::translate "raid.raid_possible" "${possible_raids[*]}")"
-            echo "Proceed with RAID${possible_raids[0]} (Y), abort (N), or choose (C)?"
-            read -r user_confirmation
-            case $user_confirmation in
-                [Yy])
-                    raid_level=${possible_raids[0]}
-                    ;;
-                [Cc])
-                    mflibs::shell::text::yellow "$(zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")"
-                    read -r chosen_raid
-                    if [[ " ${possible_raids[*]} " =~ ${chosen_raid} ]]; then
-                        raid_level=$chosen_raid
-                    else
-                        mflibs::status::warn "Invalid selection."; exit 1
-                    fi
-                    ;;
-                *)
-                    mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1
-                    ;;
-            esac
+            local prompt_message
+            prompt_message=$(mflibs::shell::icon::ask::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.select_raid_level") ?")
+            mflibs::shell::prompt "$prompt_message" C "${#possible_raids[@]}" possible_raids
+            raid_level=$C
         else
             mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
         fi
@@ -225,6 +211,5 @@ raid::mount::mdadm::disk(){
         mflibs::status::error "$(zen::i18n::translate "raid.created_not_mounted" "$disk_name")"
     fi
 }
-
 
 raid::process::args "$@"
