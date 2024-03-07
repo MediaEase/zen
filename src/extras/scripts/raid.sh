@@ -137,8 +137,9 @@ raid::disk::detection() {
 # @stdout Guides the user through disk formatting process and reports on the status of each disk.
 raid::format::disk(){
     echo ""
-    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow::sl "Continue ? [";mflibs::shell::text::green::sl "Y";mflibs::shell::text::yellow::sl "] or [";mflibs::shell::text::red::sl "N";mflibs::shell::text::yellow::sl "] (default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::yellow::sl " )"
-    mflibs::shell::prompt::yn "Continue ?" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
+    local prompt_message
+    prompt_message=$(mflibs::shell::icon::ask::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue_prompt") ?")
+    mflibs::shell::prompt "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
 
     mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
     for disk in "${DISKS_TO_FORMAT[@]}"; do
