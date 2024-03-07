@@ -12,10 +12,10 @@
 ################################################################################
 # @description: prompt for yes or no
 # @example:
-#   mflibs::shell::prompt::yn "hi"
+#   zen::prompt::yn "hi"
 # @arg $1: string
 ################################################################################
-mflibs::shell::prompt::yn() {
+zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
     prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "[C] (default : ";mflibs::shell::text::green::sl "Y";mflibs::shell::text::white::sl " ):")
@@ -44,12 +44,12 @@ mflibs::shell::prompt::yn() {
 ################################################################################
 # @description: prompt for a choice
 # @example:
-#   mflibs::shell::prompt::yn::choices "choices" "output_var" "prompt"
+#   zen::prompt::yn::choices "choices" "output_var" "prompt"
 # @arg $1: array
 # @arg $2: string
 # @arg $3: string
 ################################################################################
-mflibs::shell::prompt::yn::choices() {
+zen::prompt::yn::choices() {
     declare -a choice_list=("${!1}")
     declare -n output_var=$2
     declare prompt="${3:-"$(zen::i18n::translate "common.choices")"}"
@@ -69,12 +69,12 @@ mflibs::shell::prompt::yn::choices() {
 ###############################################################################
 # @description: prompt for a code input
 # @example:
-#   mflibs::shell::prompt::yn::code "prompt" "code"
+#   zen::prompt::yn::code "prompt" "code"
 # @arg $1: string
 # @arg $2: string
 # @arg $3: string
 ###############################################################################
-mflibs::shell::prompt::yn::code() {
+zen::prompt::yn::code() {
   local prompt="${1:-}"
   local string="${2:-}"
   local context="${3:-code}"
