@@ -99,8 +99,6 @@ raid::process::args() {
 # The function sets global variables for the disks to be formatted and their count.
 # @stdout Informs about the system disk, disks to be formatted, and their count.
 raid::disk::detection() {
-    apt-get install -yqq --allow-unauthenticated "${raid_packages[*]}"
-    zen::dependency::apt::install::inline "${raid_packages[*]}"
     ROOT_DEVICE=$(findmnt -n -o SOURCE --target / | cut -d'[' -f1)
     SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
 

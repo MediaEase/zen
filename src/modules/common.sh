@@ -212,7 +212,7 @@ zen::common::dashboard::log() {
 	echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
 }
 
-# @section Shell Functions
+# @section String/Shell extra Functions
 # @description The following functions are used for shell operations.
 
 # @function zen::common::capitalize::first
