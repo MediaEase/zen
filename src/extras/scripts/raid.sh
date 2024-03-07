@@ -37,6 +37,8 @@ raid::process::args() {
     declare -g mount_point=${2:-/home}
     declare -g filesystem_type=${3:-ext4}
     declare -g disk_name=${4:-md0}
+    # Define required packages for RAID array creation
+    declare -g raid_packages=("mdadm" "parted" "util-linux")
     # Define valid RAID levels and filesystem types
     local raid_levels=("0" "5" "6" "10")
     local types=("ext4" "btrfs")
@@ -111,8 +113,6 @@ raid::process::args() {
 # The function sets global variables for the disks to be formatted and their count.
 # @stdout Informs about the system disk, disks to be formatted, and their count.
 raid::disk::detection() {
-    local raid_packages
-    raid_packages=("mdadm" "parted" "util-linux")
     zen::dependency::apt::install::inline "${raid_packages[*]}"
     ROOT_DEVICE=$(findmnt -n -o SOURCE --target /)
     if [[ $ROOT_DEVICE == /dev/md* ]]; then
