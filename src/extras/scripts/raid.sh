@@ -161,7 +161,7 @@ raid::create::mdadm::disk(){
     local metadata_raid_level
     case $raid_level in
         0) 
-            data_raid_level="RAID0"
+            data_raid_level="RAID$raid_level"
             metadata_raid_level="DUP"
             ;;
         1 | "1c3" | "1c4")
@@ -169,15 +169,15 @@ raid::create::mdadm::disk(){
             metadata_raid_level="RAID$raid_level"
             ;;
         5)
-            data_raid_level="RAID5"
+            data_raid_level="RAID$raid_level"
             metadata_raid_level="RAID1"
             ;;
         6)
-            data_raid_level="RAID6"
+            data_raid_level="RAID$raid_level"
             metadata_raid_level="RAID1c3"
             ;;
         10)
-            data_raid_level="RAID10"
+            data_raid_level="RAID$raid_level"
             metadata_raid_level="RAID1"
             ;;
         *)
