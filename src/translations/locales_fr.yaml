@@ -150,6 +150,9 @@ common:
   release_found: "Release found."
   failed_to_change_directory: "Failed to change directory {arg0}."
   total_execution_time: "Total execution time: {arg0}h {arg1}min {arg2}sec."
+  choices: "Choose one of the following :"
+  chosen: "You've chosen: {arg0}"
+  no_choices_available: "No choices available."
 system:
   securing_ssh: "Securing SSH..."
   securing_ssh_success: "SSH secured."
@@ -185,6 +188,9 @@ raid:
   choose_raid_level: "Choose from possible RAID levels: {arg0}"
   creation_aborted: "RAID creation aborted."
   no_raid_possible: "No RAID configuration is possible with {arg1} disks."
+  selected_raid_level: "Selected RAID level: {arg0}"
+  initializing_raid_creation: "Initializing RAID creation..."
+  disk_mounted: "Disk {arg0} mounted to {arg1}."
 mediaease:
   mediaease_configured: "MediaEase configured."
   mediaease_configuring: "Configuring MediaEase..."
