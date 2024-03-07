@@ -60,7 +60,7 @@ raid::process::args() {
     raid::disk::detection
     # Check if the number of disks is less than the minimum required for the chosen RAID level
     if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
-        mflibs::status::error "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$min_disks")" >&2
+        mflibs::shell::text::red "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$min_disks")" >&2
         # Calculate possible RAID levels based on the number of disks available
         local possible_raids=()
         if [ "$NUMBER_DISKS" -ge 4 ] && (( NUMBER_DISKS % 2 == 0 )); then
