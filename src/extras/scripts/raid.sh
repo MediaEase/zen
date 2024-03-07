@@ -186,21 +186,17 @@ raid::create::mdadm::disk(){
             return 1
             ;;
     esac
-    mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$disk_name" "$raid_level")"
-    mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}" >/dev/null 2>&1 || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; }
+    mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$raid_level" "$disk_name")"
+    mflibs::log "mdadm --create --verbose /dev/$disk_name --level=$raid_level --raid-devices=$NUMBER_DISKS ${DISK_ARRAY[*]}" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     sleep 5
+    mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
-        mkfs.btrfs -L mediaease-data --data "$data_raid_level" --metadata "$metadata_raid_level" "/dev/$disk_name" >/dev/null 2>&1 || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
+        mflibs::log "mkfs.btrfs -L mediaease --data $data_raid_level --metadata $metadata_raid_level /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     else
-        mkfs.ext4 -L mediaease-data -F "/dev/$disk_name" >/dev/null 2>&1 || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
+        mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     fi
-    fs_type_upper=$(echo "$filesystem_type" | tr '[:lower:]' '[:upper:]')
-    mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$fs_type_upper")"
-    mkfs."$filesystem_type" -F "/dev/$disk_name" >/dev/null 2>&1 || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
     mflibs::status::success "$(zen::i18n::translate "raid.disk_partitioned" "$disk_name" "$filesystem_type")"
     sleep 5
-	
-    mflibs::status::success "$(zen::i18n::translate "raid.raid_disk_created" "$disk_name")"
 }
 
 # @function raid::mount::mdadm::disk
