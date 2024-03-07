@@ -78,7 +78,7 @@ raid::process::args() {
         # Suggest alternative RAID levels to the user based on available disks
         if [ ${#possible_raids[@]} -gt 0 ]; then
             local prompt_message
-            prompt_message=$(mflibs::shell::text::cyan::sl;mflibs::shell::icon::ask::cyan;mflibs::shell::text::yellow;zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")
+            prompt_message=$(mflibs::shell::text::cyan::sl;mflibs::shell::icon::arrow::cyan;mflibs::shell::text::yellow;zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")
             zen::prompt::choices "${#possible_raids[@]}" raid_level "$prompt_message"
             echo "$raid_level"
             exit 1
@@ -123,7 +123,7 @@ raid::disk::detection() {
 raid::format::disk(){
     echo ""
     local prompt_message
-    prompt_message=$(mflibs::shell::icon::ask::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue_prompt") ?")
+    prompt_message=$(mflibs::shell::icon::arrow::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue_prompt") ?")
     zen::prompt::yn "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
 
     mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
