@@ -142,8 +142,8 @@ raid::format::disk(){
 
     mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
     for disk in "${DISKS_TO_FORMAT[@]}"; do
-        wipefs -a "$disk" &> /dev/null || { mflibs::status::error "$(zen::i18n::translate "raid.error_formatting_disk" "$disk")"; continue; }
-        parted -s "$disk" mklabel msdos mkpart primary "$filesystem_type" 1 100% &> /dev/null || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_partition" "$disk")"; continue; }
+        mflibs::log "wipefs -a $disk" || { mflibs::status::error "$(zen::i18n::translate "raid.error_formatting_disk" "$disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+        mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_partition" "$disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
         sleep 3
     done
     mflibs::status::success "$(zen::i18n::translate "raid.disk_partitions_created")"
