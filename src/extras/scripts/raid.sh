@@ -159,7 +159,6 @@ raid::format::disk(){
 raid::create::mdadm::disk(){
     local data_raid_level
     local metadata_raid_level
-    local fs_type_upper
     case $raid_level in
         0) 
             data_raid_level="RAID0"
@@ -206,27 +205,25 @@ raid::create::mdadm::disk(){
 # @stdout Indicates the mounting process of the RAID array and updates the /etc/fstab file.
 raid::mount::mdadm::disk(){
     local RAID_UUID
-    RAID_UUID=$(find /dev/disk/by-uuid/ -maxdepth 1 -type l -name 'md*' -printf '%l\n' | sed 's/ ->.*//')
-	
+    RAID_UUID=$(blkid -o value -s UUID "/dev/$disk_name")
     if mdadm --detail --scan | grep -q "/dev/$disk_name"; then
         mflibs::status::header "$(zen::i18n::translate "raid.mounting_raid_disk" "$disk_name" "$mount_point")"
-        if grep -Fxq "UUID=$RAID_UUID LABEL=mediaease-data $mount_point $filesystem_type defaults 0 0" /etc/fstab; then
+        if grep -Fxq "UUID=$RAID_UUID $mount_point $filesystem_type defaults 0 0" /etc/fstab; then
             mflibs::status::error "$(zen::i18n::translate "raid.disk_already_mounted" "$disk_name" "$mount_point")"
         else
             {
                 echo "# MediaEase RAID"
-                echo "UUID=$RAID_UUID LABEL=mediaease-data $mount_point $filesystem_type defaults 0 0"
+                echo "UUID=$RAID_UUID $mount_point $filesystem_type defaults 0 0"
                 echo "# MediaEase RAID"
             } >> /etc/fstab
+            [ ! -d "$mount_point" ] && mkdir -p "$mount_point"
             mount -a || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
             mflibs::status::success "$(zen::i18n::translate "raid.disk_mounted" "$disk_name" "$mount_point")"
         fi
     else
         mflibs::status::error "$(zen::i18n::translate "raid.created_not_mounted" "$disk_name")"
-        local raid_packages
-        raid_packages=("mdadm" "parted" "util-linux")
-        zen::dependency::apt::remove "${raid_packages[@]}"
     fi
 }
+
 
 raid::process::args "$@"
