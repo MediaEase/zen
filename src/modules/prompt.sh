@@ -9,12 +9,17 @@
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
-################################################################################
+# @function zen::prompt::yn
 # @description: prompt for yes or no
 # @example:
-#   zen::prompt::yn "hi"
+#   zen::prompt::yn "hi" "Y"
+# @example:
+#   zen::prompt::yn "hi" "N"
 # @arg $1: string
-################################################################################
+# @arg $2: string
+# @stdout: "hi ➜ [Y] or [N] (default : Y):" or "hi ➜ [Y] or [N] (default : N):"
+# @exitcode 0: if yes
+# @exitcode 1: if no
 zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
@@ -41,15 +46,18 @@ zen::prompt::yn() {
   done
 }
 
-################################################################################
-# @description: prompt for a choice
+# @function zen::prompt::choices
+# @description: Presents a list of choices to the user and allows them to select one.
 # @example:
-#   zen::prompt::yn::choices "choices" "output_var" "prompt"
-# @arg $1: array
-# @arg $2: string
-# @arg $3: string
-################################################################################
-zen::prompt::yn::choices() {
+#   possible_choices=("option1" "option2" "option3")
+#   zen::prompt::choices possible_choices[@] selected_choice "Please select an option:"
+# @arg $1: array (passed by reference) - Array of choices to present.
+# @arg $2: string - The name of the variable to store the user's selection.
+# @arg $3: string (optional) - Custom prompt message.
+# @stdout: Custom prompt message followed by a list of choices.
+# @exitcode 0: Successful execution, selection made.
+# @exitcode 1: No valid choices available or invalid selection.
+zen::prompt::choices() {
     declare -a choice_list=("${!1}")
     declare -n output_var=$2
     declare prompt="${3:-"$(zen::i18n::translate "common.choices")"}"
@@ -66,15 +74,17 @@ zen::prompt::yn::choices() {
     done
 }
 
-###############################################################################
-# @description: prompt for a code input
+# @function zen::prompt::code
+# @description: Prompts the user to input a specific code or string. Can be used for verification purposes.
 # @example:
-#   zen::prompt::yn::code "prompt" "code"
-# @arg $1: string
-# @arg $2: string
-# @arg $3: string
-###############################################################################
-zen::prompt::yn::code() {
+#   zen::prompt::code "Enter the secret code:" "1234" "code"
+# @arg $1: string - Custom prompt message.
+# @arg $2: string - The specific code or string the user must input.
+# @arg $3: string (optional) - Context of the prompt ('code' for general code, 'password' for password input).
+# @stdout: Custom prompt message and additional context-specific prompt (if applicable).
+# @exitcode 0: Correct code or string entered.
+# @exitcode 1: Incorrect input, continues prompting.
+zen::prompt::code() {
   local prompt="${1:-}"
   local string="${2:-}"
   local context="${3:-code}"
