@@ -114,28 +114,20 @@ raid::process::args() {
 # @stdout Informs about the system disk, disks to be formatted, and their count.
 raid::disk::detection() {
     zen::dependency::apt::install::inline "${raid_packages[*]}"
-    ROOT_DEVICE=$(findmnt -n -o SOURCE --target /)
-    if [[ $ROOT_DEVICE == /dev/md* ]]; then
-        SYSTEM_DISK=$ROOT_DEVICE
-        RAID_MEMBERS=$(mdadm --detail "$SYSTEM_DISK" | grep '^[[:space:]]\+[0-9]\+.*active' | awk '{print $7}')
-    else
-        SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
-    fi
+    ROOT_DEVICE=$(findmnt -n -o SOURCE --target / | cut -d'[' -f1)
+    SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
 
-    mflibs::status::info "$(zen::i18n::translate "raid.system_disk" "/dev/$SYSTEM_DISK")"
+    mflibs::status::info "$(zen::i18n::translate "raid.system_disk" "$SYSTEM_DISK")"
+    mflibs::status::info "$(zen::i18n::translate "raid.selected_raid_level" "$raid_level")"
     DISKS_TO_FORMAT=()
-    for disk in $(lsblk -nd -o NAME,TYPE | awk '$2 == "disk" {print $1}'); do
-        disk_path="/dev/$disk"
-        if [[ $disk_path != "$SYSTEM_DISK" ]] && [[ ! $RAID_MEMBERS =~ $disk_path ]]; then
-            DISKS_TO_FORMAT+=("$disk_path")
-        fi
+    for disk in $(lsblk -nd -o NAME,TYPE | awk -v sysdisk="$SYSTEM_DISK" '$2 == "disk" && $1 != sysdisk {print $1}'); do
+        DISKS_TO_FORMAT+=("/dev/$disk")
     done
     DISK_ARRAY=("${DISKS_TO_FORMAT[@]}")
     NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
-    
-    mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "${DISK_ARRAY[*]}")"
-    mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
-    mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "${DISK_ARRAY[*]}")"
+    mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "$disk_name")"
+    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
+    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "${DISK_ARRAY[*]}")"
 }
 
 # @function raid::format::disk
