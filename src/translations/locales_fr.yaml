@@ -170,7 +170,7 @@ raid:
   not_enough_disks: "Not enough disks provided for RAID{arg0}. Disks provided: {arg1} - Disks required: {arg2}"
   package_not_installed: "Package {arg0} not installed."
   system_disk: "System is on disk {arg0}."
-  disk_to_format: "The following disks will be formatted and reset: {arg0} to {arg1}."
+  disk_to_format: "The following disks will be formatted and reset: {arg0} to {arg1}. Filesystem {arg2} will be used."
   number_of_disks: "This will use {arg0} disks."
   future_disk: "The disk md0 will be created as a result of the operation."
   creating_partitions_empty_disks: "Creating partitions on empty disks..."

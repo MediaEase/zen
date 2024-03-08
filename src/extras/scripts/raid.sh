@@ -124,7 +124,7 @@ raid::disk::detection() {
     done
     DISK_ARRAY=("${DISKS_TO_FORMAT[@]}")
     NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
-    mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "$disk_name")"
+    mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "$disk_name" "$filesystem_type")"
     mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
     mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "${DISK_ARRAY[*]}")"
 }
