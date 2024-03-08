@@ -39,12 +39,22 @@ zen::dependency::apt::manage() {
 
     case "$action" in
         install)
-            cmd_options=(-yqq --allow-unauthenticated)
+            # shellcheck disable=SC2154
+            if [[ $verbose -eq 1 ]]; then
+                cmd_options=("$action" -y --allow-unauthenticated)
+            else
+                cmd_options=("$action" -yqq --allow-unauthenticated)
+            fi
             [[ "$option" == "reinstall" ]] && cmd_options+=(--reinstall)
             zen::dependency::apt::install::inline "${dependencies_string}" "${cmd_options[@]}" && return
             ;;
         update|upgrade|check)
-            cmd_options=("$action" -yqq)
+            # shellcheck disable=SC2154
+            if [[ $verbose -eq 1 ]]; then
+                cmd_options=("$action" -y)
+            else
+                cmd_options=("$action" -yqq)
+            fi
             apt-get "${cmd_options[@]}" && return
             ;;
         *)
@@ -76,12 +86,10 @@ zen::dependency::apt::install::inline() {
         if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
             # shellcheck disable=SC2154
             if [[ $verbose -eq 1 ]]; then
-                mflibs::shell::text::white "Installing ${dep}..."
                 if apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
-                    mflibs::shell::text::green "$(zen::i18n::translate 'dependency.dependency_installed' "${dep}")"
                     ((installed_count++))
                 else
-                    mflibs::shell::text::red "Failed to install ${dep}."
+                    mflibs::log "$(mflibs::shell::text::red "Failed to install ${dep}.")"
                     failed_deps+=("${dep}")
                 fi
             else

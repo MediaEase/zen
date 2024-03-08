@@ -192,7 +192,8 @@ raid::mount::mdadm::disk(){
                 echo "# MediaEase RAID"
             } >> /etc/fstab
             [ ! -d "$mount_point" ] && mkdir -p "$mount_point"
-            mflibs::log "systemctl daemon-reload && mount -a" || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
+            systemctl daemon-reload
+            mflibs::log "mount -a" || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
             mflibs::status::success "$(zen::i18n::translate "raid.disk_mounted" "$disk_name" "$mount_point")"
         fi
     else

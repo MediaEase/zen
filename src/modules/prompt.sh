@@ -23,10 +23,10 @@
 zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
-    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::green::sl "Y";mflibs::shell::text::white::sl " ):")
+    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::green::sl "Y";mflibs::shell::text::white::sl " ): ")
     default=Y
   elif [[ "${2:-}" = "N" ]]; then
-    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::white::sl " ):")
+    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::white::sl " ): ")
     default=N
   else
     prompt="y/n/c"
