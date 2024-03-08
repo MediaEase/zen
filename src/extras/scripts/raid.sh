@@ -60,7 +60,7 @@ raid::process::args() {
     raid::disk::detection
     # Check if the number of disks is less than the minimum required for the chosen RAID level
     if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
-        mflibs::shell::text::red "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$min_disks")" >&2
+        mflibs::shell::text::red "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$NUMBER_DISKS" "$min_disks")" >&2
         # Calculate possible RAID levels based on the number of disks available
         local possible_raids=()
         if [ "$NUMBER_DISKS" -ge 4 ] && (( NUMBER_DISKS % 2 == 0 )); then
@@ -78,10 +78,9 @@ raid::process::args() {
         # Suggest alternative RAID levels to the user based on available disks
         if [ ${#possible_raids[@]} -gt 0 ]; then
             local prompt_message
-            prompt_message=$(mflibs::shell::text::cyan::sl;mflibs::shell::icon::arrow::cyan;mflibs::shell::text::yellow;zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")
-            zen::prompt::choices "${#possible_raids[@]}" raid_level "$prompt_message"
-            echo "$raid_level"
-            exit 1
+            prompt_message=$(mflibs::shell::text::yellow::sl "➜ $(zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")")
+            zen::prompt::raid "$prompt_message" raid_level "${possible_raids[@]}"
+            echo "Raid level is now: $raid_level"
         else
             mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
         fi
@@ -121,7 +120,6 @@ raid::disk::detection() {
 # It ensures that each disk is properly prepared and partitioned with the specified filesystem type.
 # @stdout Guides the user through disk formatting process and reports on the status of each disk.
 raid::format::disk(){
-    echo ""
     local prompt_message
     prompt_message=$(mflibs::shell::icon::arrow::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue_prompt") ?")
     zen::prompt::yn "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
@@ -172,7 +170,9 @@ raid::create::mdadm::disk(){
             ;;
     esac
     mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$raid_level" "$disk_name")"
-    mflibs::log "mdadm --create --verbose /dev/$disk_name --level=$raid_level --raid-devices=$NUMBER_DISKS ${DISK_ARRAY[*]}" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+    local command
+    command=$(echo y | mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}")
+    mflibs::log "$command" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     sleep 5
     mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
