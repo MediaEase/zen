@@ -46,32 +46,39 @@ zen::prompt::yn() {
   done
 }
 
-# @function zen::prompt::choices
-# @description: Presents a list of choices to the user and allows them to select one.
-# @example:
-#   possible_choices=("option1" "option2" "option3")
-#   zen::prompt::choices possible_choices[@] selected_choice "Please select an option:"
-# @arg $1: array (passed by reference) - Array of choices to present.
+# @function zen::prompt::raid
+# @description: Presents a list of RAID levels to the user and allows them to select one.
+#               This function dynamically generates a list of RAID options based on the input array.
+# @arg $1: string (optional) - Custom prompt message, with a default value provided via internationalization.
 # @arg $2: string - The name of the variable to store the user's selection.
-# @arg $3: string (optional) - Custom prompt message.
-# @stdout: Custom prompt message followed by a list of choices.
-# @exitcode 0: Successful execution, selection made.
-# @exitcode 1: No valid choices available or invalid selection.
-zen::prompt::choices() {
-    declare -a choice_list=("${!1}")
-    declare -n output_var=$2
-    declare prompt="${3:-"$(zen::i18n::translate "common.choices")"}"
-
-    mflibs::shell::text::cyan "$prompt"
-    select choice in "${choice_list[@]}"; do
-        if [[ -n "$choice" ]]; then
-            output_var=$choice
-            export output_var
-            break
-        else
-            mflibs::shell::text::red "$(zen::i18n::translate "common.invalid_input" "$REPLY")"
-        fi
-    done
+# @arg $3 onwards: array (passed by reference) - Array of RAID levels to present as choices.
+# @stdout: Custom prompt message followed by a dynamically generated list of RAID levels for selection.
+# @exitcode 0: Successful execution, a valid RAID level is selected.
+# @exitcode 1: Invalid selection or no RAID levels provided.
+# @example:
+#   zen::prompt::raid "Choose a RAID level:" chosen_level raid_levels[@]
+zen::prompt::raid() {
+  local prompt="${1:-"\e[1;36m$(zen::i18n::translate "common.your_choice")\e[0m"}"
+  local -n output_var="${2:-}"
+  local choices=("${@:3}")
+  local choice
+  local choice_num
+  echo -e "${prompt}"
+  for index in "${!choices[@]}"; do
+    echo -e "    \e[96m$((index + 1)))\e[0m RAID${choices[index]}"
+  done
+  while true; do
+    printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "common.your_choice") ")"
+    read -r choice_num < /dev/tty
+    if [[ "$choice_num" =~ ^[0-9]+$ ]] && (( choice_num >= 1 && choice_num <= ${#choices[@]} )); then
+      choice="${choices[choice_num - 1]}"
+      break
+    else
+      echo -e "\e[31m$(zen::i18n::translate "common.invalid_input")\e[0m"
+    fi
+  done
+  # shellcheck disable=SC2034
+  output_var="$choice"
 }
 
 # @function zen::prompt::code
@@ -106,4 +113,3 @@ zen::prompt::code() {
     fi
   done
 }
-
