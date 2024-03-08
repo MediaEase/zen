@@ -67,7 +67,7 @@ zen::i18n::generate::system_locale(){
         echo "LANGUAGE=\"$locale_setting\"" >/etc/default/locale
         echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
         echo "$locale_setting UTF-8" >/etc/locale.gen
-        mflibs::log "locale-gen $locale_setting" >/dev/null 2>&1
+        mflibs::log "locale-gen $locale_setting  >/dev/null 2>&1"
     fi
 }
 
