@@ -23,17 +23,17 @@
 zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
-    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "[C] (default : ";mflibs::shell::text::green::sl "Y";mflibs::shell::text::white::sl " ):")
+    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::green::sl "Y";mflibs::shell::text::white::sl " ):")
     default=Y
   elif [[ "${2:-}" = "N" ]]; then
-    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "[C] (default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::white::sl " ):")
+    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::white::sl " ):")
     default=N
   else
     prompt="y/n/c"
     default=
   fi
   while true; do
-    printf "%s %s %s" "$1" "$(mflibs::shell::text::cyan " ➜ ")" "$prompt"
+    printf "%s %s" "$1" "$prompt"
     read -r reply < /dev/tty
     if [[ -z "$reply" ]]; then
       reply=$default
@@ -90,8 +90,8 @@ zen::prompt::code() {
   local context="${3:-code}"
 
   while true; do
+    printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
     printf "%s " "$prompt"
-    
     if [[ "$context" == "code" ]]; then
       mflibs::shell::text::red::sl "$string"
     elif [[ "$context" == "password" ]]; then
@@ -106,3 +106,4 @@ zen::prompt::code() {
     fi
   done
 }
+
