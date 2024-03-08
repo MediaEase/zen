@@ -41,15 +41,14 @@ zen::dependency::apt::manage() {
         install)
             # shellcheck disable=SC2154
             if [[ $verbose -eq 1 ]]; then
-                cmd_options=("$action" -y --allow-unauthenticated)
+                cmd_options=(-y --allow-unauthenticated)
             else
-                cmd_options=("$action" -yqq --allow-unauthenticated)
+                cmd_options=(-yqq --allow-unauthenticated)
             fi
             [[ "$option" == "reinstall" ]] && cmd_options+=(--reinstall)
             zen::dependency::apt::install::inline "${dependencies_string}" "${cmd_options[@]}" && return
             ;;
         update|upgrade|check)
-            # shellcheck disable=SC2154
             if [[ $verbose -eq 1 ]]; then
                 cmd_options=("$action" -y)
             else
@@ -86,10 +85,12 @@ zen::dependency::apt::install::inline() {
         if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
             # shellcheck disable=SC2154
             if [[ $verbose -eq 1 ]]; then
-                if apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
+                mflibs::shell::text::white "Installing ${dep}..."
+                if apt-get install "${cmd_options[@]}" "${dep}"; then
+                    mflibs::shell::text::green "$(zen::i18n::translate 'dependency.dependency_installed' "${dep}")"
                     ((installed_count++))
                 else
-                    mflibs::log "$(mflibs::shell::text::red "Failed to install ${dep}.")"
+                    mflibs::shell::text::red "Failed to install ${dep}."
                     failed_deps+=("${dep}")
                 fi
             else
@@ -106,6 +107,7 @@ zen::dependency::apt::install::inline() {
             fi
         fi
     done
+
     mflibs::status::info "$(zen::i18n::translate 'dependency.installed_count' "$installed_count")"
     if [[ ${#failed_deps[@]} -gt 0 ]]; then
         mflibs::status::warn "$(zen::i18n::translate 'dependency.failed_dependencies' "${failed_deps[*]}")"
@@ -246,9 +248,12 @@ zen::apt::add_source() {
     [[ -z "$source_url" ]] && { printf "URL for %s not found in YAML file.\n" "$source_name"; return 1; }
     [[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && { printf "Architecture %s not supported for %s\n" "$arch" "$source_name"; return 1; }
     if [[ -n "$gpg_key_url" ]]; then
-        wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "/usr/share/keyrings/${source_name}.gpg" || { printf "Failed to process GPG key for %s\n" "$source_name"; }
-        echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
-        [[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+        local gpg_key_file
+        gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
+        [[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
+        wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || { printf "Failed to process GPG key for %s\n" "$source_name"; return 1; }
+        echo "deb [signed-by=$gpg_key_file] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+        [[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
     else
         echo "deb $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
         [[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
@@ -308,9 +313,12 @@ zen::apt::update_source() {
         include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
         gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
         if [[ -n "$gpg_key_url" ]]; then
-            wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "/usr/share/keyrings/${source_name}.gpg" || { printf "Failed to process GPG key for %s\n" "$source_name"; continue; }
-            echo "deb [signed-by=/usr/share/keyrings/${source_name}.gpg] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
-            [[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+            local gpg_key_file
+            gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
+            [[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
+            wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || { printf "Failed to process GPG key for %s\n" "$source_name"; return 1; }
+            echo "deb [signed-by=$gpg_key_file] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
+            [[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
         else
             echo "deb $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
             [[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
@@ -326,4 +334,3 @@ zen::apt::update_source() {
         unset source_url include_deb_src gpg_key_url trusted_key_url recv_keys
     done
 }
-
