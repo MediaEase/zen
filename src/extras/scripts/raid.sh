@@ -36,9 +36,14 @@ raid::process::args() {
     declare -g raid_level=$1
     declare -g mount_point=${2:-/home}
     declare -g filesystem_type=${3:-ext4}
-    declare -g disk_name=${4:-md0}
+    declare -g disk_name=${4:-md10}
     # Define required packages for RAID array creation
     declare -g raid_packages=("mdadm" "parted" "util-linux")
+    if [[ "$filesystem_type" == "btrfs" ]]; then
+        raid_packages+=("btrfs-progs")
+    elif [[ "$filesystem_type" == "xfs" ]]; then
+        raid_packages+=("xfsprogs")
+    fi
     # Define valid RAID levels and filesystem types
     local raid_levels=("0" "5" "6" "10")
     local types=("ext4" "btrfs" "xfs")
@@ -141,8 +146,8 @@ raid::format::disk(){
 
     mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
     for disk in "${DISKS_TO_FORMAT[@]}"; do
-        mflibs::log "wipefs -a $disk" || { mflibs::status::error "$(zen::i18n::translate "raid.error_formatting_disk" "$disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
-        mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_partition" "$disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+        mflibs::log "wipefs -a $disk" || { mflibs::status::error "$(zen::i18n::translate "raid.error_formatting_disk" "$disk")"; }
+        mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_partition" "$disk")"; }
         sleep 3
     done
     mflibs::status::success "$(zen::i18n::translate "raid.disk_partitions_created")"
@@ -159,15 +164,15 @@ raid::create::mdadm::disk(){
     mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$raid_level" "$disk_name")"
     local command
     command=$(echo y | mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}")
-    mflibs::log "$command" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+    mflibs::log "$command" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; }
     sleep 5
     mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
-        mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+        mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
     elif [[ "$filesystem_type" == "xfs" ]]; then
-        mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+        mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
     else
-        mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+        mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
     fi
     mflibs::status::success "$(zen::i18n::translate "raid.disk_partitioned" "$disk_name" "$filesystem_type")"
     sleep 5
