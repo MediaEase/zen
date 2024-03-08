@@ -100,12 +100,27 @@ raid::process::args() {
 raid::disk::detection() {
     ROOT_DEVICE=$(findmnt -n -o SOURCE --target / | cut -d'[' -f1)
     SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
+    # if system_disk is md* then we need to get the /dev/sd* disks or /dev/nvme* disks
+    SYSTEM_DISKS=()  # Un tableau pour stocker les disques système
+    if [[ $SYSTEM_DISK == md* ]]; then
+        while read -r line; do
+            SYSTEM_DISKS+=("${line//[0-9]/}")
+        done < <(mdadm --detail "/dev/$SYSTEM_DISK" | grep 'active sync' | awk '{print $7}')
+    else
+        SYSTEM_DISKS+=("$SYSTEM_DISK")
+    fi
 
-    mflibs::status::info "$(zen::i18n::translate "raid.system_disk" "$SYSTEM_DISK")"
+    mflibs::status::info "$(zen::i18n::translate "raid.system_disk" "${SYSTEM_DISKS[*]}")"
     mflibs::status::info "$(zen::i18n::translate "raid.selected_raid_level" "$raid_level")"
+
     DISKS_TO_FORMAT=()
-    for disk in $(lsblk -nd -o NAME,TYPE | awk -v sysdisk="$SYSTEM_DISK" '$2 == "disk" && $1 != sysdisk {print $1}'); do
-        DISKS_TO_FORMAT+=("/dev/$disk")
+    for disk in $(lsblk -nd -o NAME,TYPE | awk '{print $1}'); do
+        disk_type=$(lsblk -no TYPE "/dev/$disk")
+        if [[ "$disk_type" == "disk" ]]; then
+            if [[ ! " ${SYSTEM_DISKS[*]} " =~ ${disk} ]]; then
+                DISKS_TO_FORMAT+=("/dev/$disk")
+            fi
+        fi
     done
     DISK_ARRAY=("${DISKS_TO_FORMAT[@]}")
     NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
@@ -121,7 +136,7 @@ raid::disk::detection() {
 # @stdout Guides the user through disk formatting process and reports on the status of each disk.
 raid::format::disk(){
     local prompt_message
-    prompt_message=$(mflibs::shell::icon::arrow::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue_prompt") ?")
+    prompt_message=$(mflibs::shell::icon::arrow::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue") ?")
     zen::prompt::yn "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
 
     mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
