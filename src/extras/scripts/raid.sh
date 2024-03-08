@@ -41,7 +41,7 @@ raid::process::args() {
     declare -g raid_packages=("mdadm" "parted" "util-linux")
     # Define valid RAID levels and filesystem types
     local raid_levels=("0" "5" "6" "10")
-    local types=("ext4" "btrfs")
+    local types=("ext4" "btrfs" "xfs")
     # Check if the RAID level is valid and set the minimum disks required for the RAID
     case $raid_level in
         0) min_disks=2 ;;
@@ -52,7 +52,7 @@ raid::process::args() {
     esac
     # Check if the filesystem type is valid
     case $filesystem_type in
-        ext4|btrfs) ;;
+        ext4|btrfs|xfs) ;;
         *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"; exit 1 ;;
     esac
     # Call the disk detection function to initialize related variables
@@ -164,6 +164,8 @@ raid::create::mdadm::disk(){
     mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
         mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+    elif [[ "$filesystem_type" == "xfs" ]]; then
+        mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     else
         mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     fi
@@ -190,7 +192,7 @@ raid::mount::mdadm::disk(){
                 echo "# MediaEase RAID"
             } >> /etc/fstab
             [ ! -d "$mount_point" ] && mkdir -p "$mount_point"
-            mount -a || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
+            mflibs::log "systemctl daemon-reload && mount -a" || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
             mflibs::status::success "$(zen::i18n::translate "raid.disk_mounted" "$disk_name" "$mount_point")"
         fi
     else
