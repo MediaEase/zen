@@ -126,7 +126,7 @@ raid::disk::detection() {
     NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
     mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "$disk_name" "$filesystem_type")"
     mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
-    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "${DISK_ARRAY[*]}")"
+    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "$disk_name")"
 }
 
 # @function raid::format::disk
@@ -156,34 +156,6 @@ raid::format::disk(){
 # The RAID array is created using the disks that were formatted in the previous step.
 # @stdout Details the RAID creation process and reports any errors encountered.
 raid::create::mdadm::disk(){
-    local data_raid_level
-    local metadata_raid_level
-    case $raid_level in
-        0) 
-            data_raid_level="RAID$raid_level"
-            metadata_raid_level="DUP"
-            ;;
-        1 | "1c3" | "1c4")
-            data_raid_level="RAID$raid_level"
-            metadata_raid_level="RAID$raid_level"
-            ;;
-        5)
-            data_raid_level="RAID$raid_level"
-            metadata_raid_level="RAID1"
-            ;;
-        6)
-            data_raid_level="RAID$raid_level"
-            metadata_raid_level="RAID1c3"
-            ;;
-        10)
-            data_raid_level="RAID$raid_level"
-            metadata_raid_level="RAID1"
-            ;;
-        *)
-            mflibs::status::error "$(zen::i18n::translate "raid.invalid_raid_level" "${raid_levels[@]}")"
-            return 1
-            ;;
-    esac
     mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$raid_level" "$disk_name")"
     local command
     command=$(echo y | mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}")
@@ -191,7 +163,7 @@ raid::create::mdadm::disk(){
     sleep 5
     mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
-        mflibs::log "mkfs.btrfs -L mediaease --data $data_raid_level --metadata $metadata_raid_level /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
+        mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     else
         mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; zen::dependency::apt::remove "${raid_packages[@]}"; exit 1; }
     fi
