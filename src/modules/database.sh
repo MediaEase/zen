@@ -18,20 +18,20 @@
 # @note Checks for the presence of a query and the database file.
 #      Uses a .timeout of 20000 to handle database locks.
 zen::database::query() {
-    local query="$1"
-    
-    if [[ -z "$query" ]]; then
-        mflibs::status::error "$(zen::i18n::translate "common.no_query_provided")"
-        return 1
-    fi
+  local query="$1"
+  
+  if [[ -z "$query" ]]; then
+    mflibs::status::error "$(zen::i18n::translate "common.no_query_provided")"
+    return 1
+  fi
 
-    declare -g sqlite3_db
-    if [[ ! -f "$sqlite3_db" ]]; then
-        mflibs::status::error "$(zen::i18n::translate "common.db_not_found" "$sqlite3_db")"
-        return 1
-    fi
-    sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
-    sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
+  declare -g sqlite3_db
+  if [[ ! -f "$sqlite3_db" ]]; then
+    mflibs::status::error "$(zen::i18n::translate "common.db_not_found" "$sqlite3_db")"
+    return 1
+  fi
+  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
+  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
 }
 
 # @function zen::database::select::count
@@ -44,27 +44,27 @@ zen::database::query() {
 # @return Returns the exit status of the sqlite3 command.
 # @note Constructs a SELECT COUNT query based on the provided arguments.
 zen::database::select() {
-    local select_clause="$1"
-    local table="$2"
-    local where_clause="$3"
-    local additional_clauses="$4"
-    local distinct_flag="${5:-0}"
+  local select_clause="$1"
+  local table="$2"
+  local where_clause="$3"
+  local additional_clauses="$4"
+  local distinct_flag="${5:-0}"
 
-    local query="SELECT"
-    if [[ "$distinct_flag" == "1" ]]; then
-        query+=" DISTINCT"
-    fi
-    query+=" ${select_clause} FROM ${table}"
+  local query="SELECT"
+  if [[ "$distinct_flag" == "1" ]]; then
+    query+=" DISTINCT"
+  fi
+  query+=" ${select_clause} FROM ${table}"
 
-    if [[ -n "$where_clause" ]]; then
-        query+=" WHERE ${where_clause}"
-    fi
+  if [[ -n "$where_clause" ]]; then
+    query+=" WHERE ${where_clause}"
+  fi
 
-    if [[ -n "$additional_clauses" ]]; then
-        query+=" ${additional_clauses}"
-    fi
+  if [[ -n "$additional_clauses" ]]; then
+    query+=" ${additional_clauses}"
+  fi
 
-    zen::database::query "$query"
+  zen::database::query "$query"
 }
 
 # @function zen::database::select::count
@@ -77,23 +77,23 @@ zen::database::select() {
 # @return Returns the exit status of the sqlite3 command.
 # @note Constructs a SELECT COUNT query based on the provided arguments.
 zen::database::select::count() {
-    local select_clause="$1"
-    local table="$2"
-    local where_clause="$3"
-    local additional_clauses="$4"
+  local select_clause="$1"
+  local table="$2"
+  local where_clause="$3"
+  local additional_clauses="$4"
 
-    local query="SELECT COUNT"
-    query+=" ${select_clause} FROM ${table}"
+  local query="SELECT COUNT"
+  query+=" ${select_clause} FROM ${table}"
 
-    if [[ -n "$where_clause" ]]; then
-        query+=" WHERE ${where_clause}"
-    fi
+  if [[ -n "$where_clause" ]]; then
+    query+=" WHERE ${where_clause}"
+  fi
 
-    if [[ -n "$additional_clauses" ]]; then
-        query+=" ${additional_clauses}"
-    fi
+  if [[ -n "$additional_clauses" ]]; then
+    query+=" ${additional_clauses}"
+  fi
 
-    zen::database::query "$query"
+  zen::database::query "$query"
 }
 
 # @function zen::database::select::inner_join
@@ -108,27 +108,28 @@ zen::database::select::count() {
 # @return Returns the exit status of the sqlite3 command.
 # @note Constructs an INNER JOIN SELECT query based on the provided arguments.
 zen::database::select::inner_join() {
-    local select_clause="$1"
-    local table="$2"
-    local inner_join_clause="$3"
-    local where_clause="${4:-1=1}"
-    local additional_clauses="$5"
-    local distinct_flag="$6"
-    
-    local query="SELECT"
-    if [[ "$distinct_flag" == "1" ]]; then
-        query+=" DISTINCT"
-    fi
-    query+=" ${select_clause} FROM ${table} INNER JOIN ${inner_join_clause}"
+  local select_clause="$1"
+  local table="$2"
+  local inner_join_clause="$3"
+  local where_clause="${4:-1=1}"
+  local additional_clauses="$5"
+  local distinct_flag="$6"
 
-    if [[ -n "$where_clause" ]]; then
-        query+=" WHERE ${where_clause}"
-    fi
+  local query="SELECT"
+  if [[ "$distinct_flag" == "1" ]]; then
+    query+=" DISTINCT"
+  fi
+  query+=" ${select_clause} FROM ${table} INNER JOIN ${inner_join_clause}"
 
-    if [[ -n "$additional_clauses" ]]; then
-        query+=" ${additional_clauses}"
-    fi
-    zen::database::query "$query"
+  if [[ -n "$where_clause" ]]; then
+    query+=" WHERE ${where_clause}"
+  fi
+
+  if [[ -n "$additional_clauses" ]]; then
+    query+=" ${additional_clauses}"
+  fi
+
+  zen::database::query "$query"
 }
 
 ################################################################################
@@ -141,18 +142,18 @@ zen::database::select::inner_join() {
 # @return Returns the exit status of the sqlite3 command.
 # @note Constructs an INSERT INTO query based on the provided arguments.
 zen::database::insert() {
-    local table="$1"
-    local columns="$2"
-    local values="$3"
+  local table="$1"
+  local columns="$2"
+  local values="$3"
 
-    if [[ -z "$table" || -z "$columns" || -z "$values" ]]; then
-        mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
-        return 1
-    fi
+  if [[ -z "$table" || -z "$columns" || -z "$values" ]]; then
+    mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
+    return 1
+  fi
+  
+  local query="INSERT INTO ${table} (${columns}) VALUES (${values});"
 
-    local query="INSERT INTO ${table} (${columns}) VALUES (${values});"
-
-    zen::database::query "$query"
+  zen::database::query "$query"
 }
 
 # @function zen::database::update
@@ -164,18 +165,18 @@ zen::database::insert() {
 # @return Returns the exit status of the sqlite3 command.
 # @note Constructs an UPDATE query based on the provided arguments.
 zen::database::update() {
-    local table="$1"
-    local update_clause="$2"
-    local where_clause="$3"
+  local table="$1"
+  local update_clause="$2"
+  local where_clause="$3"
 
-    if [[ -z "$table" || -z "$update_clause" || -z "$where_clause" ]]; then
-        mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
-        return 1
-    fi
+  if [[ -z "$table" || -z "$update_clause" || -z "$where_clause" ]]; then
+    mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
+    return 1
+  fi
 
-    local query="UPDATE ${table} SET ${update_clause} WHERE ${where_clause};"
+  local query="UPDATE ${table} SET ${update_clause} WHERE ${where_clause};"
 
-    zen::database::query "$query"
+  zen::database::query "$query"
 }
 
 # @function zen::database::delete
@@ -186,17 +187,17 @@ zen::database::update() {
 # @return Returns the exit status of the sqlite3 command.
 # @note Constructs a DELETE FROM query based on the provided arguments.
 zen::database::delete() {
-    local table="$1"
-    local where_clause="$2"
+  local table="$1"
+  local where_clause="$2"
 
-    if [[ -z "$table" || -z "$where_clause" ]]; then
-        mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
-        return 1
-    fi
+  if [[ -z "$table" || -z "$where_clause" ]]; then
+    mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
+    return 1
+  fi
 
-    local query="DELETE FROM ${table} WHERE ${where_clause};"
+  local query="DELETE FROM ${table} WHERE ${where_clause};"
 
-    zen::database::query "$query"
+  zen::database::query "$query"
 }
 
 # @function zen::database::load_config
@@ -208,26 +209,26 @@ zen::database::delete() {
 # @stdout Populates the provided associative array with query results.
 # @note Expects query result in a specific format; sanitizes column names.
 zen::database::load_config() {
-    local query_result="$1"
-    local -n assoc_array="$2"
-    local identifier_index="$3"
-    local -n column_names="$4"
-    local identifier value column_name key
+  local query_result="$1"
+  local -n assoc_array="$2"
+  local identifier_index="$3"
+  local -n column_names="$4"
+  local identifier value column_name key
 
-    IFS=$'\n' read -d '' -ra array <<<"$query_result"
-    
-    for row in "${array[@]}"; do
-        IFS='|' read -ra row_data <<<"$row"
-        identifier="${row_data[identifier_index]}"
-        for i in "${!row_data[@]}"; do
-            column_name="${column_names[i]}"
-            value="${row_data[i]}"
-            key="${column_name}"
-            key="${key//[^a-zA-Z0-9_]/_}"
-            # shellcheck disable=SC2034
-            assoc_array["$key"]="$value"
-        done
+  IFS=$'\n' read -d '' -ra array <<<"$query_result"
+  
+  for row in "${array[@]}"; do
+    IFS='|' read -ra row_data <<<"$row"
+    identifier="${row_data[identifier_index]}"
+    for i in "${!row_data[@]}"; do
+      column_name="${column_names[i]}"
+      value="${row_data[i]}"
+      key="${column_name}"
+      key="${key//[^a-zA-Z0-9_]/_}"
+      # shellcheck disable=SC2034
+      assoc_array["$key"]="$value"
     done
+  done
 }
 
 # @function zen::database::load_joined_config
@@ -238,21 +239,21 @@ zen::database::load_config() {
 # @stdout Sets global variables for each column value in the query result.
 # @note Assumes a specific format of the query result; requires an appropriate prefix.
 zen::database::load_joined_config() {
-    local query_result="$1"
-    local prefix="$2"
-    local -n column_names="$3"
-    local identifier value sanitized_name column_name
-    IFS=$'\n' read -d '' -ra config_array <<<"$query_result"
+  local query_result="$1"
+  local prefix="$2"
+  local -n column_names="$3"
+  local identifier value sanitized_name column_name
+  IFS=$'\n' read -d '' -ra config_array <<<"$query_result"
 
-    for row in "${config_array[@]}"; do
-        IFS='|' read -ra row_data <<<"$row"
-        identifier="${row_data[2]}"
-        for i in "${!row_data[@]}"; do
-            column_name="${column_names[i]}"
-            value="${row_data[i]}"
-            sanitized_name="${prefix}_${identifier}_${column_name}"
-            sanitized_name="${sanitized_name//[^a-zA-Z0-9_]/_}"
-            declare -g "$sanitized_name"="$value"
-        done
+  for row in "${config_array[@]}"; do
+    IFS='|' read -ra row_data <<<"$row"
+    identifier="${row_data[2]}"
+    for i in "${!row_data[@]}"; do
+      column_name="${column_names[i]}"
+      value="${row_data[i]}"
+      sanitized_name="${prefix}_${identifier}_${column_name}"
+      sanitized_name="${sanitized_name//[^a-zA-Z0-9_]/_}"
+      declare -g "$sanitized_name"="$value"
     done
+  done
 }

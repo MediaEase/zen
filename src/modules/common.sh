@@ -23,37 +23,37 @@
 # @exitcode 1 on failure.
 # @stdout Informs about the cloning process and results.
 zen::common::git::clone() {
-    local repo_name="$1"
-    local target_dir="$2"
-    local branch="${3}"
-    local repo_url
-    repo_url="https://github.com/$repo_name"
-    if [ -d "$target_dir" ]; then
-        mflibs::status::warn "$(zen::i18n::translate "common.repository_already_exists" "$repo_url")"
-        return 0
-    fi
+	local repo_name="$1"
+	local target_dir="$2"
+	local branch="${3}"
+	local repo_url
+	repo_url="https://github.com/$repo_name"
+	if [ -d "$target_dir" ]; then
+			mflibs::status::warn "$(zen::i18n::translate "common.repository_already_exists" "$repo_url")"
+			return 0
+	fi
 
-    if [ -z "$branch" ]; then
-        branch=$(git ls-remote --symref "$repo_url" HEAD | awk '/^ref:/ {sub(/refs\/heads\//, "", $2); print $2}')
-    fi
+	if [ -z "$branch" ]; then
+			branch=$(git ls-remote --symref "$repo_url" HEAD | awk '/^ref:/ {sub(/refs\/heads\//, "", $2); print $2}')
+	fi
 
-    if mflibs::log "git clone --branch $branch $repo_url $target_dir"; then
-        mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
-        if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
-            local username
-            username=$(echo "$target_dir" | cut -d'/' -f3)
-            local group
-            zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
-        else 
-            zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
-        fi
-        if [[ "$target_dir" == /opt/pyenv* && "$target_dir" == /opt/MediaEase* ]]; then
-            zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
-        fi
-    else
-        mflibs::status::error "$(zen::i18n::translate "common.repository_clone_failed" "$repo_url")"
-        return 1
-    fi
+	if mflibs::log "git clone --branch $branch $repo_url $target_dir"; then
+			mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
+			if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
+					local username
+					username=$(echo "$target_dir" | cut -d'/' -f3)
+					local group
+					zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
+			else 
+					zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+			fi
+			if [[ "$target_dir" == /opt/pyenv* && "$target_dir" == /opt/MediaEase* ]]; then
+					zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+			fi
+	else
+			mflibs::status::error "$(zen::i18n::translate "common.repository_clone_failed" "$repo_url")"
+			return 1
+	fi
 }
 
 # @function zen::common::git::get_release
@@ -68,48 +68,48 @@ zen::common::git::clone() {
 # @exitcode 1 on failure.
 # @stdout Details the process of downloading and extracting the release.
 zen::common::git::get_release(){
-    local target_dir="$1"
-    local repo_name="$2"
-    local is_prerelease="$3"
-    local release_name="$4"
-    local repo_url
-    mflibs::shell::text::white "$(zen::i18n::translate "common.getting_release" "$repo_name")"
-    repo_url="https://api.github.com/repos/$repo_name/releases"
-    release_url="$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")"
-    declare -g release_version
-    release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
-    mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "common.release_found" "$repo_name"): $release_version")"
-    [[ -d $target_dir ]] && rm -rf "$target_dir"
-    mflibs::dir::mkcd "$target_dir"
-    local file_extension="${release_url##*.}"
-    wget -q "$release_url"
-    local downloaded_file
-    downloaded_file="$(basename "$release_url")"
-    case "$file_extension" in
-        zip)
-            unzip -q "$downloaded_file"
-            ;;
-        tar)
-            tar -xf "$downloaded_file" --strip-components=1
-            ;;
-        gz)
-            tar -xvzf "$downloaded_file" --strip-components=1 > /dev/null 2>&1
-            ;;
-        *)
-            mflibs::status::error "$(zen::i18n::translate "common.unsupported_file_type" "$file_extension")"
-            return 1
-            ;;
-    esac
-    rm -f "$downloaded_file"
-    if [[ "$target_dir" == /opt/* ]]; then
-        local username
-        username=$(echo "$target_dir" | cut -d'/' -f3)
-        local group
-        zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
-    else 
-        zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
-    fi
-    mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
+	local target_dir="$1"
+	local repo_name="$2"
+	local is_prerelease="$3"
+	local release_name="$4"
+	local repo_url
+	mflibs::shell::text::white "$(zen::i18n::translate "common.getting_release" "$repo_name")"
+	repo_url="https://api.github.com/repos/$repo_name/releases"
+	release_url="$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")"
+	declare -g release_version
+	release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
+	mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "common.release_found" "$repo_name"): $release_version")"
+	[[ -d $target_dir ]] && rm -rf "$target_dir"
+	mflibs::dir::mkcd "$target_dir"
+	local file_extension="${release_url##*.}"
+	wget -q "$release_url"
+	local downloaded_file
+	downloaded_file="$(basename "$release_url")"
+	case "$file_extension" in
+		zip)
+			unzip -q "$downloaded_file"
+			;;
+		tar)
+			tar -xf "$downloaded_file" --strip-components=1
+			;;
+		gz)
+			tar -xvzf "$downloaded_file" --strip-components=1 > /dev/null 2>&1
+			;;
+		*)
+				mflibs::status::error "$(zen::i18n::translate "common.unsupported_file_type" "$file_extension")"
+				return 1
+				;;
+	esac
+	rm -f "$downloaded_file"
+	if [[ "$target_dir" == /opt/* ]]; then
+		local username
+		username=$(echo "$target_dir" | cut -d'/' -f3)
+		local group
+		zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
+	else 
+		zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+	fi
+	mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
 }
 
 # @section Environment Functions
@@ -123,12 +123,12 @@ zen::common::git::get_release(){
 # @exitcode 1 if the variable is not found.
 # @stdout Value of the specified environment variable.
 zen::common::environment::get::variable() {
-    local var_name="$1"
-    if [[ -n "${!var_name}" ]]; then
-        echo "${!var_name}"
-    else
-        mflibs::status::error "$(zen::i18n::translate "common.env_var_not_found" "$var_name")"
-    fi
+	local var_name="$1"
+	if [[ -n "${!var_name}" ]]; then
+		echo "${!var_name}"
+	else
+		mflibs::status::error "$(zen::i18n::translate "common.env_var_not_found" "$var_name")"
+	fi
 }
 
 # @function zen::common::environment::set::variable
@@ -140,13 +140,13 @@ zen::common::environment::get::variable() {
 # @stdout None.
 # @notes If the variable is already exported in the .bash_profile, this function does not duplicate it.
 zen::common::export::var() {
-    local var_name="${1%%=*}"
-    local var_value="${1#*=}"
-    local bashrc_file="/root/.bash_profile"
+	local var_name="${1%%=*}"
+	local var_value="${1#*=}"
+	local bashrc_file="/root/.bash_profile"
 
-    if ! grep -q "export $var_name=" "$bashrc_file"; then
-        echo "export $var_name=\"$var_value\"" >> "$bashrc_file"
-    fi
+	if ! grep -q "export $var_name=" "$bashrc_file"; then
+		echo "export $var_name=\"$var_value\"" >> "$bashrc_file"
+	fi
 }
 
 # @section File System Functions
@@ -164,20 +164,20 @@ zen::common::export::var() {
 # @exitcode 0 if successful.
 # @exitcode 1 if the path doesn't exist.
 zen::common::fix::permissions() {
-    local path="$1"
-    local user="$2"
-    local group="$3"
-    local dir_permissions="$4"
-    local file_permissions="$5"
+	local path="$1"
+	local user="$2"
+	local group="$3"
+	local dir_permissions="$4"
+	local file_permissions="$5"
 
-    if [ ! -e "$path" ]; then
-        mflibs::status::error "$(zen::i18n::translate "common.path_not_found" "$path")"
-        return 1
-    fi
+	if [ ! -e "$path" ]; then
+		mflibs::status::error "$(zen::i18n::translate "common.path_not_found" "$path")"
+		return 1
+	fi
 
-    chown -R "$user:$group" "$path"
-    find "$path" -type d -exec chmod "$dir_permissions" {} +
-    find "$path" -type f -exec chmod "$file_permissions" {} +
+	chown -R "$user:$group" "$path"
+	find "$path" -type d -exec chmod "$dir_permissions" {} +
+	find "$path" -type f -exec chmod "$file_permissions" {} +
 }
 
 # @section Setting Functions
@@ -192,9 +192,9 @@ zen::common::fix::permissions() {
 # shellcheck disable=SC2034
 # Disable reason: 'settings' is used in other functions
 zen::common::setting::load(){
-    declare -A -g settings
-    setting_columns=("id" "site_name" "root_url" "site_description" "backdrop" "logo" "default_quota" "net_interface" "registration_enabled" "welcome_email")
-    zen::database::load_config "$(zen::database::select "*" "setting" "")"  "settings" 0 "setting_columns"
+	declare -A -g settings
+	setting_columns=("id" "site_name" "root_url" "site_description" "backdrop" "logo" "default_quota" "net_interface" "registration_enabled" "welcome_email")
+	zen::database::load_config "$(zen::database::select "*" "setting" "")"  "settings" 0 "setting_columns"
 }
 
 # Logs messages to a file for dashboard display.
@@ -204,12 +204,12 @@ zen::common::setting::load(){
 # @stdout None.
 # @notes Creates and manages the dashboard log file.
 zen::common::dashboard::log() {
-	if [[ ! -f "/srv/zen/logs/dashboard" ]]; then
-		mkdir -p /srv/zen/logs
-		touch /srv/zen/logs/dashboard
-		chown www-data:www-data /srv/zen/logs/dashboard
-	fi
-	echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
+if [[ ! -f "/srv/zen/logs/dashboard" ]]; then
+	mkdir -p /srv/zen/logs
+	touch /srv/zen/logs/dashboard
+	chown www-data:www-data /srv/zen/logs/dashboard
+fi
+echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
 }
 
 # @section String/Shell extra Functions
@@ -221,11 +221,11 @@ zen::common::dashboard::log() {
 # @arg $1 string String to be capitalized.
 # @stdout Transformed string with the first letter capitalized.
 zen::common::capitalize::first() {
-    local input_string="$1"
-    local capitalized_string
+	local input_string="$1"
+	local capitalized_string
 
-    capitalized_string="${input_string^}"
-    echo "$capitalized_string"
+	capitalized_string="${input_string^}"
+	echo "$capitalized_string"
 }
 
 # @function zen::common::shell::color::randomizer
@@ -233,11 +233,11 @@ zen::common::capitalize::first() {
 # @description This function randomly selects a color code for styling shell outputs, adding visual diversity to command line interfaces.
 # @stdout Random color code.
 zen::common::shell::color::randomizer(){
-    local color
-    color=$((RANDOM % 3))
-    case $color in
-        0) echo "yellow";;
-        1) echo "magenta";;
-        2) echo "cyan";;
-    esac
+	local color
+	color=$((RANDOM % 3))
+	case $color in
+		0) echo "yellow";;
+		1) echo "magenta";;
+		2) echo "cyan";;
+	esac
 }

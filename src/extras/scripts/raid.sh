@@ -27,73 +27,73 @@
 # @exitcode 0 Success.
 # @exitcode 1 Error due to incorrect number of arguments, invalid RAID level, invalid filesystem type, insufficient number of disks, or user cancellation.
 raid::process::args() {
-    # Check if the number of arguments is not equal to 4
-    if [ "$#" -ne 4 ]; then
-        echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
-        exit 1
-    fi
-    # Declare global variables and set their default values if not provided
-    declare -g raid_level=$1
-    declare -g mount_point=${2:-/home}
-    declare -g filesystem_type=${3:-ext4}
-    declare -g disk_name=${4:-md10}
-    # Define required packages for RAID array creation
-    declare -g raid_packages=("mdadm" "parted" "util-linux")
-    if [[ "$filesystem_type" == "btrfs" ]]; then
-        raid_packages+=("btrfs-progs")
-    elif [[ "$filesystem_type" == "xfs" ]]; then
-        raid_packages+=("xfsprogs")
-    fi
-    # Define valid RAID levels and filesystem types
-    local raid_levels=("0" "5" "6" "10")
-    local types=("ext4" "btrfs" "xfs")
-    # Check if the RAID level is valid and set the minimum disks required for the RAID
-    case $raid_level in
-        0) min_disks=2 ;;
-        5) min_disks=3 ;;
-        6) min_disks=4 ;;
-        10) min_disks=4 ;;
-        *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_raid_level" "${raid_levels[@]}")"; exit 1 ;;
-    esac
-    # Check if the filesystem type is valid
-    case $filesystem_type in
-        ext4|btrfs|xfs) ;;
-        *) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"; exit 1 ;;
-    esac
-    # Call the disk detection function to initialize related variables
-    mflibs::status::header "$(zen::i18n::translate "raid.initializing_raid_creation")"
-    raid::disk::detection
-    # Check if the number of disks is less than the minimum required for the chosen RAID level
-    if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
-        mflibs::shell::text::red "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$NUMBER_DISKS" "$min_disks")" >&2
-        # Calculate possible RAID levels based on the number of disks available
-        local possible_raids=()
-        if [ "$NUMBER_DISKS" -ge 4 ] && (( NUMBER_DISKS % 2 == 0 )); then
-            possible_raids+=("10")
-        fi
-        if [ "$NUMBER_DISKS" -ge 4 ]; then
-            possible_raids+=("6")
-        fi
-        if [ "$NUMBER_DISKS" -ge 3 ]; then
-            possible_raids+=("5")
-        fi
-        if [ "$NUMBER_DISKS" -ge 2 ]; then
-            possible_raids+=("0")
-        fi
-        # Suggest alternative RAID levels to the user based on available disks
-        if [ ${#possible_raids[@]} -gt 0 ]; then
-            local prompt_message
-            prompt_message=$(mflibs::shell::text::yellow::sl "➜ $(zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")")
-            zen::prompt::raid "$prompt_message" raid_level "${possible_raids[@]}"
-            echo "Raid level is now: $raid_level"
-        else
-            mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
-        fi
-    fi
-    # If valid selections are made, proceed with RAID setup
-    raid::format::disk
-    raid::create::mdadm::disk
-    raid::mount::mdadm::disk
+	# Check if the number of arguments is not equal to 4
+	if [ "$#" -ne 4 ]; then
+		echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
+		exit 1
+	fi
+	# Declare global variables and set their default values if not provided
+	declare -g raid_level=$1
+	declare -g mount_point=${2:-/home}
+	declare -g filesystem_type=${3:-ext4}
+	declare -g disk_name=${4:-md10}
+	# Define required packages for RAID array creation
+	declare -g raid_packages=("mdadm" "parted" "util-linux")
+	if [[ "$filesystem_type" == "btrfs" ]]; then
+		raid_packages+=("btrfs-progs")
+	elif [[ "$filesystem_type" == "xfs" ]]; then
+		raid_packages+=("xfsprogs")
+	fi
+	# Define valid RAID levels and filesystem types
+	local raid_levels=("0" "5" "6" "10")
+	local types=("ext4" "btrfs" "xfs")
+	# Check if the RAID level is valid and set the minimum disks required for the RAID
+	case $raid_level in
+			0) min_disks=2 ;;
+			5) min_disks=3 ;;
+			6) min_disks=4 ;;
+			10) min_disks=4 ;;
+			*) mflibs::status::error "$(zen::i18n::translate "raid.invalid_raid_level" "${raid_levels[@]}")"; exit 1 ;;
+	esac
+	# Check if the filesystem type is valid
+	case $filesystem_type in
+			ext4|btrfs|xfs) ;;
+			*) mflibs::status::error "$(zen::i18n::translate "raid.invalid_filesystem_type" "${types[@]}")"; exit 1 ;;
+	esac
+	# Call the disk detection function to initialize related variables
+	mflibs::status::header "$(zen::i18n::translate "raid.initializing_raid_creation")"
+	raid::disk::detection
+	# Check if the number of disks is less than the minimum required for the chosen RAID level
+	if [ "$NUMBER_DISKS" -lt "$min_disks" ]; then
+		mflibs::shell::text::red "$(zen::i18n::translate "raid.not_enough_disks" "$raid_level" "$NUMBER_DISKS" "$min_disks")" >&2
+		# Calculate possible RAID levels based on the number of disks available
+		local possible_raids=()
+		if [ "$NUMBER_DISKS" -ge 4 ] && (( NUMBER_DISKS % 2 == 0 )); then
+			possible_raids+=("10")
+		fi
+		if [ "$NUMBER_DISKS" -ge 4 ]; then
+			possible_raids+=("6")
+		fi
+		if [ "$NUMBER_DISKS" -ge 3 ]; then
+			possible_raids+=("5")
+		fi
+		if [ "$NUMBER_DISKS" -ge 2 ]; then
+			possible_raids+=("0")
+		fi
+		# Suggest alternative RAID levels to the user based on available disks
+		if [ ${#possible_raids[@]} -gt 0 ]; then
+			local prompt_message
+			prompt_message=$(mflibs::shell::text::yellow::sl "➜ $(zen::i18n::translate "raid.choose_raid_level" "${possible_raids[*]}")")
+			zen::prompt::raid "$prompt_message" raid_level "${possible_raids[@]}"
+			printf "Raid level is now: %s\n" "$raid_level"
+		else
+			mflibs::status::error "$(zen::i18n::translate "raid.no_raid_possible" "$NUMBER_DISKS")"; exit 1
+		fi
+	fi
+	# If valid selections are made, proceed with RAID setup
+	raid::format::disk
+	raid::create::mdadm::disk
+	raid::mount::mdadm::disk
 }
 
 # @function raid::disk::detection
@@ -103,35 +103,35 @@ raid::process::args() {
 # The function sets global variables for the disks to be formatted and their count.
 # @stdout Informs about the system disk, disks to be formatted, and their count.
 raid::disk::detection() {
-    ROOT_DEVICE=$(findmnt -n -o SOURCE --target / | cut -d'[' -f1)
-    SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
-    # if system_disk is md* then we need to get the /dev/sd* disks or /dev/nvme* disks
-    SYSTEM_DISKS=()  # Un tableau pour stocker les disques système
-    if [[ $SYSTEM_DISK == md* ]]; then
-        while read -r line; do
-            SYSTEM_DISKS+=("${line//[0-9]/}")
-        done < <(mdadm --detail "/dev/$SYSTEM_DISK" | grep 'active sync' | awk '{print $7}')
-    else
-        SYSTEM_DISKS+=("$SYSTEM_DISK")
-    fi
+	ROOT_DEVICE=$(findmnt -n -o SOURCE --target / | cut -d'[' -f1)
+	SYSTEM_DISK=$(lsblk -no PKNAME "$ROOT_DEVICE")
+	# if system_disk is md* then we need to get the /dev/sd* disks or /dev/nvme* disks
+	SYSTEM_DISKS=()  # Un tableau pour stocker les disques système
+	if [[ $SYSTEM_DISK == md* ]]; then
+		while read -r line; do
+			SYSTEM_DISKS+=("${line//[0-9]/}")
+		done < <(mdadm --detail "/dev/$SYSTEM_DISK" | grep 'active sync' | awk '{print $7}')
+	else
+		SYSTEM_DISKS+=("$SYSTEM_DISK")
+	fi
 
-    mflibs::status::info "$(zen::i18n::translate "raid.system_disk" "${SYSTEM_DISKS[*]}")"
-    mflibs::status::info "$(zen::i18n::translate "raid.selected_raid_level" "$raid_level")"
+	mflibs::status::info "$(zen::i18n::translate "raid.system_disk" "${SYSTEM_DISKS[*]}")"
+	mflibs::status::info "$(zen::i18n::translate "raid.selected_raid_level" "$raid_level")"
 
-    DISKS_TO_FORMAT=()
-    for disk in $(lsblk -nd -o NAME,TYPE | awk '{print $1}'); do
-        disk_type=$(lsblk -no TYPE "/dev/$disk")
-        if [[ "$disk_type" == "disk" ]]; then
-            if [[ ! " ${SYSTEM_DISKS[*]} " =~ ${disk} ]]; then
-                DISKS_TO_FORMAT+=("/dev/$disk")
-            fi
-        fi
-    done
-    DISK_ARRAY=("${DISKS_TO_FORMAT[@]}")
-    NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
-    mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "$disk_name" "$filesystem_type")"
-    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
-    mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "$disk_name")"
+	DISKS_TO_FORMAT=()
+	for disk in $(lsblk -nd -o NAME,TYPE | awk '{print $1}'); do
+		disk_type=$(lsblk -no TYPE "/dev/$disk")
+		if [[ "$disk_type" == "disk" ]]; then
+			if [[ ! " ${SYSTEM_DISKS[*]} " =~ ${disk} ]]; then
+				DISKS_TO_FORMAT+=("/dev/$disk")
+			fi
+		fi
+	done
+	DISK_ARRAY=("${DISKS_TO_FORMAT[@]}")
+	NUMBER_DISKS=${#DISKS_TO_FORMAT[@]}
+	mflibs::status::info "$(zen::i18n::translate "raid.disk_to_format" "${DISKS_TO_FORMAT[*]}" "$disk_name" "$filesystem_type")"
+	mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.number_of_disks" "$NUMBER_DISKS")"
+	mflibs::shell::icon::warning::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "raid.future_disk" "$disk_name")"
 }
 
 # @function raid::format::disk
@@ -140,18 +140,18 @@ raid::disk::detection() {
 # It ensures that each disk is properly prepared and partitioned with the specified filesystem type.
 # @stdout Guides the user through disk formatting process and reports on the status of each disk.
 raid::format::disk(){
-    local prompt_message
-    prompt_message=$(mflibs::shell::icon::arrow::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue") ?")
-    zen::prompt::yn "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
+	local prompt_message
+	prompt_message=$(mflibs::shell::icon::arrow::yellow;mflibs::shell::text::yellow "$(zen::i18n::translate "common.continue") ?")
+	zen::prompt::yn "$prompt_message" N || { mflibs::status::warn "$(zen::i18n::translate "raid.creation_aborted")"; exit 1; }
 
-    mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
-    for disk in "${DISKS_TO_FORMAT[@]}"; do
-        mflibs::log "wipefs -a $disk" || { mflibs::status::error "$(zen::i18n::translate "raid.error_formatting_disk" "$disk")"; }
-        mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_partition" "$disk")"; }
-        sleep 3
-    done
-    mflibs::status::success "$(zen::i18n::translate "raid.disk_partitions_created")"
-    sleep 5
+	mflibs::status::header "$(zen::i18n::translate "raid.creating_partitions_empty_disks")"
+	for disk in "${DISKS_TO_FORMAT[@]}"; do
+		mflibs::log "wipefs -a $disk" || { mflibs::status::error "$(zen::i18n::translate "raid.error_formatting_disk" "$disk")"; }
+		mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_partition" "$disk")"; }
+		sleep 3
+	done
+	mflibs::status::success "$(zen::i18n::translate "raid.disk_partitions_created")"
+	sleep 5
 }
 
 # @function raid::create::mdadm::disk
@@ -161,21 +161,21 @@ raid::format::disk(){
 # The RAID array is created using the disks that were formatted in the previous step.
 # @stdout Details the RAID creation process and reports any errors encountered.
 raid::create::mdadm::disk(){
-    mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$raid_level" "$disk_name")"
-    local command
-    command=$(echo y | mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}")
-    mflibs::log "$command" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; }
-    sleep 5
-    mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
+	mflibs::status::header "$(zen::i18n::translate "raid.creating_raid_disk" "$raid_level" "$disk_name")"
+	local command
+	command=$(echo y | mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}")
+	mflibs::log "$command" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_raid_disk")"; }
+	sleep 5
+	mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
-        mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
-    elif [[ "$filesystem_type" == "xfs" ]]; then
-        mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
-    else
-        mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
-    fi
-    mflibs::status::success "$(zen::i18n::translate "raid.disk_partitioned" "$disk_name" "$filesystem_type")"
-    sleep 5
+		mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
+	elif [[ "$filesystem_type" == "xfs" ]]; then
+		mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
+	else
+		mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
+	fi
+	mflibs::status::success "$(zen::i18n::translate "raid.disk_partitioned" "$disk_name" "$filesystem_type")"
+	sleep 5
 }
 
 # @function raid::mount::mdadm::disk
@@ -184,26 +184,26 @@ raid::create::mdadm::disk(){
 # It also updates the /etc/fstab file to ensure the RAID array is mounted automatically on boot.
 # @stdout Indicates the mounting process of the RAID array and updates the /etc/fstab file.
 raid::mount::mdadm::disk(){
-    local RAID_UUID
-    RAID_UUID=$(blkid -o value -s UUID "/dev/$disk_name")
-    if mdadm --detail --scan | grep -q "/dev/$disk_name"; then
-        mflibs::status::header "$(zen::i18n::translate "raid.mounting_raid_disk" "$disk_name" "$mount_point")"
-        if grep -Fxq "UUID=$RAID_UUID $mount_point $filesystem_type defaults 0 0" /etc/fstab; then
-            mflibs::status::error "$(zen::i18n::translate "raid.disk_already_mounted" "$disk_name" "$mount_point")"
-        else
-            {
-                echo "# MediaEase RAID"
-                echo "UUID=$RAID_UUID $mount_point $filesystem_type defaults 0 0"
-                echo "# MediaEase RAID"
-            } >> /etc/fstab
-            [ ! -d "$mount_point" ] && mkdir -p "$mount_point"
-            systemctl daemon-reload
-            mflibs::log "mount -a" || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
-            mflibs::status::success "$(zen::i18n::translate "raid.disk_mounted" "$disk_name" "$mount_point")"
-        fi
-    else
-        mflibs::status::error "$(zen::i18n::translate "raid.created_not_mounted" "$disk_name")"
-    fi
+	local RAID_UUID
+	RAID_UUID=$(blkid -o value -s UUID "/dev/$disk_name")
+	if mdadm --detail --scan | grep -q "/dev/$disk_name"; then
+		mflibs::status::header "$(zen::i18n::translate "raid.mounting_raid_disk" "$disk_name" "$mount_point")"
+		if grep -Fxq "UUID=$RAID_UUID $mount_point $filesystem_type defaults 0 0" /etc/fstab; then
+			mflibs::status::error "$(zen::i18n::translate "raid.disk_already_mounted" "$disk_name" "$mount_point")"
+		else
+			{
+				echo "# MediaEase RAID"
+				echo "UUID=$RAID_UUID $mount_point $filesystem_type defaults 0 0"
+				echo "# MediaEase RAID"
+			} >> /etc/fstab
+			[ ! -d "$mount_point" ] && mkdir -p "$mount_point"
+			systemctl daemon-reload
+			mflibs::log "mount -a" || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk" "$disk_name" "$mount_point")"; }
+			mflibs::status::success "$(zen::i18n::translate "raid.disk_mounted" "$disk_name" "$mount_point")"
+		fi
+	else
+		mflibs::status::error "$(zen::i18n::translate "raid.created_not_mounted" "$disk_name")"
+	fi
 }
 
 raid::process::args "$@"

@@ -24,27 +24,27 @@
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
 zen::proxy::generate() {
-    local app_name="$1"
-    local port="$2"
-    local url_base="$3"
-    local caddy_file
-    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-    [[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
-    if [ "$is_multi" == "true" ]; then
-        caddy_file="/etc/caddy/softwares/${user[username]}.$app_name.caddy"
-    else
-        caddy_file="/etc/caddy/softwares/$app_name.caddy"
-    fi
-    [[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
-    # Write configuration to the file
-    cat <<EOF > "${caddy_file}"
-route ${url_base}/* {
-    reverse_proxy 127.0.0.1:$port {
-        header_up -Accept-Encoding
-        header_down -x-webkit-csp
-        header_down -content-security-policy
-    }
-}
+	local app_name="$1"
+	local port="$2"
+	local url_base="$3"
+	local caddy_file
+	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+	[[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
+	if [ "$is_multi" == "true" ]; then
+			caddy_file="/etc/caddy/softwares/${user[username]}.$app_name.caddy"
+	else
+			caddy_file="/etc/caddy/softwares/$app_name.caddy"
+	fi
+	[[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
+	# Write configuration to the file
+	cat <<EOF > "${caddy_file}"
+	route ${url_base}/* {
+		reverse_proxy 127.0.0.1:$port {
+			header_up -Accept-Encoding
+			header_down -x-webkit-csp
+			header_down -content-security-policy
+		}
+	}
 EOF
 }
 
@@ -60,14 +60,14 @@ EOF
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to file access or append errors.
 zen::proxy::add_directive() {
-    local app_name="$1"
-    local username="$2"
-    local directive="$3"
-    local caddy_file
-    caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
+	local app_name="$1"
+	local username="$2"
+	local directive="$3"
+	local caddy_file
+	caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
 
-    # Append the directive to the file
-    echo "$directive" >> "${caddy_file}"
+	# Append the directive to the file
+	echo "$directive" >> "${caddy_file}"
 }
 
 # @function zen::proxy::remove
@@ -81,9 +81,9 @@ zen::proxy::add_directive() {
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to file not found or deletion errors.
 zen::proxy::remove() {
-    local app_name="$1"
-    local username="$2"
-    local caddy_file
-    caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
-    [[ -f "$caddy_file" ]] && rm -f "$caddy_file"
+	local app_name="$1"
+	local username="$2"
+	local caddy_file
+	caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
+	[[ -f "$caddy_file" ]] && rm -f "$caddy_file"
 }

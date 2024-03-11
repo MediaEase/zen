@@ -18,17 +18,17 @@
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
 zen::software::radarr::add(){
-    is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
-    # grab the correct release
-    zen::common::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
-    # configure the app. This will also generate the proxy file
-    zen::software::radarr::config "$is_prerelease"
-    # generate the service file, this will also start it
-    zen::service::generate "$app_name" "$software_config_file"
-    chmod a+x "/opt/${user[username]}/$app_name/Radarr"
-    # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+	is_prerelease="false"
+	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
+	# grab the correct release
+	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
+	# configure the app. This will also generate the proxy file
+	zen::software::radarr::config "$is_prerelease"
+	# generate the service file, this will also start it
+	zen::service::generate "$app_name" "$software_config_file"
+	chmod a+x "/opt/${user[username]}/$app_name/Radarr"
+	# create a backup file
+	zen::software::backup::create "$app_name" "$software_config_file"
 }
 
 ################################################################################
@@ -42,38 +42,38 @@ zen::software::radarr::add(){
 #   # the following enables pre-release (nightly):
 #   zen::software::radarr::config "true"
 zen::software::radarr::config(){
-    local is_prerelease="$1"
-    declare -g url_base
-    mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
-    zen::software::autogen
-    url_base="/${user[username]}/${app_name}"
-    [[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
-    mkdir -p "/home/${user[username]}/.config/${app_name}"
-    cat > "/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
+	local is_prerelease="$1"
+	declare -g url_base
+	mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
+	zen::software::autogen
+	url_base="/${user[username]}/${app_name}"
+	[[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
+	mkdir -p "/home/${user[username]}/.config/${app_name}"
+	cat > "/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
 <Config>
-    <BindAddress>127.0.0.1</BindAddress>
-    <Port>${default_port}</Port>
-    <UrlBase>${url_base}</UrlBase>
-    <EnableSsl>False</EnableSsl>
-    <SslPort>${ssl_port}</SslPort>
-    <SslCertPath></SslCertPath>
-    <SslCertPassword></SslCertPassword>
-    <ApiKey>${apikey}</ApiKey>
-    <LogLevel>Info</LogLevel>
-    <AnalyticsEnabled>False</AnalyticsEnabled>
-    <Branch>${branch}</Branch>
-    <UpdateAutomatically>True</UpdateAutomatically>
-    <UpdateMechanism>BuiltIn</UpdateMechanism>
-    <LaunchBrowser>False</LaunchBrowser>
-    <InstanceName>${app_name_sanitized}</InstanceName>
-    <Theme>dark</Theme>
+	<BindAddress>127.0.0.1</BindAddress>
+	<Port>${default_port}</Port>
+	<UrlBase>${url_base}</UrlBase>
+	<EnableSsl>False</EnableSsl>
+	<SslPort>${ssl_port}</SslPort>
+	<SslCertPath></SslCertPath>
+	<SslCertPassword></SslCertPassword>
+	<ApiKey>${apikey}</ApiKey>
+	<LogLevel>Info</LogLevel>
+	<AnalyticsEnabled>False</AnalyticsEnabled>
+	<Branch>${branch}</Branch>
+	<UpdateAutomatically>True</UpdateAutomatically>
+	<UpdateMechanism>BuiltIn</UpdateMechanism>
+	<LaunchBrowser>False</LaunchBrowser>
+	<InstanceName>${app_name_sanitized}</InstanceName>
+	<Theme>dark</Theme>
 </Config>
 RCON
 
-    # generate the proxy configuration
-    zen::common::fix::permissions "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
-    zen::proxy::generate "$app_name" "$default_port" "$url_base"
-    mflibs::shell::text::green "$(zen::i18n::translate "software.application_configured" "$app_name")"
+	# generate the proxy configuration
+	zen::common::fix::permissions "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
+	zen::proxy::generate "$app_name" "$default_port" "$url_base"
+	mflibs::shell::text::green "$(zen::i18n::translate "software.application_configured" "$app_name")"
 }
 
 # @function zen::software::radarr::update
@@ -81,54 +81,54 @@ RCON
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::radarr::update(){
-    local service_name
-    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-    zen::service::manage "stop" "$service_name"
-    rm -rf "/opt/${user[username]}/$app_name"
-    is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
-    # grab the correct release
-    zen::common::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
-    zen::service::manage "start" "$service_name"
+	local service_name
+	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::service::manage "stop" "$service_name"
+	rm -rf "/opt/${user[username]}/$app_name"
+	is_prerelease="false"
+	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
+	# grab the correct release
+	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
+	zen::service::manage "start" "$service_name"
 }
 
 # @function zen::software::radarr::remove
 # @description Removes Radarr for a user, including disabling and deleting the service and cleaning up files.
 # @global user An associative array containing user-specific information.
 zen::software::radarr::remove(){
-    local service_name
-    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-    
-    zen::service::manage "disable" "$service_name"
-    rm -f "$service_file"
-    zen::proxy::remove "$app_name" "${user[username]}"
-    rm -rf /opt/"${user[username]}"/"$app_name"
-    rm -rf /home/"${user[username]}"/.config/"$app_name"
-    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+	local service_name
+	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	
+	zen::service::manage "disable" "$service_name"
+	rm -f "$service_file"
+	zen::proxy::remove "$app_name" "${user[username]}"
+	rm -rf /opt/"${user[username]}"/"$app_name"
+	rm -rf /home/"${user[username]}"/.config/"$app_name"
+	rm -rf /home/"${user[username]}"/tmp/"$app_name"
 }
 
 # @function zen::software::radarr::backup
 # @description Creates a backup for Radarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
 zen::software::radarr::backup(){
-    local username="$1"
-    local app_name="$2"
+	local username="$1"
+	local app_name="$2"
 }
 
 # @function zen::software::radarr::reset
 # @description Resets Radarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
 zen::software::radarr::reset(){
-    local username="$1"
-    local app_name="$2"
+	local username="$1"
+	local app_name="$2"
 }
 
 # @function zen::software::radarr::reinstall
 # @description Reinstalls Radarr for a user.
 # @note This function is currently a placeholder and needs implementation.
 zen::software::radarr::reinstall(){
-    local username="$1"
-    local app_name="$2"
+	local username="$1"
+	local app_name="$2"
 }
