@@ -37,13 +37,6 @@ raid::process::args() {
 	declare -g mount_point=${2:-/home}
 	declare -g filesystem_type=${3:-ext4}
 	declare -g disk_name=${4:-md10}
-	# Define required packages for RAID array creation
-	declare -g raid_packages=("mdadm" "parted" "util-linux")
-	if [[ "$filesystem_type" == "btrfs" ]]; then
-		raid_packages+=("btrfs-progs")
-	elif [[ "$filesystem_type" == "xfs" ]]; then
-		raid_packages+=("xfsprogs")
-	fi
 	# Define valid RAID levels and filesystem types
 	local raid_levels=("0" "5" "6" "10")
 	local types=("ext4" "btrfs" "xfs")
