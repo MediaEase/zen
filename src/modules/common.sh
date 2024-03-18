@@ -277,3 +277,39 @@ zen::common::make::install(){
 	fi
 }
 
+# @function zen::common::scons::install
+# Installs a project using the scons build system.
+# @description This function handles the configuration, building, and installation of a project that utilizes scons as its build system.
+# It supports building in debug mode and allows specifying a custom installation directory.
+# @usage zen::common::scons::install "source_directory" "installation_directory" "debug_flag"
+# @arg $1 string Source directory of the project to be built.
+# @arg $2 string Installation directory where the project should be installed (optional).
+# @arg $3 string Debug build flag; if set to 'true', the project will be built in debug mode (optional).
+# @exitcode 0 on successful execution.
+# @exitcode 1 on failure at any step (configuration, building, or installation).
+# @stdout Information about the process steps and their success or failure.
+# @notes This function assumes the presence of scons in the system and relies on proper configuration of the project for scons.
+zen::common::scons::install(){
+    local source_dir="$1"
+    local install_dir="$2"
+    local debug_build="${3:-false}"
+    local scons_install_args
+    local debug_flag
+    debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
+    cd "$source_dir" || return 1
+    if ! mflibs::log "scons config"; then
+        mflibs::status::error "$(zen::i18n::translate "common.scons_config_failed" "$source_dir")"
+        return 1
+    fi
+    if ! mflibs::log "scons DEBUG=$debug_flag"; then
+        mflibs::status::error "$(zen::i18n::translate "common.scons_build_failed" "$source_dir")"
+        return 1
+    fi
+
+    [ -n "$install_dir" ] && scons_install_args="--prefix=$install_dir"
+    if ! mflibs::log "scons $scons_install_args DEBUG=$debug_flag install"; then
+        mflibs::status::error "$(zen::i18n::translate "common.scons_install_failed" "$source_dir")"
+        return 1
+    fi
+    mflibs::status::success "$(zen::i18n::translate "common.scons_install_success" "$source_dir")"
+}
