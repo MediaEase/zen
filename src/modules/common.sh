@@ -241,3 +241,39 @@ zen::common::shell::color::randomizer(){
 		2) echo "cyan";;
 	esac
 }
+
+# @function zen::common::make::install
+# Compiles and installs a project using the make build system.
+# @description This function handles the compilation and installation of a project that uses the make build system.
+# It utilizes all available processors to speed up the compilation and allows specification of additional make arguments and installation directory.
+# @usage zen::common::make::install "source_directory" "installation_directory" "make_arguments" "make_install_arguments"
+# @arg $1 string Source directory where the makefile is located and where the build process should occur.
+# @arg $2 string Installation directory where the built project should be installed. This is optional and, if specified, is used in the `make install` command with the DESTDIR prefix.
+# @arg $3 string Additional arguments to pass to the make command during the build process (optional).
+# @arg $4 string Additional arguments for the make install command, allowing further customization of the install process (optional).
+# @exitcode 0 on successful build and installation.
+# @exitcode 1 on failure during either the build or install step.
+# @stdout Information and status updates about each step of the build and installation process.
+# @notes This function optimizes build speed by using parallel build options based on the number of available processors.
+zen::common::make::install(){
+	local source_dir="$1"
+	local install_dir="$2"
+	local make_args="$3"
+	local make_install_args="$4"
+	local nproc_args
+	nproc_args="-j$(nproc)"
+	cd "$source_dir" || return 1
+	if mflibs::log "make $nproc_args $make_args"; then
+		[ -n "$install_dir" ] && make_install_args="DESTDIR=$install_dir $make_install_args"
+		if mflibs::log "make install $make_install_args"; then
+			mflibs::status::success "$(zen::i18n::translate "common.make_install_success" "$source_dir")"
+		else
+			mflibs::status::error "$(zen::i18n::translate "common.make_install_failed" "$source_dir")"
+			return 1
+		fi
+	else
+		mflibs::status::error "$(zen::i18n::translate "common.make_failed" "$source_dir")"
+		return 1
+	fi
+}
+
