@@ -162,6 +162,21 @@ raid::create::mdadm::disk(){
 	mflibs::status::info "$(zen::i18n::translate "raid.formatting_raid_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
 		mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
+		if [ ! -d "/mnt" ]; then
+			mflibs::log "mkdir -p /mnt" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_mount_point")"; }
+		fi
+		mflibs::log "mount /dev/$disk_name /mnt" || { mflibs::status::error "$(zen::i18n::translate "raid.error_mounting_raid_disk")"; }
+		declare -g subvolume
+		if [[ $mount_point == "/home" ]]; then
+			subvolume="home"
+		elif [[ $mount_point == "/" ]]; then
+			subvolume="root"
+		else
+			subvolume="data"
+		fi
+		mflibs::log "btrfs subvolume create /mnt/$subvolume" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_subvolume")"; }
+		mflibs::log "btrfs subvolume create /mnt/home" || { mflibs::status::error "$(zen::i18n::translate "raid.error_creating_subvolume")"; }
+		mflibs::log "umount /mnt" || { mflibs::status::error "$(zen::i18n::translate "raid.error_unmounting_raid_disk")"; }
 	elif [[ "$filesystem_type" == "xfs" ]]; then
 		mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "raid.error_partitioning_raid_disk")"; }
 	else
@@ -184,7 +199,7 @@ raid::mount::mdadm::disk(){
 		local mount_options="defaults"
         case "$filesystem_type" in
             btrfs)
-                mount_options="$mount_options,nofail,x-systemd.growfs,noatime,lazytime,compress-force=zstd,space_cache=v2,autodefrag,nodiscard"
+                mount_options="$mount_options,nofail,x-systemd.growfs,noatime,lazytime,compress-force=zstd,space_cache=v2,autodefrag,nodiscard,subvol=$subvolume"
                 ;;
             xfs)
                 mount_options="$mount_options,nofail,noatime,nodiratime,discard,allocsize=4M"
