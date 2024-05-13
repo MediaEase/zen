@@ -97,39 +97,64 @@ zen::service::generate() {
 # @stdout Performs the specified action on the systemd service.
 # @return Exits with a status code if an invalid action is provided.
 # @note Wrapper around systemctl commands for service management.
+# @return 0 if the service is not running
+# @return 1 if the service is already running
+# @return 2 if an invalid action is provided
 # @example
 #    zen::service::manage "start" "app_name.service"
 zen::service::manage() {
-	local action=$1
-	local service_name=$2
-	case $action in
-	start | stop | restart)
-		systemctl "$action" "$service_name"
-		zen::service::manage "status" "$service_name"
-		;;
-	enable)
-		systemctl daemon-reload
-		systemctl enable "$service_name" --now > /dev/null 2>&1
-		;;
-	disable)
-		systemctl stop "$service_name"
-		systemctl disable "$service_name"
-		systemctl daemon-reload
-		zen::service::manage "status" "$service_name"
-		;;
-	status)
-		if systemctl is-active --quiet "$service_name"; then
-			mflibs::shell::text::green "$(zen::i18n::translate 'service.service_running' "$service_name")"
-		else
-			mflibs::shell::text::red "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
-		fi
-		;;
-	*)
-		mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action" "$service_name")"
-		exit 1
-		;;
-	esac
+    local action=$1
+    local service_name=$2
+
+    check_service_status() {
+		sleep 2
+        if systemctl is-active --quiet "$service_name"; then
+            mflibs::shell::text::green "$(zen::i18n::translate 'service.service_running' "$service_name")"
+            return 1
+        else
+            mflibs::shell::text::red "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
+            return 0
+        fi
+    }
+
+    case $action in
+        start)
+            if zen::service::manage "status" "$service_name"; then
+                mflibs::status::error "$(zen::i18n::translate 'service.service_already_running' "$service_name")"
+                return 1
+            fi
+            systemctl start "$service_name"
+            ;;
+        stop)
+            if ! zen::service::manage "status" "$service_name"; then
+                mflibs::status::error "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
+                return 1
+            fi
+            systemctl stop "$service_name"
+            ;;
+        restart|reload)
+            systemctl "$action" "$service_name"
+			zen::service::manage "status" "$service_name"
+            ;;
+        enable)
+            systemctl daemon-reload
+            systemctl enable "$service_name" --now > /dev/null 2>&1
+            ;;
+        disable)
+            systemctl stop "$service_name"
+            systemctl disable "$service_name"
+            systemctl daemon-reload
+            ;;
+        status)
+            check_service_status
+            ;;
+        *)
+            mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action" "$service_name")"
+            return 2
+            ;;
+    esac
 }
+
 
 # @function zen::service::build::add_entry
 # @description Adds an entry to the api_service associative array.
