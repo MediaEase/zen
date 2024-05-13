@@ -115,6 +115,15 @@ zen::dependency::apt::install::inline() {
 	mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
 }
 
+zen::dependency::apt::get_string() {
+	local software_name="$1"
+	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
+	local dependencies_string
+	dependencies_string=$(yq e ".${software_name}.apt" "$dependencies_file")
+	dependencies_string=$(echo "$dependencies_string" | tr ' ' ',')
+	echo "$dependencies_string"
+}
+
 # @function zen::dependency::apt::update
 # Updates package lists and upgrades installed packages.
 # @description This function performs system updates using apt-get commands. It updates the package lists and upgrades the installed packages.
