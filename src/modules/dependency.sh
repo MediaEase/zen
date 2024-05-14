@@ -138,6 +138,49 @@ zen::dependency::apt::get_string() {
 	echo "$dependencies_string"
 }
 
+
+# @function zen::dependency::apt::pin
+# Manages the list of pinned APT packages by adding or removing packages.
+# @description This function adds or removes APT packages from a list stored in a configuration file. 
+# It reads the current list from the file, modifies it based on the specified action (add or remove), and then writes the updated list back to the file.
+# @arg $1 string The action to perform ("add" or "remove").
+# @arg $2 string The package name to add or remove.
+# @note The configuration file is expected to be located at /root/.mediaease/config.
+# @example
+#   zen::dependency::apt::pin add "curl"
+#   zen::dependency::apt::pin remove "curl"
+zen::dependency::apt::pin() {
+	local action="$1"
+	local package="$2"
+	local config_file="/root/.mediaease/config"
+	local list
+	list=$(sed -n '2p' "$config_file")
+
+	case "$action" in
+		add)
+			if [[ -z "$list" ]]; then
+				echo "$package" > "$config_file"
+			else
+				echo "${list},${package}" > "$config_file"
+			fi
+		;;
+		remove)
+			if [[ -n "$list" ]]; then
+				list=${list//,$package/}
+				list=${list//"$package,"/}
+				list=${list//"$package"/}
+				list=${list//,,/,}
+				list=${list#,}
+				list=${list%,}
+				echo "$list" > "$config_file"
+			fi
+		;;
+		*)
+			return 1
+		;;
+	esac
+}
+
 # @function zen::dependency::apt::update
 # Updates package lists and upgrades installed packages.
 # @description This function performs system updates using apt-get commands. It updates the package lists and upgrades the installed packages.
