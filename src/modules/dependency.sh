@@ -115,12 +115,26 @@ zen::dependency::apt::install::inline() {
 	mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
 }
 
+# @function zen::dependency::apt::get_string
+# Retrieves a comma-separated string of APT dependencies for a given software name from a YAML file.
+# @description This function reads a YAML file containing APT dependencies for various software and returns a comma-separated string of dependencies for the specified software name.
+# It uses `yq` to parse the YAML file and converts spaces to commas.
+# @arg $1 string The name of the software whose dependencies are to be retrieved.
+# @arg $2 string The separator to use (comma or space). Defaults to space if not provided.
+# @stdout Outputs a string of APT dependencies separated by the specified separator.
+# @example
+#   dependencies=$(zen::dependency::apt::get_string "plex" ",")
+#   echo "$dependencies" # Outputs: "curl,libssl-dev,ffmpeg"
 zen::dependency::apt::get_string() {
 	local software_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
+	local separator="${2:- }"
+	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
 	local dependencies_string
 	dependencies_string=$(yq e ".${software_name}.apt" "$dependencies_file")
-	dependencies_string=$(echo "$dependencies_string" | tr ' ' ',')
+	if [[ "$separator" == "," ]]; then
+		dependencies_string=$(echo "$dependencies_string" | tr ' ' ',')
+	fi
 	echo "$dependencies_string"
 }
 
