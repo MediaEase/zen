@@ -1,8 +1,15 @@
 arguments:
   app_name: Prowlarr
-  docs: https://wiki.servarr.com/Prowlarr
-  homepage: https://github.com/Prowlarr/Prowlarr
-  mediaease_docs: https://mediaease.github.io/docs/software/official/prowlarr
+  altname: prowlarr
+  description: prowlarr_description
+  pro_only: false
+  logo_path: prowlarr.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Prowlarr
+    github: https://github.com/Prowlarr/Prowlarr
+    homepage: https://prowlarr.com/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/prowlarr
   multi_user: true
   ports: 
     - default: [12001-13999]

@@ -1,8 +1,15 @@
 arguments:
   app_name: Radarr
-  docs: https://wiki.servarr.com/Radarr
-  homepage: https://github.com/Radarr/Radarr
-  mediaease_docs: https://mediaease.github.io/docs/software/official/radarr
+  altname: radarr
+  description: radarr_description
+  pro_only: false
+  logo_path: radarr.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Radarr
+    github: https://github.com/Radarr/Radarr
+    homepage: https://radarr.video/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/radarr
   multi_user: true
   ports: 
     - default: [12001-13999]

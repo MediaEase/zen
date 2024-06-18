@@ -1,8 +1,15 @@
 arguments:
-  app_name: Sonarr4k
-  docs: https://wiki.servarr.com/Sonarr
-  homepage: https://github.com/Sonarr/Sonarr
-  mediaease_docs: https://mediaease.github.io/docs/software/official/sonarr
+  app_name: Sonarr4K
+  altname: sonarr4k
+  description: sonarr4k_description
+  pro_only: false
+  logo_path: sonarr4k.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Sonarr
+    github: https://github.com/Sonarr/Sonarr
+    homepage: https://sonarr.tv/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/sonarr
   multi_user: true
   ports: 
     - default: [12001-13999]
@@ -20,7 +27,7 @@ arguments:
   paths:
     - backup: /home/%i/.mediaease/backups/$app_name
     - data: /home/%i/.config/$app_name
-    - install: /opt/%i/$app_name
+    - install: /opt/%i/$app_name/software/official/prowlarr/
   autogen:
     - apikey
     - ssl_port

@@ -1,8 +1,15 @@
 arguments:
   app_name: Sonarr
-  docs: https://wiki.servarr.com/Sonarr
-  homepage: https://github.com/Sonarr/Sonarr
-  mediaease_docs: https://mediaease.github.io/docs/software/official/sonarr
+  altname: sonarr
+  description: sonarr_description
+  pro_only: false
+  logo_path: sonarr.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Sonarr
+    github: https://github.com/Sonarr/Sonarr
+    homepage: https://sonarr.tv/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/sonarr
   multi_user: true
   ports: 
     - default: [12001-13999]

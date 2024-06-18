@@ -1,8 +1,15 @@
 arguments:
-  app_name: Readarr4k
-  docs: https://wiki.servarr.com/Readarr4k
-  homepage: https://github.com/Readarr4k/Readarr4k
-  mediaease_docs: https://mediaease.github.io/docs/software/official/readarr
+  app_name: Readarr4K
+  altname: readarr
+  description: readarr4k_description
+  pro_only: false
+  logo_path: readarr4k.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Readarr4k
+    github: https://github.com/Readarr/Readarr
+    homepage: https://readarr.com/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/readarr
   multi_user: true
   ports: 
     - default: [12001-13999]

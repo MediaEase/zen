@@ -1,8 +1,15 @@
 arguments:
   app_name: Lidarr
-  docs: https://wiki.servarr.com/Lidarr
-  homepage: https://github.com/Lidarr/Lidarr
-  mediaease_docs: https://mediaease.github.io/docs/software/official/lidarr
+  altname: lidarr
+  description: lidarr_description
+  pro_only: false
+  logo_path: lidarr.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Lidarr
+    github: https://github.com/Lidarr/Lidarr
+    homepage: https://lidarr.audio/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/lidarr
   multi_user: true
   ports: 
     - default: [12001-13999]
