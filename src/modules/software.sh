@@ -26,7 +26,7 @@ zen::software::is::installed() {
 		mflibs::status::error "$(zen::i18n::translate "software.software_name_not_found")"
 		return 1
 	fi
-	
+
 	local select_clause="a.name, a.altname, GROUP_CONCAT(srv.name) as services, srv.application_id, GROUP_CONCAT(srv.ports) as ports, srv.user_id"
 	local table_with_alias="application a"
 	local inner_join_clause="service srv ON a.id = srv.application_id"
@@ -50,10 +50,9 @@ zen::software::is::installed() {
 # @description Generates a random port number within a specified range for an application.
 # @arg $1 string Name of the application.
 # @arg $2 string Type of port to generate (default, ssl).
-# @arg $3 string Path to the configuration file.
 # @return A randomly selected port number within the specified range.
 # @example
-#   zen::software::port_randomizer "app_name" "port_type" "config_file"
+#   zen::software::port_randomizer "app_name" "port_type"
 zen::software::port_randomizer() {
 	local app_name="$1"
 	local port_type="$2"
@@ -61,6 +60,12 @@ zen::software::port_randomizer() {
 	local port_low
 	local port_high
 	local retries=10
+	local interval=1500
+	local use_range=false
+	if [[ "$port_type" == "port_range" ]]; then
+		use_range=true
+		port_type="default"
+	fi
 
 	port_range=$(yq e ".arguments.ports[] | select(.${port_type} != null) | .${port_type}" "$software_config_file")
 	if [[ -z "$port_range" ]]; then
@@ -71,17 +76,42 @@ zen::software::port_randomizer() {
 	port_low=$(echo "$port_range" | tr -d '[]' | cut -d'-' -f1)
 	port_high=$(echo "$port_range" | tr -d '[]' | cut -d'-' -f2)
 
-	while ((retries > 0)); do
-		local port=$((port_low + RANDOM % (port_high - port_low + 1)))
-		if ! netstat -tuln | grep -q ":$port "; then
-			echo "$port"
-			return 0
-		fi
-		((retries--))
-	done
+	if [[ "$use_range" == true ]]; then
+		while ((retries > 0)); do
+			local start_port=$((port_low + RANDOM % ((port_high - port_low + 1) - interval)))
+			local end_port=$((start_port + interval))
 
-	mflibs::status::error "$(zen::i18n::translate "software.port_unavailable" "$app_name")"
-	return 1
+			local range_is_free=true
+			for ((port = start_port; port <= end_port; port++)); do
+				if netstat -tuln | grep -q ":$port "; then
+					range_is_free=false
+					break
+				fi
+			done
+
+			if [[ "$range_is_free" == true ]]; then
+				echo "${start_port}-${end_port}"
+				return 0
+			fi
+
+			((retries--))
+		done
+
+		mflibs::status::error "$(zen::i18n::translate "software.port_range_unavailable" "$app_name")"
+		return 1
+	else
+		while ((retries > 0)); do
+			local port=$((port_low + RANDOM % (port_high - port_low + 1)))
+			if ! netstat -tuln | grep -q ":$port "; then
+				echo "$port"
+				return 0
+			fi
+			((retries--))
+		done
+
+		mflibs::status::error "$(zen::i18n::translate "software.port_unavailable" "$app_name")"
+		return 1
+	fi
 }
 
 # @function zen::software::infobox
@@ -106,69 +136,69 @@ zen::software::infobox() {
 	local app_name_sanitized
 	app_name_sanitized=$(zen::common::capitalize::first "$app_name")
 	case "$shell_color" in
-		yellow)
-			shell="mflibs::shell::text::yellow"
-			;;
-		magenta)
-			shell="mflibs::shell::text::magenta"
-			;;
-		cyan)
-			shell="mflibs::shell::text::cyan"
-			;;
-		*)
-			local colors=("mflibs::shell::text::cyan" "mflibs::shell::text::magenta" "mflibs::shell::text::yellow")
-			local random_index=$(( RANDOM % ${#colors[@]} ))
-			shell="${colors[random_index]}"
-			;;
+	yellow)
+		shell="mflibs::shell::text::yellow"
+		;;
+	magenta)
+		shell="mflibs::shell::text::magenta"
+		;;
+	cyan)
+		shell="mflibs::shell::text::cyan"
+		;;
+	*)
+		local colors=("mflibs::shell::text::cyan" "mflibs::shell::text::magenta" "mflibs::shell::text::yellow")
+		local random_index=$((RANDOM % ${#colors[@]}))
+		shell="${colors[random_index]}"
+		;;
 	esac
 
 	case "$infobox_type" in
-		intro)
-			case "$action" in
-				add|update|backup|reset|remove|reinstall)
-					translated_string=$(zen::i18n::translate "software.header_info_$action" "$app_name_sanitized")
-					;;
-				*)
-					translated_string="Action: $action"
-					;;
-			esac
-			$shell "################################################################################"
-			$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
-			$shell "# $(date)"
-			$shell "# $translated_string"
-			$shell "################################################################################"
-			;;
-		outro)
-			case "$action" in
-				add|update|backup|reset|remove|reinstall)
-					outro=$(zen::i18n::translate "software.footer_info_$action" "$app_name_sanitized")
-					# shellcheck disable=SC2154
-					[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "software.access_link" "$app_name_sanitized" "$url_base")
-					[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "software.docs_link" "$app_name_sanitized" "$url_base")
-					;;
-				*)
-					translated_string="Action completed: $action"
-					;;
-			esac
-			settings=$(zen::common::setting::load)
-			root_url=${settings[root_url]}
-			$shell "################################################################################"
-			$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
-			$shell "# $(date)"
-			$shell "# $outro"
-			[ "$action" != "remove" ] && $shell "# ------------------------------------------------------------------------------"
-			[[ -n "$docs_link" && "$action" == "add" ]] && $shell "# $root_url/$docs_link"
-			[[ -n "$mediaease_link" && "$action" == "add" ]] && $shell "# $mediaease_link"
-			[[ -n "$homepage_link" && "$action" == "add" ]] && $shell "# $homepage_link"
-			[[ -n "$access_link" ]] && $shell "# $access_link"
-			[[ -n "$username" ]] && $shell "# Username: $username"
-			[[ -n "$password" ]] && $shell "# Password: $password"
-			$shell "################################################################################"
+	intro)
+		case "$action" in
+		add | update | backup | reset | remove | reinstall)
+			translated_string=$(zen::i18n::translate "software.header_info_$action" "$app_name_sanitized")
 			;;
 		*)
-			printf "Invalid infobox type specified %s\n" "$infobox_type"
-			return 1
+			translated_string="Action: $action"
 			;;
+		esac
+		$shell "################################################################################"
+		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
+		$shell "# $(date)"
+		$shell "# $translated_string"
+		$shell "################################################################################"
+		;;
+	outro)
+		case "$action" in
+		add | update | backup | reset | remove | reinstall)
+			outro=$(zen::i18n::translate "software.footer_info_$action" "$app_name_sanitized")
+			# shellcheck disable=SC2154
+			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "software.access_link" "$app_name_sanitized" "$url_base")
+			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "software.docs_link" "$app_name_sanitized" "$url_base")
+			;;
+		*)
+			translated_string="Action completed: $action"
+			;;
+		esac
+		settings=$(zen::common::setting::load)
+		root_url=${settings[root_url]}
+		$shell "################################################################################"
+		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
+		$shell "# $(date)"
+		$shell "# $outro"
+		[ "$action" != "remove" ] && $shell "# ------------------------------------------------------------------------------"
+		[[ -n "$docs_link" && "$action" == "add" ]] && $shell "# $root_url/$docs_link"
+		[[ -n "$mediaease_link" && "$action" == "add" ]] && $shell "# $mediaease_link"
+		[[ -n "$homepage_link" && "$action" == "add" ]] && $shell "# $homepage_link"
+		[[ -n "$access_link" ]] && $shell "# $access_link"
+		[[ -n "$username" ]] && $shell "# Username: $username"
+		[[ -n "$password" ]] && $shell "# Password: $password"
+		$shell "################################################################################"
+		;;
+	*)
+		printf "Invalid infobox type specified %s\n" "$infobox_type"
+		return 1
+		;;
 	esac
 	printf "\n"
 }
@@ -185,28 +215,28 @@ zen::software::options::process() {
 	local options="$1"
 	software_branch="" software_email="" software_domain="" software_key=""
 
-	IFS=',' read -ra options_array <<< "$options"
+	IFS=',' read -ra options_array <<<"$options"
 	for option in "${options_array[@]}"; do
-		IFS='=' read -ra option_array <<< "$option"
+		IFS='=' read -ra option_array <<<"$option"
 		local option_name="${option_array[0]}"
 		local option_value="${option_array[1]}"
 		case "$option_name" in
-			branch)
-				software_branch="$option_value"
-				;;
-			email)
-				software_email="$option_value"
-				;;
-			domain)
-				software_domain="$option_value"
-				;;
-			key)
-				software_key="$option_value"
-				;;
-			*)
-				mflibs::status::error "$(zen::i18n::translate "common.invalid_option" "$option_name")"
-				exit 1
-				;;
+		branch)
+			software_branch="$option_value"
+			;;
+		email)
+			software_email="$option_value"
+			;;
+		domain)
+			software_domain="$option_value"
+			;;
+		key)
+			software_key="$option_value"
+			;;
+		*)
+			mflibs::status::error "$(zen::i18n::translate "common.invalid_option" "$option_name")"
+			exit 1
+			;;
 		esac
 	done
 
@@ -299,25 +329,32 @@ zen::software::autogen() {
 
 	for key in "${autogen_keys[@]}"; do
 		case "$key" in
-			apikey)
-				declare -g apikey
-				apikey=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32 ; echo '')
-				;;
-			ssl_port)
-				declare -g ssl_port
-				ssl_port=$(zen::software::port_randomizer "$app_name" "ssl")
-				;;
-			default_port)
-				declare -g default_port
-				default_port=$(zen::software::port_randomizer "$app_name" "default")
-				;;
-			password)
-				declare -g password
-				password=$(zen::user::password::generate 16)
-				;;
-			*)
-				mflibs::status::error "$(zen::i18n::translate "software.invalid_autogen_key" "$key")"
-				;;
+		apikey)
+			declare -g apikey
+			apikey=$(
+				head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32
+				echo ''
+			)
+			;;
+		ssl_port)
+			declare -g ssl_port
+			ssl_port=$(zen::software::port_randomizer "$app_name" "ssl")
+			;;
+		default_port)
+			declare -g default_port
+			default_port=$(zen::software::port_randomizer "$app_name" "default")
+			;;
+		password)
+			declare -g password
+			password=$(zen::user::password::generate 16)
+			;;
+		port_range)
+			declare -g port_range
+			port_range=$(zen::software::port_randomizer "$app_name" "port_range")
+			;;
+		*)
+			mflibs::status::error "$(zen::i18n::translate "software.invalid_autogen_key" "$key")"
+			;;
 		esac
 	done
 
