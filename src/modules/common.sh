@@ -19,6 +19,7 @@
 # @arg $1 string Full URL of the Git repository to clone.
 # @arg $2 string Target directory where the repository will be cloned.
 # @arg $3 string Specific branch to clone (optional).
+# @arg $4 bool Recursively clone submodules (optional).
 # @exitcode 0 on successful cloning.
 # @exitcode 1 on failure.
 # @stdout Informs about the cloning process and results.
@@ -26,33 +27,40 @@ zen::common::git::clone() {
 	local repo_name="$1"
 	local target_dir="$2"
 	local branch="${3}"
+	local recurse_submodules="${4:-false}"
 	local repo_url
 	repo_url="https://github.com/$repo_name"
 	if [ -d "$target_dir" ]; then
-			mflibs::status::warn "$(zen::i18n::translate "common.repository_already_exists" "$repo_url")"
-			return 0
+		mflibs::status::warn "$(zen::i18n::translate "common.repository_already_exists" "$repo_url")"
+		return 0
 	fi
 
 	if [ -z "$branch" ]; then
-			branch=$(git ls-remote --symref "$repo_url" HEAD | awk '/^ref:/ {sub(/refs\/heads\//, "", $2); print $2}')
+		branch=$(git ls-remote --symref "$repo_url" HEAD | awk '/^ref:/ {sub(/refs\/heads\//, "", $2); print $2}')
 	fi
 
-	if mflibs::log "git clone --branch $branch $repo_url $target_dir"; then
-			mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
-			if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
-					local username
-					username=$(echo "$target_dir" | cut -d'/' -f3)
-					local group
-					zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
-			else 
-					zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
-			fi
-			if [[ "$target_dir" == /opt/pyenv* && "$target_dir" == /opt/MediaEase* ]]; then
-					zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
-			fi
+	if [ "$recurse_submodules" == "true" ]; then
+		recurse_submodules="--recurse-submodules"
 	else
-			mflibs::status::error "$(zen::i18n::translate "common.repository_clone_failed" "$repo_url")"
-			return 1
+		recurse_submodules=""
+	fi
+
+	if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules"; then
+		mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
+		if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
+			local username
+			username=$(echo "$target_dir" | cut -d'/' -f3)
+			local group
+			zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
+		else
+			zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+		fi
+		if [[ "$target_dir" == /opt/pyenv* && "$target_dir" == /opt/MediaEase* ]]; then
+			zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+		fi
+	else
+		mflibs::status::error "$(zen::i18n::translate "common.repository_clone_failed" "$repo_url")"
+		return 1
 	fi
 }
 
@@ -67,7 +75,7 @@ zen::common::git::clone() {
 # @exitcode 0 on successful retrieval and extraction.
 # @exitcode 1 on failure.
 # @stdout Details the process of downloading and extracting the release.
-zen::common::git::get_release(){
+zen::common::git::get_release() {
 	local target_dir="$1"
 	local repo_name="$2"
 	local is_prerelease="$3"
@@ -86,19 +94,19 @@ zen::common::git::get_release(){
 	local downloaded_file
 	downloaded_file="$(basename "$release_url")"
 	case "$file_extension" in
-		zip)
-			unzip -q "$downloaded_file"
-			;;
-		tar)
-			tar -xf "$downloaded_file" --strip-components=1
-			;;
-		gz)
-			tar -xvzf "$downloaded_file" --strip-components=1 > /dev/null 2>&1
-			;;
-		*)
-				mflibs::status::error "$(zen::i18n::translate "common.unsupported_file_type" "$file_extension")"
-				return 1
-				;;
+	zip)
+		unzip -q "$downloaded_file"
+		;;
+	tar)
+		tar -xf "$downloaded_file" --strip-components=1
+		;;
+	gz)
+		tar -xvzf "$downloaded_file" --strip-components=1 >/dev/null 2>&1
+		;;
+	*)
+		mflibs::status::error "$(zen::i18n::translate "common.unsupported_file_type" "$file_extension")"
+		return 1
+		;;
 	esac
 	rm -f "$downloaded_file"
 	if [[ "$target_dir" == /opt/* ]]; then
@@ -106,7 +114,7 @@ zen::common::git::get_release(){
 		username=$(echo "$target_dir" | cut -d'/' -f3)
 		local group
 		zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
-	else 
+	else
 		zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
 	fi
 	mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
@@ -145,7 +153,7 @@ zen::common::export::var() {
 	local bashrc_file="/root/.bash_profile"
 
 	if ! grep -q "export $var_name=" "$bashrc_file"; then
-		echo "export $var_name=\"$var_value\"" >> "$bashrc_file"
+		echo "export $var_name=\"$var_value\"" >>"$bashrc_file"
 	fi
 }
 
@@ -191,10 +199,10 @@ zen::common::fix::permissions() {
 # @exitcode 1 on failure.
 # shellcheck disable=SC2034
 # Disable reason: 'settings' is used in other functions
-zen::common::setting::load(){
+zen::common::setting::load() {
 	declare -A -g settings
 	setting_columns=("id" "site_name" "root_url" "site_description" "backdrop" "logo" "default_quota" "net_interface" "registration_enabled" "welcome_email")
-	zen::database::load_config "$(zen::database::select "*" "setting" "")"  "settings" 0 "setting_columns"
+	zen::database::load_config "$(zen::database::select "*" "setting" "")" "settings" 0 "setting_columns"
 }
 
 # Logs messages to a file for dashboard display.
@@ -204,12 +212,12 @@ zen::common::setting::load(){
 # @stdout None.
 # @notes Creates and manages the dashboard log file.
 zen::common::dashboard::log() {
-if [[ ! -f "/srv/zen/logs/dashboard" ]]; then
-	mkdir -p /srv/zen/logs
-	touch /srv/zen/logs/dashboard
-	chown www-data:www-data /srv/zen/logs/dashboard
-fi
-echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
+	if [[ ! -f "/srv/zen/logs/dashboard" ]]; then
+		mkdir -p /srv/zen/logs
+		touch /srv/zen/logs/dashboard
+		chown www-data:www-data /srv/zen/logs/dashboard
+	fi
+	echo "${1:-null}" | sed -z "s/\n/<br>\n/" >/srv/zen/logs/dashboard
 }
 
 # @section String/Shell extra Functions
@@ -232,13 +240,13 @@ zen::common::capitalize::first() {
 # Selects a random color code for shell output styling.
 # @description This function randomly selects a color code for styling shell outputs, adding visual diversity to command line interfaces.
 # @stdout Random color code.
-zen::common::shell::color::randomizer(){
+zen::common::shell::color::randomizer() {
 	local color
 	color=$((RANDOM % 3))
 	case $color in
-		0) echo "yellow";;
-		1) echo "magenta";;
-		2) echo "cyan";;
+	0) echo "yellow" ;;
+	1) echo "magenta" ;;
+	2) echo "cyan" ;;
 	esac
 }
 
@@ -255,7 +263,7 @@ zen::common::shell::color::randomizer(){
 # @exitcode 1 on failure during either the build or install step.
 # @stdout Information and status updates about each step of the build and installation process.
 # @notes This function optimizes build speed by using parallel build options based on the number of available processors.
-zen::common::make::install(){
+zen::common::make::install() {
 	local source_dir="$1"
 	local install_dir="$2"
 	local make_args="$3"
@@ -289,27 +297,27 @@ zen::common::make::install(){
 # @exitcode 1 on failure at any step (configuration, building, or installation).
 # @stdout Information about the process steps and their success or failure.
 # @notes This function assumes the presence of scons in the system and relies on proper configuration of the project for scons.
-zen::common::scons::install(){
-    local source_dir="$1"
-    local install_dir="$2"
-    local debug_build="${3:-false}"
-    local scons_install_args
-    local debug_flag
-    debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
-    cd "$source_dir" || return 1
-    if ! mflibs::log "scons config"; then
-        mflibs::status::error "$(zen::i18n::translate "common.scons_config_failed" "$source_dir")"
-        return 1
-    fi
-    if ! mflibs::log "scons DEBUG=$debug_flag"; then
-        mflibs::status::error "$(zen::i18n::translate "common.scons_build_failed" "$source_dir")"
-        return 1
-    fi
+zen::common::scons::install() {
+	local source_dir="$1"
+	local install_dir="$2"
+	local debug_build="${3:-false}"
+	local scons_install_args
+	local debug_flag
+	debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
+	cd "$source_dir" || return 1
+	if ! mflibs::log "scons config"; then
+		mflibs::status::error "$(zen::i18n::translate "common.scons_config_failed" "$source_dir")"
+		return 1
+	fi
+	if ! mflibs::log "scons DEBUG=$debug_flag"; then
+		mflibs::status::error "$(zen::i18n::translate "common.scons_build_failed" "$source_dir")"
+		return 1
+	fi
 
-    [ -n "$install_dir" ] && scons_install_args="--prefix=$install_dir"
-    if ! mflibs::log "scons $scons_install_args DEBUG=$debug_flag install"; then
-        mflibs::status::error "$(zen::i18n::translate "common.scons_install_failed" "$source_dir")"
-        return 1
-    fi
-    mflibs::status::success "$(zen::i18n::translate "common.scons_install_success" "$source_dir")"
+	[ -n "$install_dir" ] && scons_install_args="--prefix=$install_dir"
+	if ! mflibs::log "scons $scons_install_args DEBUG=$debug_flag install"; then
+		mflibs::status::error "$(zen::i18n::translate "common.scons_install_failed" "$source_dir")"
+		return 1
+	fi
+	mflibs::status::success "$(zen::i18n::translate "common.scons_install_success" "$source_dir")"
 }
