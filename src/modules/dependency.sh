@@ -38,28 +38,28 @@ zen::dependency::apt::manage() {
 	fi
 
 	case "$action" in
-		install)
-			# shellcheck disable=SC2154
-			if [[ $verbose -eq 1 ]]; then
-				cmd_options=(-y --allow-unauthenticated)
-			else
-				cmd_options=(-yqq --allow-unauthenticated)
-			fi
-			[[ "$option" == "reinstall" ]] && cmd_options+=(--reinstall)
-			zen::dependency::apt::install::inline "${dependencies_string}" "${cmd_options[@]}" && return
-			;;
-		update|upgrade|check)
-			if [[ $verbose -eq 1 ]]; then
-				cmd_options=("$action" -y)
-			else
-				cmd_options=("$action" -yqq)
-			fi
-			apt-get "${cmd_options[@]}" && return
-			;;
-		*)
-			mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action")"
-			return 1
-			;;
+	install)
+		# shellcheck disable=SC2154
+		if [[ $verbose -eq 1 ]]; then
+			cmd_options=(-y --allow-unauthenticated)
+		else
+			cmd_options=(-yqq --allow-unauthenticated)
+		fi
+		[[ "$option" == "reinstall" ]] && cmd_options+=(--reinstall)
+		zen::dependency::apt::install::inline "${dependencies_string}" "${cmd_options[@]}" && return
+		;;
+	update | upgrade | check)
+		if [[ $verbose -eq 1 ]]; then
+			cmd_options=("$action" -y)
+		else
+			cmd_options=("$action" -yqq)
+		fi
+		apt-get "${cmd_options[@]}" && return
+		;;
+	*)
+		mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action")"
+		return 1
+		;;
 	esac
 }
 
@@ -75,10 +75,10 @@ zen::dependency::apt::manage() {
 zen::dependency::apt::install::inline() {
 	local dependencies_string="$1"
 	local cmd_options=("${@:2}")
-	IFS=' ' read -r -a dependencies <<< "$dependencies_string"
+	IFS=' ' read -r -a dependencies <<<"$dependencies_string"
 	local failed_deps=()
 	local installed_count=0
-	local last_index=$(( ${#dependencies[@]} - 1 ))
+	local last_index=$((${#dependencies[@]} - 1))
 
 	for i in "${!dependencies[@]}"; do
 		local dep="${dependencies[i]}"
@@ -94,7 +94,7 @@ zen::dependency::apt::install::inline() {
 					failed_deps+=("${dep}")
 				fi
 			else
-				if ! apt-get install "${cmd_options[@]}" "${dep}" > /tmp/dep_install_output 2>&1; then
+				if ! apt-get install "${cmd_options[@]}" "${dep}" >/tmp/dep_install_output 2>&1; then
 					printf "%s$(tput setaf 1)✗ $(tput sgr0)" "${dep}"
 					failed_deps+=("${dep}")
 				else
@@ -138,10 +138,9 @@ zen::dependency::apt::get_string() {
 	echo "$dependencies_string"
 }
 
-
 # @function zen::dependency::apt::pin
 # Manages the list of pinned APT packages by adding or removing packages.
-# @description This function adds or removes APT packages from a list stored in a configuration file. 
+# @description This function adds or removes APT packages from a list stored in a configuration file.
 # It reads the current list from the file, modifies it based on the specified action (add or remove), and then writes the updated list back to the file.
 # @arg $1 string The action to perform ("add" or "remove").
 # @arg $2 string The package name to add or remove.
@@ -157,26 +156,26 @@ zen::dependency::apt::pin() {
 	list=$(sed -n '2p' "$config_file")
 
 	case "$action" in
-		add)
-			if [[ -z "$list" ]]; then
-				echo "$package" > "$config_file"
-			else
-				echo "${list},${package}" > "$config_file"
-			fi
+	add)
+		if [[ -z "$list" ]]; then
+			echo "$package" >"$config_file"
+		else
+			echo "${list},${package}" >"$config_file"
+		fi
 		;;
-		remove)
-			if [[ -n "$list" ]]; then
-				list=${list//,$package/}
-				list=${list//"$package,"/}
-				list=${list//"$package"/}
-				list=${list//,,/,}
-				list=${list#,}
-				list=${list%,}
-				echo "$list" > "$config_file"
-			fi
+	remove)
+		if [[ -n "$list" ]]; then
+			list=${list//,$package/}
+			list=${list//"$package,"/}
+			list=${list//"$package"/}
+			list=${list//,,/,}
+			list=${list#,}
+			list=${list%,}
+			echo "$list" >"$config_file"
+		fi
 		;;
-		*)
-			return 1
+	*)
+		return 1
 		;;
 	esac
 }
@@ -191,7 +190,7 @@ zen::dependency::apt::pin() {
 # @note The function checks for and resolves locked dpkg situations before proceeding.
 zen::dependency::apt::update() {
 	mflibs::shell::text::white "$(zen::i18n::translate 'dependency.updating_system')"
-	# check if fuser is installed 
+	# check if fuser is installed
 	if command -v fuser >/dev/null 2>&1; then
 		if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
 			mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked')"
@@ -269,8 +268,8 @@ zen::dependency::external::install() {
 		elif [[ $line == value* ]]; then
 			install_command=$(yq e ".${app_name}.external[] | select(has(\"$software_name\")) | .${software_name}.install" "$dependencies_file")
 			local temp_script="temp_install_$software_name.sh"
-			echo "#!/bin/bash" > "$temp_script"
-			echo "$install_command" >> "$temp_script"
+			echo "#!/bin/bash" >"$temp_script"
+			echo "$install_command" >>"$temp_script"
 			chmod +x "$temp_script"
 			mflibs::log "./$temp_script"
 			local install_status=$?
@@ -281,7 +280,7 @@ zen::dependency::external::install() {
 				return 1
 			fi
 		fi
-	done <<< "$entries"
+	done <<<"$entries"
 	mflibs::status::success "$(zen::i18n::translate "dependency.external_dependencies_installed" "$app_name")"
 }
 
@@ -300,8 +299,11 @@ zen::dependency::external::install() {
 zen::apt::add_source() {
 	local source_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/apt_sources.yaml"
-	
-	[[ -z "$source_name" ]] && { printf "Source name is required.\n"; return 1; }
+
+	[[ -z "$source_name" ]] && {
+		printf "Source name is required.\n"
+		return 1
+	}
 
 	local source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
 	local source_url=$(eval echo "$source_url_template")
@@ -311,18 +313,27 @@ zen::apt::add_source() {
 	local recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
 	local trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 
-	[[ -z "$source_url" ]] && { printf "URL for %s not found in YAML file.\n" "$source_name"; return 1; }
-	[[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && { printf "Architecture %s not supported for %s\n" "$arch" "$source_name"; return 1; }
+	[[ -z "$source_url" ]] && {
+		printf "URL for %s not found in YAML file.\n" "$source_name"
+		return 1
+	}
+	[[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && {
+		printf "Architecture %s not supported for %s\n" "$arch" "$source_name"
+		return 1
+	}
 	if [[ -n "$gpg_key_url" ]]; then
 		local gpg_key_file
 		gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
 		[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
-		wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || { printf "Failed to process GPG key for %s\n" "$source_name"; return 1; }
-		echo "deb [signed-by=$gpg_key_file] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
-		[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+		wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
+			printf "Failed to process GPG key for %s\n" "$source_name"
+			return 1
+		}
+		echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+		[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 	else
-		echo "deb $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
-		[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+		echo "deb $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+		[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 	fi
 	if [[ -n "$recv_keys" ]]; then
 		sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { printf "Failed to receive keys for %s\n" "$source_name"; }
@@ -360,7 +371,6 @@ zen::apt::remove_source() {
 	mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_removed" "$source_name")"
 }
 
-
 # @function zen::apt::update_source
 # Updates APT sources based on a YAML configuration.
 # @description This function updates APT sources based on the definitions in the apt_sources.yaml file.
@@ -375,27 +385,39 @@ zen::apt::update_source() {
 
 	for source_name in $source_names; do
 		source_url=$(yq e ".sources.${source_name}.url" "$dependencies_file" | grep -v 'null')
-		[[ -z "$source_url" ]] && { printf "URL for %s not found in YAML file.\n" "$source_name"; continue; }
+		[[ -z "$source_url" ]] && {
+			printf "URL for %s not found in YAML file.\n" "$source_name"
+			continue
+		}
 		include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
 		gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
 		if [[ -n "$gpg_key_url" ]]; then
 			local gpg_key_file
 			gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
 			[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
-			wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || { printf "Failed to process GPG key for %s\n" "$source_name"; return 1; }
-			echo "deb [signed-by=$gpg_key_file] $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
-			[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+			wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
+				printf "Failed to process GPG key for %s\n" "$source_name"
+				return 1
+			}
+			echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+			[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 		else
-			echo "deb $source_url" > "/etc/apt/sources.list.d/${source_name}.list"
-			[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >> "/etc/apt/sources.list.d/${source_name}.list"
+			echo "deb $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+			[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 		fi
 		trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 		if [[ -n "$trusted_key_url" ]]; then
-			wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { printf "Failed to process trusted key for %s\n" "$source_name"; continue; }
+			wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
+				printf "Failed to process trusted key for %s\n" "$source_name"
+				continue
+			}
 		fi
 		recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
 		if [[ -n "$recv_keys" ]]; then
-			sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { printf "Failed to receive keys for %s\n" "$source_name"; continue; }
+			sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
+				printf "Failed to receive keys for %s\n" "$source_name"
+				continue
+			}
 		fi
 		unset source_url include_deb_src gpg_key_url trusted_key_url recv_keys
 	done

@@ -55,7 +55,6 @@ zen::service::generate() {
 		service_content+=("$directive")
 	done
 
-
 	if [ "$is_multi" == "true" ]; then
 		service_content+=(
 			""
@@ -65,7 +64,7 @@ zen::service::generate() {
 	fi
 
 	# Write the content to the service file
-	printf "%s\n" "${service_content[@]}" > "$service_file"
+	printf "%s\n" "${service_content[@]}" >"$service_file"
 	mflibs::shell::text::green "$(zen::i18n::translate "service.service_file_created" "$app_name" "$service_name")"
 	mflibs::log "systemctl daemon-reload"
 	# if not bypass_mode; then
@@ -103,58 +102,57 @@ zen::service::generate() {
 # @example
 #    zen::service::manage "start" "app_name.service"
 zen::service::manage() {
-    local action=$1
-    local service_name=$2
+	local action=$1
+	local service_name=$2
 
-    check_service_status() {
+	check_service_status() {
 		sleep 2
-        if systemctl is-active --quiet "$service_name"; then
-            mflibs::shell::text::green "$(zen::i18n::translate 'service.service_running' "$service_name")"
-            return 1
-        else
-            mflibs::shell::text::red "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
-            return 0
-        fi
-    }
+		if systemctl is-active --quiet "$service_name"; then
+			mflibs::shell::text::green "$(zen::i18n::translate 'service.service_running' "$service_name")"
+			return 1
+		else
+			mflibs::shell::text::red "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
+			return 0
+		fi
+	}
 
-    case $action in
-        start)
-            if zen::service::manage "status" "$service_name"; then
-                mflibs::status::error "$(zen::i18n::translate 'service.service_already_running' "$service_name")"
-                return 1
-            fi
-            systemctl start "$service_name"
-            ;;
-        stop)
-            if ! zen::service::manage "status" "$service_name"; then
-                mflibs::status::error "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
-                return 1
-            fi
-            systemctl stop "$service_name"
-            ;;
-        restart|reload)
-            systemctl "$action" "$service_name"
-			zen::service::manage "status" "$service_name"
-            ;;
-        enable)
-            systemctl daemon-reload
-            systemctl enable "$service_name" --now > /dev/null 2>&1
-            ;;
-        disable)
-            systemctl stop "$service_name"
-            systemctl disable "$service_name"
-            systemctl daemon-reload
-            ;;
-        status)
-            check_service_status
-            ;;
-        *)
-            mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action" "$service_name")"
-            return 2
-            ;;
-    esac
+	case $action in
+	start)
+		if zen::service::manage "status" "$service_name"; then
+			mflibs::status::error "$(zen::i18n::translate 'service.service_already_running' "$service_name")"
+			return 1
+		fi
+		systemctl start "$service_name"
+		;;
+	stop)
+		if ! zen::service::manage "status" "$service_name"; then
+			mflibs::status::error "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
+			return 1
+		fi
+		systemctl stop "$service_name"
+		;;
+	restart | reload)
+		systemctl "$action" "$service_name"
+		zen::service::manage "status" "$service_name"
+		;;
+	enable)
+		systemctl daemon-reload
+		systemctl enable "$service_name" --now >/dev/null 2>&1
+		;;
+	disable)
+		systemctl stop "$service_name"
+		systemctl disable "$service_name"
+		systemctl daemon-reload
+		;;
+	status)
+		check_service_status
+		;;
+	*)
+		mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action" "$service_name")"
+		return 2
+		;;
+	esac
 }
-
 
 # @function zen::service::build::add_entry
 # @description Adds an entry to the api_service associative array.
@@ -206,7 +204,7 @@ zen::service::validate() {
 	application_id=$(echo "$application_id" | head -n 1)
 	if [[ "$is_child" == "true" ]]; then
 		parent_service_id=$(zen::database::select "id" "service" "id = (SELECT MAX(id) FROM application)")
-	else 
+	else
 		parent_service_id="null"
 	fi
 	# Construct the final JSON

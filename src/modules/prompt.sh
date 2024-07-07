@@ -23,10 +23,24 @@
 zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
-    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::green::sl "Y";mflibs::shell::text::white::sl " ): ")
+    prompt=$(
+      mflibs::shell::text::green::sl "[Y]"
+      mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') "
+      mflibs::shell::text::red::sl "[N] "
+      mflibs::shell::text::white::sl "(default : "
+      mflibs::shell::text::green::sl "Y"
+      mflibs::shell::text::white::sl " ): "
+    )
     default=Y
   elif [[ "${2:-}" = "N" ]]; then
-    prompt=$(mflibs::shell::text::green::sl "[Y]";mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') ";mflibs::shell::text::red::sl "[N] ";mflibs::shell::text::white::sl "(default : ";mflibs::shell::text::red::sl "N";mflibs::shell::text::white::sl " ): ")
+    prompt=$(
+      mflibs::shell::text::green::sl "[Y]"
+      mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') "
+      mflibs::shell::text::red::sl "[N] "
+      mflibs::shell::text::white::sl "(default : "
+      mflibs::shell::text::red::sl "N"
+      mflibs::shell::text::white::sl " ): "
+    )
     default=N
   else
     prompt="y/n/c"
@@ -34,14 +48,14 @@ zen::prompt::yn() {
   fi
   while true; do
     printf "%s %s" "$1" "$prompt"
-    read -r reply < /dev/tty
+    read -r reply </dev/tty
     if [[ -z "$reply" ]]; then
       reply=$default
     fi
 
     case "$reply" in
-      Y* | y*) return 0 ;;
-      N* | n*) return 1 ;;
+    Y* | y*) return 0 ;;
+    N* | n*) return 1 ;;
     esac
   done
 }
@@ -69,8 +83,8 @@ zen::prompt::raid() {
   done
   while true; do
     printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "common.your_choice") ")"
-    read -r choice_num < /dev/tty
-    if [[ "$choice_num" =~ ^[0-9]+$ ]] && (( choice_num >= 1 && choice_num <= ${#choices[@]} )); then
+    read -r choice_num </dev/tty
+    if [[ "$choice_num" =~ ^[0-9]+$ ]] && ((choice_num >= 1 && choice_num <= ${#choices[@]})); then
       choice="${choices[choice_num - 1]}"
       break
     else
@@ -105,7 +119,7 @@ zen::prompt::code() {
       zen::vault::pass::decode "$string"
     fi
     mflibs::shell::text::cyan " ➜ "
-    read -r reply < /dev/tty
+    read -r reply </dev/tty
     if [[ "$reply" == "$string" ]]; then
       return 0
     else

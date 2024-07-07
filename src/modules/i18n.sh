@@ -48,7 +48,7 @@ zen::i18n::load_locale_file() {
 # @note Validates language code, sets system locale settings based on language code.
 # @example
 #      zen::i18n::generate::system_locale "fr"
-zen::i18n::generate::system_locale(){
+zen::i18n::generate::system_locale() {
 	local lang="$1"
 	declare -A system_lang=(
 		["en"]="en_US.UTF-8"
@@ -80,7 +80,7 @@ zen::i18n::generate::system_locale(){
 # @note Validates language code, sets system timezone based on language code.
 # @example
 #      zen::i18n::set::timezone "fr"
-zen::i18n::set::timezone(){
+zen::i18n::set::timezone() {
 	local lang="$1"
 	if command -v tzdata >/dev/null; then
 		default_timezone="UTC"
@@ -100,7 +100,7 @@ zen::i18n::set::timezone(){
 
 		# Update the timezone only if it's different from the intended timezone
 		if [[ "$current_timezone" != "$intended_timezone" ]]; then
-			IFS='/' read -r AREA LOCATION <<< "$intended_timezone"
+			IFS='/' read -r AREA LOCATION <<<"$intended_timezone"
 			rm -f /etc/localtime
 			ln -s "/usr/share/zoneinfo/$intended_timezone" /etc/localtime
 			echo "tzdata tzdata/Areas select $AREA" | debconf-set-selections
@@ -140,9 +140,8 @@ zen::i18n::translate() {
 		done
 		translation="${translation%\"}"
 		translation="${translation#\"}"
-		translation="$(tr '[:lower:]' '[:upper:]' <<< "${translation:0:1}")${translation:1}"
+		translation="$(tr '[:lower:]' '[:upper:]' <<<"${translation:0:1}")${translation:1}"
 	fi
 
 	printf '%s' "$translation"
 }
-

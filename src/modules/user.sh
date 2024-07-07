@@ -119,7 +119,11 @@ zen::user::check() {
 # @return 0 if the user is an admin, 1 otherwise.
 # @note User must be loaded with zen::user::load before calling this function.
 zen::user::is::admin() {
-	[[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]] && { mflibs::status::info "$(zen::i18n::translate "user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "user.user_is_not_admin")"; zen::lock::cleanup; exit 1;}
+	[[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]] && {
+		mflibs::status::info "$(zen::i18n::translate "user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "user.user_is_not_admin")"
+		zen::lock::cleanup
+		exit 1
+	}
 	return 1
 }
 
@@ -143,7 +147,7 @@ zen::multi::check::id() {
 # @note Queries the database and populates the 'user' array with the user's data.
 # shellcheck disable=SC2034
 # Disable SC2034 because the variable is defined in the main script
-zen::user::load(){
+zen::user::load() {
 	declare -A -g user
 	local username="$1"
 	local where_clause="username = '$username'"
@@ -152,8 +156,8 @@ zen::user::load(){
 	if [[ -z "${user[username]}" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "user.user_not_found" "${username}")"
 		zen::lock::cleanup
-			exit 1
-	# else 
+		exit 1
+		# else
 		# mflibs::shell::text::green "$(zen::i18n::translate "user.user_found" "${username}")"
 	fi
 }
@@ -204,8 +208,8 @@ zen::user::password::set() {
 	local password="$2"
 	mflibs::status::info "$(zen::i18n::translate "user.setting_password_for" "$username")"
 	echo "${username}:${password}" | chpasswd 2>/dev/null
-	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >> /etc/htpasswd
+	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd
 	mkdir -p /etc/htpasswd.d
-	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >> /etc/htpasswd.d/htpasswd."${username}"
+	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd.d/htpasswd."${username}"
 	mflibs::status::success "$(zen::i18n::translate "user.password_set" "$username")"
 }

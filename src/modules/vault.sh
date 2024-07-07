@@ -23,7 +23,7 @@ zen::vault::init() {
 	else
 		# Hashing to determine vault path
 		# vault_name is a global variable
-		# shellcheck disable=SC2154 
+		# shellcheck disable=SC2154
 		hash=$(echo -n "${vault_name}${salt}" | sha256sum | cut -d' ' -f1)
 		local vault_dir="${vault_base_dir}/${hash:0:32}"
 		local vault_file="${hash:32}.yaml"
@@ -34,7 +34,6 @@ zen::vault::init() {
 		fi
 	fi
 
-	
 }
 
 # @function zen::vault::create
@@ -54,7 +53,7 @@ zen::vault::create() {
 
 	# Encode user provided salt in base64 and store it
 	salt=$(echo -n "$user_salt" | base64)
-	echo "$salt" > "$salt_file"
+	echo "$salt" >"$salt_file"
 	chmod 600 "$salt_file"
 	chattr +i "$salt_file"
 	mflibs::status::info "$(zen::i18n::translate "vault.salt_stored")"
@@ -192,9 +191,9 @@ zen::vault::pass::reveal() {
 #    zen::vault::permissions "add"
 # @example
 #    zen::vault::permissions "remove"
-zen::vault::permissions(){
+zen::vault::permissions() {
 	local action="$1"
-	
+
 	if [[ "$action" == "add" ]]; then
 		mflibs::log "chown -R root:root $credentials_file"
 		mflibs::log "chmod -R 700 $credentials_file"

@@ -27,7 +27,7 @@ zen::python::venv::create() {
 		return 1
 	fi
 	mflibs::shell::text::white "$(zen::i18n::translate "python.venv_create_creating" "$app_name")"
-	
+
 	cd "$path" || return 1
 	sudo -u "${username}" python3 -m venv venv || return 1
 	mflibs::shell::text::green "$(zen::i18n::translate "python.venv_create_success" "$app_name")"
@@ -63,20 +63,20 @@ zen::python::venv::build() {
 	# Install Python dependencies from dependencies.yaml file
 	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
 	if [[ -z "$python_dependencies" ]]; then
-			mflibs::status::error "$(zen::i18n::translate 'dependency.no_python_dependencies_found' "$app_name")"
-			deactivate
-			return 1
+		mflibs::status::error "$(zen::i18n::translate 'dependency.no_python_dependencies_found' "$app_name")"
+		deactivate
+		return 1
 	fi
 	mflibs::shell::text::white "$(zen::i18n::translate "python.venv_install_required_dependencies" "$app_name")"
 	local exit_status=0
-	IFS=' ' read -ra DEPS <<< "$python_dependencies"
+	IFS=' ' read -ra DEPS <<<"$python_dependencies"
 	for dependency in "${DEPS[@]}"; do
-			mflibs::log "pip install --quiet --use-pep517 ${dependency}"
-			local result=$?
-			if [[ "$result" -ne 0 ]]; then
-				mflibs::status::error "$(zen::i18n::translate 'dependency.python_dependency_install_failed' "$dependency")"
-				exit_status=1
-			fi
+		mflibs::log "pip install --quiet --use-pep517 ${dependency}"
+		local result=$?
+		if [[ "$result" -ne 0 ]]; then
+			mflibs::status::error "$(zen::i18n::translate 'dependency.python_dependency_install_failed' "$dependency")"
+			exit_status=1
+		fi
 	done
 	mflibs::shell::text::green "$(zen::i18n::translate "python.venv_install_required_dependencies_success" "$app_name")"
 
@@ -112,7 +112,7 @@ zen::python::venv::build() {
 # @return 1 if no path is specified or if the directory change fails.
 # @exitcode 0 Success in removing the virtual environment.
 # @exitcode 1 Failure due to missing path or directory change failure.
-zen::python::venv::remove(){
+zen::python::venv::remove() {
 	local path="$1"
 	if [[ -z "$path" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "python.venv_remove_no_path")"
@@ -137,7 +137,7 @@ zen::python::venv::remove(){
 # @arg $1 string The target file to which the Python environment configuration should be appended.
 # @exitcode 0 Success in appending the configuration.
 # @exitcode 1 Failure in file operation.
-zen::python::add::profile(){
+zen::python::add::profile() {
 	local target_file="$1"
 	{
 		printf "export PYENV_ROOT=\"/opt/pyenv\"\n"
@@ -145,5 +145,5 @@ zen::python::add::profile(){
 		printf "eval \"\$(pyenv init -)\"\n"
 		printf "eval \"\$(pyenv virtualenv-init -)\"\n"
 		printf "source %s/.cargo/env\n" "$HOME"
-	} >> "$target_file"
+	} >>"$target_file"
 }
