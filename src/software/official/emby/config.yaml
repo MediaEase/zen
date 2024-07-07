@@ -1,0 +1,35 @@
+arguments:
+  app_name: Emby
+  altname: emby
+  description: emby_description
+  pro_only: false
+  logo_path: emby.png
+  group: media
+  details:
+    docs: https://emby.media/support/articles/Quick-Start.html
+    github: https://github.com/MediaBrowser/Emby
+    homepage: https://emby.media/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/emby
+  multi_user: true
+  ports:
+    default: [8090-9010]
+    ssl: [8920-8950]
+  service_directives:
+    - Type=simple
+    - EnvironmentFile=/etc/%i-emby.conf
+    - WorkingDirectory=/opt/%i/emby
+    - ExecStart=/opt/%i/emby/bin/emby-server
+    - TimeoutStopSec=20
+    - RestartForceExitStatus=3
+  files:
+    - service: /etc/systemd/system/$app_name@%i.service
+    - config: /etc/%i-emby.conf
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port

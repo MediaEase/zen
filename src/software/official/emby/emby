@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# @file software/emby/emby.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Emby handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::emby::add
+# @description Adds a Emby for a user, including downloading, configuring, and starting the service.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+zen::software::emby::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::common::git::get_release "/opt/${user[username]}/$app_name" "MediaBrowser/Emby.Releases" "$is_prerelease" "_amd64.deb"
+    # configure the app. This will also generate the proxy file
+    if [[ -f /etc/emby-server.conf ]]; then
+        cat <<EOF >>/etc/emby-server.conf
+EMBY_USER="${user[username]}"
+EMBY_GROUP="${user[username]}"
+EOF
+    fi
+    for user in "${user[username]}" video audio; do
+        usermod -a -G "$user" emby
+    done
+    zen::software::autogen
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    # create a backup file
+    zen::common::fix::permissions "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
