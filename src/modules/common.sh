@@ -120,6 +120,39 @@ zen::common::git::get_release() {
 	mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
 }
 
+# @function zen::common::git::download_file
+# Downloads a specific file from a GitHub repository.
+# @description This function downloads a specified file from a given GitHub repository and saves it to a local path.
+# @arg $1 string Local path where the file should be saved.
+# @arg $2 string Name of the repository (e.g., "git/core").
+# @arg $3 string Branch of the repository to download from.
+# @arg $4 string Path to the remote file in the repository.
+# @exitcode 0 on successful download.
+# @exitcode 1 on failure.
+# @stdout Informs about the downloading process and results.
+zen::common::git::download_file() {
+	local local_path="$1"
+	local repo_name="$2"
+	local branch="$3"
+	local remote_file="$4"
+	local repo_url="https://raw.githubusercontent.com/$repo_name/$branch/$remote_file"
+
+	# Check if curl is installed
+	if ! command -v curl &>/dev/null; then
+		mflibs::status::error "$(zen::i18n::translate "common.curl_not_installed")"
+		return 1
+	fi
+
+	# Download the file
+	if curl -o "$local_path" "$repo_url"; then
+		mflibs::status::success "$(zen::i18n::translate "common.file_download_success" "$repo_url" "$local_path")"
+		return 0
+	else
+		mflibs::status::error "$(zen::i18n::translate "common.file_download_failed" "$repo_url")"
+		return 1
+	fi
+}
+
 # @function zen::common::git::tree
 # Lists the files in a given repository and branch.
 # @description This function lists the files in a specified repository and branch using the GitHub API.
