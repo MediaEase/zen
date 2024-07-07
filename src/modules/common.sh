@@ -120,6 +120,46 @@ zen::common::git::get_release() {
 	mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
 }
 
+# @function zen::common::git::tree
+# Lists the files in a given repository and branch.
+# @description This function lists the files in a specified repository and branch using the GitHub API.
+# @arg $1 string Remote path to the directory in the repository.
+# @arg $2 string Name of the repository (e.g., "MediaEase/binaries").
+# @arg $3 string Branch name (e.g., "main").
+# @exitcode 0 on successful retrieval and listing.
+# @exitcode 1 on failure.
+# @stdout Lists the files in the specified directory.
+zen::common::git::tree() {
+	local remote_path="$1"
+	local repo_name="$2"
+	local branch="$3"
+	local api_url="https://api.github.com/repos/$repo_name/contents/$remote_path?ref=$branch"
+
+	# Check if curl and jq are installed
+	if ! command -v curl &>/dev/null || ! command -v jq &>/dev/null; then
+		mflibs::status::error "$(zen::i18n::translate "common.required_tools_not_installed")"
+		return 1
+	fi
+
+	# Fetch and list the files
+	local response
+	response=$(curl -s "$api_url")
+
+	# Check if response is empty or not a valid array
+	if [ -z "$response" ] || ! echo "$response" | jq -e . >/dev/null 2>&1; then
+		mflibs::status::error "$(zen::i18n::translate "common.invalid_api_response")"
+		return 1
+	fi
+
+	echo "$response" | jq -r '.[] | "\(.type)\t\(.name)"' | while IFS=$'\t' read -r type name; do
+		if [[ $type == "file" ]]; then
+			mflibs::shell::text::green "$name"
+		elif [[ $type == "dir" ]]; then
+			mflibs::shell::text::blue "$name/"
+		fi
+	done
+}
+
 # @section Environment Functions
 # @description The following functions are used for environment variable management.
 
