@@ -1,0 +1,35 @@
+arguments:
+  app_name: rTorrent
+  altname: rtorrent
+  description: rtorrent_description
+  note: rtorrent_note
+  pro_only: false
+  logo_path: rtorrent.png
+  precompiled: true
+  precompiled_description: rtorrent_precompiled_description
+  multi_user: false
+  group: automation
+  details:
+    github: https://github.com/rTorrent/rTorrent
+    homepage: https://rtorrent.video/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/rtorrent
+  ports:
+    - default: [20000-61000]
+  service_directives:
+    - Type=forking
+    - KillMode=none
+    - ExecStartPre=-/bin/rm -f /home/%i/.sessions/$app_name.lock
+    - ExecStart=/usr/bin/screen -d -m -fa -S $app_name /usr/bin/$app_name
+    - ExecStop=/usr/bin/screen -X -S $app_name quit
+    - WorkingDirectory=/home/%i/
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.$app_name.rc
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+  autogen:
+    - port_range
+  versions:
+    - "0.9.6"
+    - "0.9.7"
+    - "0.9.8"
