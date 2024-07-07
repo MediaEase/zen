@@ -103,6 +103,9 @@ zen::common::git::get_release() {
 	gz)
 		tar -xvzf "$downloaded_file" --strip-components=1 >/dev/null 2>&1
 		;;
+	deb)
+		dpkg -i "$downloaded_file" >/dev/null 2>&1
+		;;
 	*)
 		mflibs::status::error "$(zen::i18n::translate "common.unsupported_file_type" "$file_extension")"
 		return 1
