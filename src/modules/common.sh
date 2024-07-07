@@ -95,10 +95,10 @@ zen::common::git::get_release() {
 	downloaded_file="$(basename "$release_url")"
 	case "$file_extension" in
 	zip)
-		unzip -q "$downloaded_file"
+		unzip -q "$downloaded_file" >/dev/null 2>&1
 		;;
 	tar)
-		tar -xf "$downloaded_file" --strip-components=1
+		tar -xf "$downloaded_file" --strip-components=1 >/dev/null 2>&1
 		;;
 	gz)
 		tar -xvzf "$downloaded_file" --strip-components=1 >/dev/null 2>&1
