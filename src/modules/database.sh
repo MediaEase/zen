@@ -19,7 +19,7 @@
 #      Uses a .timeout of 20000 to handle database locks.
 zen::database::query() {
   local query="$1"
-  
+
   if [[ -z "$query" ]]; then
     mflibs::status::error "$(zen::i18n::translate "common.no_query_provided")"
     return 1
@@ -150,7 +150,7 @@ zen::database::insert() {
     mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
     return 1
   fi
-  
+
   local query="INSERT INTO ${table} (${columns}) VALUES (${values});"
 
   zen::database::query "$query"
@@ -216,7 +216,7 @@ zen::database::load_config() {
   local identifier value column_name key
 
   IFS=$'\n' read -d '' -ra array <<<"$query_result"
-  
+
   for row in "${array[@]}"; do
     IFS='|' read -ra row_data <<<"$row"
     identifier="${row_data[identifier_index]}"
