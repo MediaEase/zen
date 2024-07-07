@@ -1,0 +1,20 @@
+arguments:
+  app_name: ruTorrent
+  altname: rutorrent
+  description: rutorrent_description
+  note: rutorrent_note
+  pro_only: false
+  multi_user: false
+  logo_path: rutorrent.png
+  group: automation
+  parent_service: rTorrent
+  details:
+    github: https://github.com/Novik/ruTorrent
+    homepage: https://rutorrent.video/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/rutorrent
+  files:
+    - config: /srv/$app_name/config.php
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /srv/$app_name
+  skip_requirements_check: true
