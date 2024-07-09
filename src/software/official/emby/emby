@@ -19,7 +19,8 @@ zen::software::emby::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::common::git::get_release "/opt/${user[username]}/$app_name" "MediaBrowser/Emby.Releases" "$is_prerelease" "_amd64.deb"
+    zen::common::git::get_release "/opt/${user[username]}/${app_name}" "MediaBrowser/Emby.Releases" "$is_prerelease" "_amd64.deb"
+    zen::common::fix::permissions "/opt/${user[username]}/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
     # configure the app. This will also generate the proxy file
     if [[ -f /etc/emby-server.conf ]]; then
         cat <<EOF >>/etc/emby-server.conf
