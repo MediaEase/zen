@@ -233,6 +233,6 @@ zen::service::validate() {
 	json_string=$(echo "$json_result" | jq -c .)
 
 	# Call the zen::database::insert function
-	zen::database::insert "services" "name, version, status, apikey, ports, configuration, application_id, parent_service_id, user_id" "'$json_string'"
+	zen::database::insert "service" "name, version, status, apikey, ports, configuration, application_id, parent_service_id, user_id" "'$json_string'"
 	mflibs::shell::text::green "$(zen::i18n::translate "service.service_validated" "$app_name_sanitized")"
 }
