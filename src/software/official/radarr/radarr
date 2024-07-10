@@ -23,7 +23,7 @@ zen::software::radarr::add() {
 	# grab the correct release
 	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
-	mflibs::file::chmod "/opt/${user[username]}/$app_name/Radarr" "a+x"
+	zen::permission::user_exec "/opt/${user[username]}/$app_name/Radarr"
 	zen::software::radarr::config "$is_prerelease"
 	# generate the service file, this will also start it
 	zen::service::generate "$app_name" "$software_config_file"

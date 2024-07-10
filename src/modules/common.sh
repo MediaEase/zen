@@ -47,16 +47,22 @@ zen::common::git::clone() {
 
 	if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules"; then
 		mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
+
+		local username
+		local group
+
 		if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
-			local username
 			username=$(echo "$target_dir" | cut -d'/' -f3)
-			local group
-			zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
+			group=$(getent group | grep "^$username:" | cut -d: -f1)
 		else
-			zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+			username="www-data"
+			group="www-data"
 		fi
-		if [[ "$target_dir" == /opt/pyenv* && "$target_dir" == /opt/MediaEase* ]]; then
-			zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+
+		zen::permission::fix "$target_dir" "755" "644" "$username" "$group"
+
+		if [[ "$target_dir" == /opt/pyenv* || "$target_dir" == /opt/MediaEase* ]]; then
+			zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
 		fi
 	else
 		mflibs::status::error "$(zen::i18n::translate "common.repository_clone_failed" "$repo_url")"
@@ -116,9 +122,11 @@ zen::common::git::get_release() {
 		local username
 		username=$(echo "$target_dir" | cut -d'/' -f3)
 		local group
-		zen::common::fix::permissions "$target_dir" "$username" "$group" "755" "644"
+		group=$(getent group | grep "^$username:" | cut -d: -f1)
+
+		zen::permission::read_exec "$target_dir" "$username" "$group"
 	else
-		zen::common::fix::permissions "$target_dir" "www-data" "www-data" "755" "644"
+		zen::permission::read_exec "$target_dir" "www-data" "www-data"
 	fi
 	mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
 }
@@ -231,37 +239,6 @@ zen::common::export::var() {
 	if ! grep -q "export $var_name=" "$bashrc_file"; then
 		echo "export $var_name=\"$var_value\"" >>"$bashrc_file"
 	fi
-}
-
-# @section File System Functions
-# @description The following functions are used for file system operations.
-
-# @function zen::common::environment::set::variable
-# Fixes permissions of a specified path for a user and group.
-# @description This function sets the ownership and permissions of a specified file system path for a given user and group.
-# It applies different permissions for directories and files within the path.
-# @arg $1 string File system path whose permissions need fixing.
-# @arg $2 string User for file/directory ownership.
-# @arg $3 string Group for file/directory ownership.
-# @arg $4 string Permissions for directories (e.g., '755').
-# @arg $5 string Permissions for files (e.g., '644').
-# @exitcode 0 if successful.
-# @exitcode 1 if the path doesn't exist.
-zen::common::fix::permissions() {
-	local path="$1"
-	local user="$2"
-	local group="$3"
-	local dir_permissions="$4"
-	local file_permissions="$5"
-
-	if [ ! -e "$path" ]; then
-		mflibs::status::error "$(zen::i18n::translate "common.path_not_found" "$path")"
-		return 1
-	fi
-
-	chown -R "$user:$group" "$path"
-	find "$path" -type d -exec chmod "$dir_permissions" {} +
-	find "$path" -type f -exec chmod "$file_permissions" {} +
 }
 
 # @section Setting Functions
