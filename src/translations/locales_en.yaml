@@ -117,7 +117,7 @@ proxy:
   proxy_invalid_conf: "Invalid configuration file: {arg0}"
   proxy_harmonyui_failed: "HarmonyUI dashboard unreachable."
   proxy_harmonyui_api_failed: "HarmonyUI API unreachable."
-harmonyui: 
+harmonyui:
   composer_install_failed: "Failed to install Composer dependencies for HarmonyUI."
   yarn_install_failed: "Failed to install NodeJS dependencies for HarmonyUI."
   yarn_build_failed: "Failed to build assets for HarmonyUI."
@@ -137,7 +137,6 @@ common:
   permissions_tuned: "Permissions adjusted."
   invalid_option: "Invalid option: {arg0}"
   invalid_action: "Invalid action: {arg0}"
-  missing_arguments: "Missing arguments."
   insufficient_arguments: "Insufficient arguments."
   locale_file_not_found: "Location file not found: {arg0}"
   lang_loaded: "Language {arg0} loaded."
@@ -198,3 +197,7 @@ raid:
 mediaease:
   mediaease_configured: "MediaEase configured."
   mediaease_configuring: "Configuring MediaEase..."
+database:
+  db_not_found: "Database not found."
+  missing_arguments: "Missing arguments."
+  no_query_provided: "No query provided."

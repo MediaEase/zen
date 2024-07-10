@@ -21,13 +21,13 @@ zen::database::query() {
   local query="$1"
 
   if [[ -z "$query" ]]; then
-    mflibs::status::error "$(zen::i18n::translate "common.no_query_provided")"
+    mflibs::status::error "$(zen::i18n::translate "database.no_query_provided")"
     return 1
   fi
 
   declare -g sqlite3_db
   if [[ ! -f "$sqlite3_db" ]]; then
-    mflibs::status::error "$(zen::i18n::translate "common.db_not_found" "$sqlite3_db")"
+    mflibs::status::error "$(zen::i18n::translate "database.db_not_found" "$sqlite3_db")"
     return 1
   fi
   sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
@@ -147,7 +147,7 @@ zen::database::insert() {
   local values="$3"
 
   if [[ -z "$table" || -z "$columns" || -z "$values" ]]; then
-    mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
+    mflibs::status::error "$(zen::i18n::translate "database.missing_arguments")"
     return 1
   fi
 
@@ -170,7 +170,7 @@ zen::database::update() {
   local where_clause="$3"
 
   if [[ -z "$table" || -z "$update_clause" || -z "$where_clause" ]]; then
-    mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
+    mflibs::status::error "$(zen::i18n::translate "database.missing_arguments")"
     return 1
   fi
 
@@ -191,7 +191,7 @@ zen::database::delete() {
   local where_clause="$2"
 
   if [[ -z "$table" || -z "$where_clause" ]]; then
-    mflibs::status::error "$(zen::i18n::translate "common.missing_arguments")"
+    mflibs::status::error "$(zen::i18n::translate "database.missing_arguments")"
     return 1
   fi
 
