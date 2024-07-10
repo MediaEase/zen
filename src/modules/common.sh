@@ -277,7 +277,7 @@ zen::common::fix::permissions() {
 # Disable reason: 'settings' is used in other functions
 zen::common::setting::load() {
 	declare -A -g settings
-	setting_columns=("id" "site_name" "root_url" "site_description" "backdrop" "logo" "default_quota" "net_interface" "registration_enabled" "welcome_email")
+	setting_columns=("id" "site_name" "root_url" "site_description" "default_quota" "net_interface" "registration_enabled" "welcome_email_enabled" "brand" "favicon" "appstore" "splashscreen" "email_verification_enabled" "default_log_level" "log_refresh_delay")
 	zen::database::load_config "$(zen::database::select "*" "setting" "")" "settings" 0 "setting_columns"
 }
 

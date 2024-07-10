@@ -151,7 +151,7 @@ zen::user::load() {
 	declare -A -g user
 	local username="$1"
 	local where_clause="username = '$username'"
-	user_columns=("id" "group_id" "preference_id" "username" "roles" "password" "email" "is_verified" "apikey")
+	user_columns=("id" "group_id" "preference_id" "username" "roles" "password" "email" "is_verified" "api_key" "registered_at" "activated_at" "registration_ip" "is_banned")
 	zen::database::load_config "$(zen::database::select "*" "user" "$where_clause")" "user" 3 "user_columns"
 	if [[ -z "${user[username]}" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "user.user_not_found" "${username}")"
