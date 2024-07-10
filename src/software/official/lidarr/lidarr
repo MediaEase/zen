@@ -15,16 +15,16 @@
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-zen::software::lidarr::add(){
+zen::software::lidarr::add() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
 	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Lidarr/Lidarr" "$is_prerelease" "linux-core-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
+	mflibs::file::chmod "/opt/${user[username]}/$app_name/Lidarr" "a+x"
 	zen::software::lidarr::config "$is_prerelease"
 	# generate the service file, this will also start it
 	zen::service::generate "$app_name" "$software_config_file"
-	chmod a+x "/opt/${user[username]}/$app_name/Lidarr"
 	# create a backup file
 	zen::software::backup::create "$app_name" "$software_config_file"
 }
@@ -39,7 +39,7 @@ zen::software::lidarr::add(){
 #   zen::software::lidarr::config "false"
 #   # the following enables pre-release (nightly):
 #   zen::software::lidarr::config "true"
-zen::software::lidarr::config(){
+zen::software::lidarr::config() {
 	local is_prerelease="$1"
 	declare -g url_base
 	mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
@@ -47,7 +47,7 @@ zen::software::lidarr::config(){
 	url_base="/${user[username]}/${app_name}"
 	[[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
 	mkdir -p "/home/${user[username]}/.config/${app_name}"
-	cat > "/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
+	cat >"/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
 <Config>
 	<BindAddress>127.0.0.1</BindAddress>
 	<Port>${default_port}</Port>
@@ -78,7 +78,7 @@ RCON
 # @description Updates Lidarr for a user, including stopping the service, downloading the latest release, and restarting.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
-zen::software::lidarr::update(){
+zen::software::lidarr::update() {
 	local service_name
 	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
 	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
@@ -94,11 +94,11 @@ zen::software::lidarr::update(){
 # @function zen::software::lidarr::remove
 # @description Removes Lidarr for a user, including disabling and deleting the service and cleaning up files.
 # @global user An associative array containing user-specific information.
-zen::software::lidarr::remove(){
+zen::software::lidarr::remove() {
 	local service_name
 	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
 	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-	
+
 	zen::service::manage "disable" "$service_name"
 	rm -f "$service_file"
 	zen::proxy::remove "$app_name" "${user[username]}"
@@ -110,7 +110,7 @@ zen::software::lidarr::remove(){
 # @function zen::software::lidarr::backup
 # @description Creates a backup for Lidarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
-zen::software::lidarr::backup(){
+zen::software::lidarr::backup() {
 	local username="$1"
 	local app_name="$2"
 }
@@ -118,7 +118,7 @@ zen::software::lidarr::backup(){
 # @function zen::software::lidarr::reset
 # @description Resets Lidarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
-zen::software::lidarr::reset(){
+zen::software::lidarr::reset() {
 	local username="$1"
 	local app_name="$2"
 }
@@ -126,7 +126,7 @@ zen::software::lidarr::reset(){
 # @function zen::software::lidarr::reinstall
 # @description Reinstalls Lidarr for a user.
 # @note This function is currently a placeholder and needs implementation.
-zen::software::lidarr::reinstall(){
+zen::software::lidarr::reinstall() {
 	local username="$1"
 	local app_name="$2"
 }

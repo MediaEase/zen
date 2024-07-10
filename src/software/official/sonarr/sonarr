@@ -17,16 +17,16 @@
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-zen::software::sonarr::add(){
+zen::software::sonarr::add() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
 	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Sonarr/Sonarr" "$is_prerelease" "linux-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
+	mflibs::file::chmod "/opt/${user[username]}/$app_name/Sonarr" "a+x"
 	zen::software::sonarr::config "$is_prerelease"
 	# generate the service file, this will also start it
 	zen::service::generate "$app_name" "$software_config_file"
-	chmod a+x "/opt/${user[username]}/$app_name/Sonarr"
 	# create a backup file
 	zen::software::backup::create "$app_name" "$software_config_file"
 }
@@ -41,7 +41,7 @@ zen::software::sonarr::add(){
 #   zen::software::sonarr::config "false"
 #   # the following enables pre-release (nightly):
 #   zen::software::sonarr::config "true"
-zen::software::sonarr::config(){
+zen::software::sonarr::config() {
 	local is_prerelease="$1"
 	declare -g url_base
 	mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
@@ -49,7 +49,7 @@ zen::software::sonarr::config(){
 	url_base="/${user[username]}/${app_name}"
 	[[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
 	mkdir -p "/home/${user[username]}/.config/${app_name}"
-	cat > "/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
+	cat >"/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
 <Config>
 	<BindAddress>127.0.0.1</BindAddress>
 	<Port>${default_port}</Port>
@@ -80,7 +80,7 @@ RCON
 # @description Updates Sonarr for a user, including stopping the service, downloading the latest release, and restarting.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
-zen::software::sonarr::update(){
+zen::software::sonarr::update() {
 	local service_name
 	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
 	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
@@ -96,11 +96,11 @@ zen::software::sonarr::update(){
 # @function zen::software::sonarr::remove
 # @description Removes Sonarr for a user, including disabling and deleting the service and cleaning up files.
 # @global user An associative array containing user-specific information.
-zen::software::sonarr::remove(){
+zen::software::sonarr::remove() {
 	local service_name
 	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
 	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-	
+
 	zen::service::manage "disable" "$service_name"
 	rm -f "$service_file"
 	zen::proxy::remove "$app_name" "${user[username]}"
@@ -112,7 +112,7 @@ zen::software::sonarr::remove(){
 # @function zen::software::sonarr::backup
 # @description Creates a backup for Sonarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
-zen::software::sonarr::backup(){
+zen::software::sonarr::backup() {
 	local username="$1"
 	local app_name="$2"
 }
@@ -120,7 +120,7 @@ zen::software::sonarr::backup(){
 # @function zen::software::sonarr::reset
 # @description Resets Sonarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
-zen::software::sonarr::reset(){
+zen::software::sonarr::reset() {
 	local username="$1"
 	local app_name="$2"
 }
@@ -128,7 +128,7 @@ zen::software::sonarr::reset(){
 # @function zen::software::sonarr::reinstall
 # @description Reinstalls Sonarr for a user.
 # @note This function is currently a placeholder and needs implementation.
-zen::software::sonarr::reinstall(){
+zen::software::sonarr::reinstall() {
 	local username="$1"
 	local app_name="$2"
 }
