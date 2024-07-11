@@ -38,7 +38,7 @@ zen::proxy::generate() {
 	[[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
 	# Write configuration to the file
 	cat <<EOF >"${caddy_file}"
-	route ${url_base}/* {
+	route ${url_base}* {
 		reverse_proxy 127.0.0.1:$port {
 			header_up -Accept-Encoding
 			header_down -x-webkit-csp
