@@ -7,10 +7,6 @@
 
 # @section Permission Functions
 # @description The following functions handle setting file permissions.
-# Example usage:
-# zen::permission::add::read_exec /path/to/directory username groupname
-# zen::permission::add::exec_exec /path/to/file username groupname
-# zen::permission::user_exec /path/to/file username groupname
 
 # @function zen::permission::fix
 # Sets permissions for a specified path.
@@ -31,9 +27,9 @@ zen::permission::fix() {
     local file_permission=$2
     local dir_permission=$3
     local user=$4
-    local group=$5
+    local group=${5:-$user}
 
-    if [[ -z "$path" || -z "$file_permission" || -z "$dir_permission" || -z "$user" || -z "$group" ]]; then
+    if [[ -z "$path" || -z "$file_permission" || -z "$dir_permission" || -z "$user" ]]; then
         [[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo -ne "[$(tput setaf 1)1$(tput sgr0)]: ${FUNCNAME[0]} is missing arguments\n" >&2
         return 1
     fi
@@ -70,7 +66,7 @@ zen::permission::fix() {
 # @arg $1 string File permissions (numeric or symbolic).
 # @arg $2 string Directory permissions (numeric or symbolic).
 # @arg $3 string Symbolic function name.
-# @usage zen::permission::add "644" "755" "rwr-xr-x"
+# @usage zen::permission::add "644" "755" "read_exec"
 zen::permission::add() {
     local file_permission=$1
     local dir_permission=$2
@@ -78,7 +74,7 @@ zen::permission::add() {
 
     eval "
         zen::permission::$symbolic_function_name() {
-            zen::permission::fix \"\$1\" \"$file_permission\" \"$dir_permission\" \"\$2\" \"\$3\"
+            zen::permission::fix \"\$1\" \"$file_permission\" \"$dir_permission\" \"\$2\" \"\${3:-\$2}\"
         }
     "
 }
@@ -96,6 +92,11 @@ declare -A permission_mapping=(
 
 # Create functions for each symbolic permission
 for symbolic in "${!permission_mapping[@]}"; do
-    permissions=("${permission_mapping[$symbolic]}")
+    IFS=' ' read -r -a permissions <<<"${permission_mapping[$symbolic]}"
     zen::permission::add "${permissions[0]}" "${permissions[1]}" "$symbolic"
 done
+
+# Example usage:
+# zen::permission::read_exec /path/to/directory username groupname
+# zen::permission::exec_exec /path/to/file username groupname
+# zen::permission::user_exec /path/to/file username groupname

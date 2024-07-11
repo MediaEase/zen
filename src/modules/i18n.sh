@@ -27,17 +27,14 @@ zen::i18n::load_locale_file() {
 	MEDIAEASE_HOME="${MEDIAEASE_HOME%/}"
 	local locale_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/translations/locales_${lang}.yaml"
 	if [[ -f "$locale_file" ]]; then
-		if [[ "$LANG" != "$locale_setting" ]]; then
-			zen::i18n::generate::system_locale "$lang"
-			export LANG="$locale_setting"
-			export LC_ALL="$locale_setting"
-			export LANGUAGE="$locale_setting"
-			export MEDIAEASE_LOCALE_FILE="$locale_file"
-			zen::i18n::set::timezone "$lang"
-		fi
+		local locale_setting
+		zen::i18n::generate::system_locale "$lang"
+		export MEDIAEASE_LOCALE_FILE="$locale_file"
+		zen::i18n::set::timezone "$lang"
 		mflibs::status::info "$(zen::i18n::translate "common.lang_loaded" "${lang}")"
 	else
 		mflibs::status::error "Locale file not found: $locale_file"
+		return 1
 	fi
 }
 
@@ -70,6 +67,9 @@ zen::i18n::generate::system_locale() {
 		echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
 		echo "$locale_setting UTF-8" >/etc/locale.gen
 		mflibs::log "locale-gen $locale_setting  >/dev/null 2>&1"
+		export LANG="$locale_setting"
+		export LC_ALL="$locale_setting"
+		export LANGUAGE="$locale_setting"
 	fi
 }
 
@@ -130,7 +130,6 @@ zen::i18n::translate() {
 	local locale_file_path="$MEDIAEASE_LOCALE_FILE"
 	local translation
 	translation=$(yq e ".${key}" "$locale_file_path" 2>/dev/null)
-	local i=0
 	if [[ -z "$translation" || "$translation" == "null" ]]; then
 		translation="$key"
 	else
@@ -144,6 +143,5 @@ zen::i18n::translate() {
 		translation="${translation#\"}"
 		translation="$(tr '[:lower:]' '[:upper:]' <<<"${translation:0:1}")${translation:1}"
 	fi
-
 	printf '%s' "$translation"
 }
