@@ -22,10 +22,14 @@ SERVER_NAME {
     tls internal
     tls EMAIL_ADDRESS
     tls /etc/pki/tls/certs/mediaease.pem /etc/pki/tls/private/mediaease.pem
-    root * /srv/harmonyui/public
 
     encode zstd gzip
+
+    # import softwares caddyfiles
+    import /etc/caddy/softwares/*.caddy
     
+    # HarmonyUI main route
+    root * /srv/harmonyui/public
     file_server
     php_fastcgi unix//var/run/php/php8.3-fpm.sock {
         resolve_root_symlink
@@ -35,6 +39,4 @@ SERVER_NAME {
         path *.php*
     }
     error @phpFile "Not found" 404
-
-    import /etc/caddy/softwares/*.caddy
 }
