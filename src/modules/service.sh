@@ -184,13 +184,14 @@ zen::service::validate() {
 	local is_child="$1"
 	local app_name_sanitized="$2"
 	mflibs::shell::text::white "$(zen::i18n::translate "service.validating_service" "$app_name_sanitized")"
-	local json_ports json_configuration application_id parent_service_id json_result json_string
+	local json_ports json_configuration application_id parent_service_id json_result
 
-	# Assuming api_service[port_type] contains a simple string or number
+	# Assuming api_service[default_port] and api_service[ssl_port] contain simple strings or numbers
 	json_ports=$(jq -n \
 		--arg default_port "${api_service[default_port]}" \
 		--arg ssl_port "${api_service[ssl_port]}" \
 		'[{"default": ($default_port | tonumber), "ssl": ($ssl_port | tonumber)}]')
+
 	# Configuration JSON
 	json_configuration=$(jq -n \
 		--arg data_path "${api_service[data_path]}" \
@@ -198,19 +199,22 @@ zen::service::validate() {
 		--arg caddyfile_path "${api_service[caddyfile_path]}" \
 		--arg root_url "${api_service[root_url]}" \
 		'[{"data_path": $data_path, "backup_path": $backup_path, "caddyfile_path": $caddyfile_path, "root_url": $root_url}]')
+
 	# Application JSON
-	application_id=$(zen::database::select "id" "application" "altname = '$app_name'")
-	# keep only the first result
+	application_id=$(zen::database::select "id" "application" "altname = '$app_name_sanitized'")
 	application_id=$(echo "$application_id" | head -n 1)
+
 	if [[ "$is_child" == "true" ]]; then
-		parent_service_id=$(zen::database::select "id" "service" "id = (SELECT MAX(id) FROM application)")
+		parent_service_id=$(zen::database::select "id" "service" "id = (SELECT MAX(id) FROM service)")
 	else
 		parent_service_id="null"
 	fi
+
 	# Construct the final JSON
-	local json_result
 	json_result=$(jq -n \
 		--arg name "${api_service[name]}" \
+		--arg version "0.0.0" \
+		--arg status "active" \
 		--arg apikey "${api_service[apikey]}" \
 		--arg user_id "${user[id]}" \
 		--argjson ports "$json_ports" \
@@ -218,21 +222,36 @@ zen::service::validate() {
 		--arg application_id "$application_id" \
 		--arg parent_service_id "$parent_service_id" \
 		'{
-			"name": $name,
-			"version": "0.0.0",
-			"status": "active",
-			"apikey": $apikey,
-			"ports": $ports,
-			"configuration": $configuration,
-			"application_id": $application_id,
-			"parent_service_id": $parent_service_id,
-			"user_id": $user_id
-		}')
-	# Convert JSON result to a string to store in the database
-	local json_string
-	json_string=$(echo "$json_result" | jq -c .)
+            "name": $name,
+            "version": $version,
+            "status": $status,
+            "apikey": $apikey,
+            "ports": $ports,
+            "configuration": $configuration,
+            "application_id": $application_id,
+            "parent_service_id": $parent_service_id,
+            "user_id": $user_id
+        }')
+
+	# Extract the individual fields from JSON except for JSON objects (ports and configuration)
+	local name version status apikey application_id parent_service_id user_id
+
+	read -r name version status apikey application_id parent_service_id user_id <<<"$(echo "$json_result" | jq -r '.name, .version, .status, .apikey, .application_id, .parent_service_id, .user_id')"
+
+	# Escape single quotes in the string values
+	name=${name//\'/\'\'}
+	version=${version//\'/\'\'}
+	status=${status//\'/\'\'}
+	apikey=${apikey//\'/\'\'}
+	application_id=${application_id//\'/\'\'}
+	parent_service_id=${parent_service_id//\'/\'\'}
+	user_id=${user_id//\'/\'\'}
+
+	# Convert JSON objects to strings for SQL insertion
+	ports=$(echo "$json_ports" | jq -c .)
+	configuration=$(echo "$json_configuration" | jq -c .)
 
 	# Call the zen::database::insert function
-	zen::database::insert "service" "name, version, status, apikey, ports, configuration, application_id, parent_service_id, user_id" "'$json_string'"
+	zen::database::insert "service" "name, version, status, apikey, ports, configuration, application_id, parent_service_id, user_id" "'$name', '$version', '$status', '$apikey', '$ports', '$configuration', '$application_id', '$parent_service_id', '$user_id'"
 	mflibs::shell::text::green "$(zen::i18n::translate "service.service_validated" "$app_name_sanitized")"
 }
