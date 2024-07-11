@@ -47,7 +47,7 @@ zen::python::venv::create() {
 # @exitcode 1 Failure due to missing path or installation error.
 zen::python::venv::build() {
 	local path="$1"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
 	local python_dependencies
 	local requirements_path="$path/requirements.txt"
 

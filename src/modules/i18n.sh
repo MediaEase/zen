@@ -25,7 +25,7 @@ zen::i18n::load_locale_file() {
 		MEDIAEASE_HOME="$(dirname "$(readlink -f "$0")")"
 	fi
 	MEDIAEASE_HOME="${MEDIAEASE_HOME%/}"
-	local locale_file="${MEDIAEASE_HOME}/MediaEase/scripts/src/translations/locales_${lang}.yaml"
+	local locale_file="${MEDIAEASE_HOME}/MediaEase/zen/src/translations/locales_${lang}.yaml"
 	if [[ -f "$locale_file" ]]; then
 		local locale_setting
 		zen::i18n::generate::system_locale "$lang"
