@@ -64,5 +64,5 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           repository: MediaEase/MediaEase
-          event-type: scripts-release
-          client-payload: '{ "submodule": "scripts", "ref": "${{ github.ref_name }}", "sha": "${{ github.sha }}"}'
+          event-type: zen-release
+          client-payload: '{ "submodule": "zen", "ref": "${{ github.ref_name }}", "sha": "${{ github.sha }}"}'

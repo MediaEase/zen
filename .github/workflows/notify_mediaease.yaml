@@ -38,13 +38,13 @@ jobs:
         with:
           token: ${{ secrets.MEDIAEASE_ACCESS_TOKEN }}
           repository: MediaEase/MediaEase
-          event-type: scripts-release
+          event-type: zen-release
           client-payload: |
             {
-              "submodule": "scripts",
+              "submodule": "zen",
               "ref": "${{ github.ref }}",
               "sha": "${{ github.sha }}",
-              "scripts_version": "${{ steps.get_latest_release.outputs.tag_name }}",
+              "zen_version": "${{ steps.get_latest_release.outputs.tag_name }}",
               "release_type": "${{ steps.get_latest_release.outputs.prerelease ? 'prerelease' : 'release' }}",
-              "scripts_release_notes": "${{ steps.get_latest_release.outputs.body }}"
+              "zen_release_notes": "${{ steps.get_latest_release.outputs.body }}"
             }
