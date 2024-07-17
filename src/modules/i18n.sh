@@ -25,6 +25,7 @@ zen::i18n::load_locale_file() {
 		MEDIAEASE_HOME="$(dirname "$(readlink -f "$0")")"
 	fi
 	MEDIAEASE_HOME="${MEDIAEASE_HOME%/}"
+	echo "MEDIAEASE_HOME=$MEDIAEASE_HOME" >>/etc/environment
 	local locale_file="${MEDIAEASE_HOME}/MediaEase/zen/src/translations/locales_${lang}.yaml"
 	if [[ -f "$locale_file" ]]; then
 		local locale_setting
@@ -65,7 +66,7 @@ zen::i18n::generate::system_locale() {
 	if [[ "$current_locale" != "$locale_setting" ]]; then
 		echo "LANGUAGE=\"$locale_setting\"" >/etc/default/locale
 		echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
-		echo "$locale_setting UTF-8" >/etc/locale.gen
+		echo "LANG=$locale_setting" >/etc/locale.gen
 		mflibs::log "locale-gen $locale_setting  >/dev/null 2>&1"
 		export LANG="$locale_setting"
 		export LC_ALL="$locale_setting"
