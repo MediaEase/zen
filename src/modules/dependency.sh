@@ -67,7 +67,7 @@ zen::dependency::apt::manage() {
 # Installs APT dependencies inline with progress display.
 # @description This function installs APT dependencies inline, showing the progress. It uses apt-get for installation and dpkg-query to check existing installations.
 # Visual feedback is provided with colored output: red for failures and green for successful installations.
-# @arg $dependencies_string string Space-separated list of dependencies to install.
+# @arg $1 string space-separated list of dependencies to install.
 # @stdout On success, displays the number of installed packages; on failure, shows failed package names.
 # @note The function checks for existing installations before proceeding with installation.
 # @example
