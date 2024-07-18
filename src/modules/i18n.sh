@@ -21,12 +21,8 @@
 #      zen::i18n::load_locale_file "fr"
 zen::i18n::load_locale_file() {
 	local lang="$1"
-	if [[ -z "$MEDIAEASE_HOME" ]]; then
-		MEDIAEASE_HOME="$(dirname "$(readlink -f "$0")")"
-	fi
-	MEDIAEASE_HOME="${MEDIAEASE_HOME%/}"
-	echo "MEDIAEASE_HOME=$MEDIAEASE_HOME" >>/etc/environment
-	local locale_file="${MEDIAEASE_HOME}/MediaEase/zen/src/translations/locales_${lang}.yaml"
+	MEDIAEASE_HOME="$(grep MEDIAEASE_HOME /etc/environment | cut -d'=' -f2)"
+	local locale_file="${MEDIAEASE_HOME}/zen/src/translations/locales_${lang}.yaml"
 	if [[ -f "$locale_file" ]]; then
 		local locale_setting
 		zen::i18n::generate::system_locale "$lang"
