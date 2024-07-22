@@ -3,11 +3,7 @@
 # @project MediaEase
 # @version 1.0.0
 # @description Contains a library of functions used in the MediaEase Project for managing proxies.
-# @author Thomas Chauveau (tomcdj71)
-# @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
 
 # @function zen::proxy::generate
 # Generates a Caddy proxy configuration file for an application.
@@ -21,6 +17,8 @@
 # @stdout Creates or overwrites a Caddy configuration file.
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to directory creation errors or file writing errors.
+# @caution Ensure the application name and port are correct to avoid misconfiguration.
+# @important The Caddy configuration will be different in multi-user mode.
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
 zen::proxy::generate() {
@@ -59,6 +57,7 @@ EOF
 # @stdout Appends the specified directive to the application's Caddy configuration file.
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to file access or append errors.
+# @note Use this function to add custom rules like security headers or rate limiting.
 zen::proxy::add_directive() {
 	local app_name="$1"
 	local username="$2"
@@ -80,6 +79,7 @@ zen::proxy::add_directive() {
 # @stdout Deletes the Caddy configuration file for the specified application.
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to file not found or deletion errors.
+# @caution Removing the proxy configuration will make the application inaccessible through the proxy.
 zen::proxy::remove() {
 	local app_name="$1"
 	local username="$2"

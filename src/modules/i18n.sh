@@ -15,8 +15,7 @@
 # @global MEDIAEASE_HOME Base directory of MediaEase application.
 # @stdout Sets system locale settings and environment variables for language and locale file path.
 # @return 1 if language not supported or locale file not found.
-# @note Validates language code, sets up environment for internationalization.
-#      Dynamically generates locale file path based on language code.
+# @note Validates language code, sets up environment for internationalization. Dynamically generates locale file path based on language code.
 # @example
 #      zen::i18n::load_locale_file "fr"
 zen::i18n::load_locale_file() {
@@ -116,8 +115,7 @@ zen::i18n::set::timezone() {
 # @global MEDIAEASE_LOCALE_FILE Path to the currently loaded locale file.
 # @stdout Translated string or original key if no translation found.
 # @return None.
-# @note Uses 'yq' to parse YAML locale file, handles missing translations,
-#       replaces placeholders in translation strings with arguments.
+# @note Uses 'yq' to parse YAML locale file, handles missing translations, replaces placeholders in translation strings with arguments.
 # @example
 #      zen::i18n::translate "common.greeting" "Thomas"
 zen::i18n::translate() {

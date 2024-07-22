@@ -20,6 +20,7 @@
 # @stdout Executes apt-get commands based on input parameters.
 # @return Exit status of the last executed apt-get command.
 # @note Handles APT actions, reinstall, and non-interactive mode.
+# @warning `yq` tool is required for parsing YAML files.
 zen::dependency::apt::manage() {
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
 	local action="$1"
@@ -122,6 +123,7 @@ zen::dependency::apt::install::inline() {
 # @arg $1 string The name of the software whose dependencies are to be retrieved.
 # @arg $2 string The separator to use (comma or space). Defaults to space if not provided.
 # @stdout Outputs a string of APT dependencies separated by the specified separator.
+# @warning `yq` tool is required for parsing YAML files.
 # @example
 #   dependencies=$(zen::dependency::apt::get_string "plex" ",")
 #   echo "$dependencies" # Outputs: "curl,libssl-dev,ffmpeg"
@@ -188,6 +190,7 @@ zen::dependency::apt::pin() {
 # @noargs
 # @stdout Executes apt-get update, upgrade, autoremove, and autoclean commands.
 # @note The function checks for and resolves locked dpkg situations before proceeding.
+# @caution Ensure that no other package management operations are running concurrently.
 zen::dependency::apt::update() {
 	mflibs::shell::text::white "$(zen::i18n::translate 'dependency.updating_system')"
 	# check if fuser is installed
@@ -222,6 +225,7 @@ zen::dependency::apt::update() {
 # @arg $1 string Name of the software for dependency removal.
 # @stdout Removes unused APT dependencies of the specified software.
 # @note The function considers dependencies listed for the specified software in the YAML configuration.
+# @caution Ensure that the dependencies are not required by other software before removal.
 zen::dependency::apt::remove() {
 	local software_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
@@ -250,6 +254,7 @@ zen::dependency::apt::remove() {
 # @arg $1 string The name of the application for which to install external dependencies.
 # @stdout Executes installation commands for each external dependency of the specified application.
 # @note Iterates over the external dependencies in the YAML file and executes their install commands.
+# @warning Ensure the external dependencies do not conflict with existing installations.
 zen::dependency::external::install() {
 	local app_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
@@ -292,6 +297,8 @@ zen::dependency::external::install() {
 # @arg $1 string Name of the source as specified in the YAML configuration.
 # @stdout Adds new APT source and GPG key based on the YAML configuration.
 # @note The function evaluates and applies settings from the YAML configuration for the specified source.
+# @caution Ensure the GPG key is from a trusted source to avoid security risks.
+# @important The architecture specified must match the system architecture.
 # @example
 #   zen::apt::add_source "php"
 # shellcheck disable=SC2155
@@ -351,6 +358,7 @@ zen::apt::add_source() {
 # It deletes the corresponding source list files and GPG keys for the specified source.
 # @arg $1 string Name of the source to be removed.
 # @stdout Removes specified APT source and its GPG key.
+# @caution Removing a source can impact system stability if other packages depend on it.
 zen::apt::remove_source() {
 	local source_name="$1"
 

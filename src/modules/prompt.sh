@@ -20,6 +20,7 @@
 # @stdout: "hi ➜ [Y] or [N] (default : Y):" or "hi ➜ [Y] or [N] (default : N):"
 # @exitcode 0: if yes
 # @exitcode 1: if no
+# @tip Use this function to prompt the user for confirmation before performing an action.
 zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
@@ -71,6 +72,7 @@ zen::prompt::yn() {
 # @exitcode 1: Invalid selection or no RAID levels provided.
 # @example:
 #   zen::prompt::raid "Choose a RAID level:" chosen_level raid_levels[@]
+# @tip Use this function to help users select from multiple RAID configuration options.
 zen::prompt::raid() {
   local prompt="${1:-"\e[1;36m$(zen::i18n::translate "common.your_choice")\e[0m"}"
   local -n output_var="${2:-}"
@@ -105,6 +107,8 @@ zen::prompt::raid() {
 # @stdout: Custom prompt message and additional context-specific prompt (if applicable).
 # @exitcode 0: Correct code or string entered.
 # @exitcode 1: Incorrect input, continues prompting.
+# @caution Ensure that the code or string provided is kept secure and not easily guessable.
+# @important This function is useful for securing sensitive operations by requiring user verification.
 zen::prompt::code() {
   local prompt="${1:-}"
   local string="${2:-}"

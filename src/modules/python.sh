@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # @file modules/python.sh
 # @brief A library for managing Python virtual environments.
+# @description Contains a library of functions used in the MediaEase Project for managing Python virtual environments.
+# @license BSD-3 Clause (Included in LICENSE)
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
-# @license BSD-3 Clause (Included in LICENSE)
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
@@ -16,6 +17,8 @@
 # @return 1 If no path is specified or if the directory change fails.
 # @exitcode 0 Success in creating the virtual environment.
 # @exitcode 1 Failure due to missing path or directory change failure.
+# @caution Ensure the specified path is correct and accessible to avoid failures.
+# @important The virtual environment is created under the specified user context.
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
 zen::python::venv::create() {
@@ -33,7 +36,7 @@ zen::python::venv::create() {
 	mflibs::shell::text::green "$(zen::i18n::translate "python.venv_create_success" "$app_name")"
 }
 
-# @function zen::python::venv::install
+# @function zen::python::venv::build
 # Installs Python packages in a virtual environment from a requirements file.
 # @description This function activates a specified Python virtual environment and installs packages.
 # It reads a requirements file and optional pre-installed packages, installing them as required.
@@ -45,6 +48,7 @@ zen::python::venv::create() {
 # @return 1 if no path is specified, or if an error occurs during installation.
 # @exitcode 0 Success in installing packages.
 # @exitcode 1 Failure due to missing path or installation error.
+# @note Ensure that the path and requirements file are correct to avoid installation errors.
 zen::python::venv::build() {
 	local path="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
@@ -112,6 +116,7 @@ zen::python::venv::build() {
 # @return 1 if no path is specified or if the directory change fails.
 # @exitcode 0 Success in removing the virtual environment.
 # @exitcode 1 Failure due to missing path or directory change failure.
+# @note Make sure to backup any important data before removing the virtual environment.
 zen::python::venv::remove() {
 	local path="$1"
 	if [[ -z "$path" ]]; then
@@ -137,6 +142,7 @@ zen::python::venv::remove() {
 # @arg $1 string The target file to which the Python environment configuration should be appended.
 # @exitcode 0 Success in appending the configuration.
 # @exitcode 1 Failure in file operation.
+# @note This function assumes that pyenv and pyenv-virtualenv are already installed.
 zen::python::add::profile() {
 	local target_file="$1"
 	{

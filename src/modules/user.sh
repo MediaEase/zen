@@ -147,6 +147,8 @@ zen::multi::check::id() {
 # @note Queries the database and populates the 'user' array with the user's data.
 # shellcheck disable=SC2034
 # Disable SC2034 because the variable is defined in the main script
+# @note Queries the database and populates the 'user' array with the user's data.
+# @warning Ensure the user exists before calling this function.
 zen::user::load() {
 	declare -A -g user
 	local username="$1"
@@ -168,6 +170,7 @@ zen::user::load() {
 # It updates the user's status in the database to reflect the ban.
 # @arg $1 string The username to ban.
 # @arg $2 string Optional duration in days for the ban.
+# @note Duration is in days; omit for a permanent ban.
 zen::user::ban() {
 	local username="$1"
 	local duration="$2"
@@ -190,6 +193,7 @@ zen::user::ban() {
 # It is used for creating default passwords for new users.
 # @arg $1 int The length of the password to generate.
 # @return A randomly generated password.
+# @note Uses /dev/urandom for secure password generation.
 zen::user::password::generate() {
 	local length="$1"
 	tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w "${length}" | head -n 1

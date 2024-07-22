@@ -74,6 +74,7 @@ zen::common::git::clone() {
 # Retrieves and extracts a release from a GitHub repository.
 # @description This function downloads and extracts a specific release (stable or prerelease) from a GitHub repository.
 # It supports various file types for the release archive and sets appropriate permissions for the extracted files.
+# @tip Check the release file type (alpha, beta, rc, ...) to ensure it is supported before downloading.
 # @arg $1 string Directory where the release will be extracted.
 # @arg $2 string Full URL of the GitHub repository.
 # @arg $3 bool Retrieve a prerelease (true) or stable release (false).
@@ -167,6 +168,7 @@ zen::common::git::download_file() {
 # @function zen::common::git::tree
 # Lists the files in a given repository and branch.
 # @description This function lists the files in a specified repository and branch using the GitHub API.
+# @tip Use appropriate filters to list only the files you are interested in.
 # @arg $1 string Remote path to the directory in the repository.
 # @arg $2 string Name of the repository (e.g., "MediaEase/binaries").
 # @arg $3 string Branch name (e.g., "main").
@@ -228,10 +230,11 @@ zen::common::environment::get::variable() {
 # @description This function exports a given variable and its value, appending it to the root user's .bash_profile if it's not already present.
 # It ensures that the variable will be set and available in future shell sessions for the root user.
 # The function splits the input into a variable name and value, then checks and appends the export statement to .bash_profile.
+# @note If the variable is already exported in the .bash_profile, this function does not duplicate it.
+# @important Only use this function for variables that should persist across sessions for the root user.
 # @arg $1 string The variable assignment in 'NAME=VALUE' format.
 # @stdout None.
-# @notes If the variable is already exported in the .bash_profile, this function does not duplicate it.
-zen::common::export::var() {
+zen::common::environment::set::variable() {
 	local var_name="${1%%=*}"
 	local var_value="${1#*=}"
 	local bashrc_file="/root/.bash_profile"
@@ -263,7 +266,6 @@ zen::common::setting::load() {
 # It creates and manages the log file, ensuring it's owned by the appropriate user.
 # @arg $1 string Message to be logged.
 # @stdout None.
-# @notes Creates and manages the dashboard log file.
 zen::common::dashboard::log() {
 	if [[ ! -f "/srv/zen/logs/dashboard" ]]; then
 		mkdir -p /srv/zen/logs
@@ -279,6 +281,7 @@ zen::common::dashboard::log() {
 # @function zen::common::capitalize::first
 # Capitalizes the first letter of a given string.
 # @description This function transforms a string by capitalizing its first letter, useful for formatting display text.
+# @tip Use this function to format user-visible strings consistently.
 # @arg $1 string String to be capitalized.
 # @stdout Transformed string with the first letter capitalized.
 zen::common::capitalize::first() {
@@ -292,6 +295,7 @@ zen::common::capitalize::first() {
 # @function zen::common::shell::color::randomizer
 # Selects a random color code for shell output styling.
 # @description This function randomly selects a color code for styling shell outputs, adding visual diversity to command line interfaces.
+# @note This function is useful for creating visually distinct outputs.
 # @stdout Random color code.
 zen::common::shell::color::randomizer() {
 	local color
@@ -308,6 +312,7 @@ zen::common::shell::color::randomizer() {
 # @description This function handles the compilation and installation of a project that uses the make build system.
 # It utilizes all available processors to speed up the compilation and allows specification of additional make arguments and installation directory.
 # @usage zen::common::make::install "source_directory" "installation_directory" "make_arguments" "make_install_arguments"
+# @note This function optimizes build speed by using parallel build options based on the number of available processors.
 # @arg $1 string Source directory where the makefile is located and where the build process should occur.
 # @arg $2 string Installation directory where the built project should be installed. This is optional and, if specified, is used in the `make install` command with the DESTDIR prefix.
 # @arg $3 string Additional arguments to pass to the make command during the build process (optional).
@@ -315,7 +320,6 @@ zen::common::shell::color::randomizer() {
 # @exitcode 0 on successful build and installation.
 # @exitcode 1 on failure during either the build or install step.
 # @stdout Information and status updates about each step of the build and installation process.
-# @notes This function optimizes build speed by using parallel build options based on the number of available processors.
 zen::common::make::install() {
 	local source_dir="$1"
 	local install_dir="$2"
@@ -343,13 +347,13 @@ zen::common::make::install() {
 # @description This function handles the configuration, building, and installation of a project that utilizes scons as its build system.
 # It supports building in debug mode and allows specifying a custom installation directory.
 # @usage zen::common::scons::install "source_directory" "installation_directory" "debug_flag"
+# @note This function assumes the presence of scons in the system and relies on proper configuration of the project for scons.
 # @arg $1 string Source directory of the project to be built.
 # @arg $2 string Installation directory where the project should be installed (optional).
 # @arg $3 string Debug build flag; if set to 'true', the project will be built in debug mode (optional).
 # @exitcode 0 on successful execution.
 # @exitcode 1 on failure at any step (configuration, building, or installation).
 # @stdout Information about the process steps and their success or failure.
-# @notes This function assumes the presence of scons in the system and relies on proper configuration of the project for scons.
 zen::common::scons::install() {
 	local source_dir="$1"
 	local install_dir="$2"

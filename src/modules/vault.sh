@@ -1,4 +1,19 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
+# @file modules/vault.sh
+# @project MediaEase
+# @version 1.0.0
+# @description A library for managing the secure vault in the MediaEase project.
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @section Vault Functions
+# @description The following functions handle the creation and management of the vault.
+# @warning The vault is a secure storage location for sensitive information. Ensure that the vault is secure and that only authorized users have access to it.
+# @important This module is purely internal. No modifications are allowed for security reasons. All functions are noted as '@internal' so the documentation generator will ignore them.
+
 # @function zen::vault::init
 # @internal
 # @description Initializes the vault by setting up the salt and secret key.

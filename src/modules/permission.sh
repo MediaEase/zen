@@ -22,6 +22,10 @@
 # @exitcode 1 if missing arguments.
 # @exitcode 2 if the path does not exist.
 # @exitcode 3 if the permission format is invalid.
+# @caution Ensure that the user and group have the necessary permissions to modify the specified path.
+# @important Incorrect permissions can lead to security vulnerabilities or application failures.
+# @example
+#   zen::permission::fix "/path/to/directory" "644" "755" "username" "groupname"
 zen::permission::fix() {
     local path=$1
     local file_permission=$2
@@ -66,7 +70,9 @@ zen::permission::fix() {
 # @arg $1 string File permissions (numeric or symbolic).
 # @arg $2 string Directory permissions (numeric or symbolic).
 # @arg $3 string Symbolic function name.
-# @usage zen::permission::add "644" "755" "read_exec"
+# @example
+#   zen::permission::add "644" "755" "read_exec"
+# @note Useful for creating reusable permission setting functions.
 zen::permission::add() {
     local file_permission=$1
     local dir_permission=$2

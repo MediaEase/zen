@@ -2,21 +2,21 @@
 # @file modules/software.sh
 # @project MediaEase
 # @version 1.0.0
-# @description Contains a library of functions used in the MediaEase Project for managing softwares.
-# @author Thomas Chauveau (tomcdj71)
-# @author_contact thomas.chauveau.pro@gmail.com
+# @description Contains a library of functions used in the MediaEase Project for managing software.
 # @license BSD-3 Clause (Included in LICENSE)
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
 # @function zen::software::is::installed
-# @description Checks if a specific software is installed for a given user.
+# Checks if a specific software is installed for a given user.
+# @description This function checks if a specific software is installed for a given user by querying the database.
 # @arg $1 string Name (altname) of the software.
 # @arg $2 string User ID to check the software installation for.
 # @return 0 if the software is installed, 1 otherwise.
-# @note Queries the database for an entry in the 'service' table for the given user and software.
+# @note Ensures both software name and user ID are provided; if user ID is '*', checks for any user.
 # @example
 #   zen::software::is::installed "software_name" "user_id"
+# @example
 #   [[ $(zen::software::is::installed "subsonic" 6) ]] && echo "yes" || echo "no"
 zen::software::is::installed() {
 	local software="$1"
@@ -47,12 +47,14 @@ zen::software::is::installed() {
 }
 
 # @function zen::software::port_randomizer
-# @description Generates a random port number within a specified range for an application.
+# Generates a random port number within a specified range for an application.
+# @description This function generates a random port number within a specified range for an application, checking if the port is available.
 # @arg $1 string Name of the application.
 # @arg $2 string Type of port to generate (default, ssl).
 # @return A randomly selected port number within the specified range.
 # @example
 #   zen::software::port_randomizer "app_name" "port_type"
+# @note If 'port_range' is specified as the port type, a range of ports is generated.
 zen::software::port_randomizer() {
 	local app_name="$1"
 	local port_type="$2"
@@ -115,7 +117,8 @@ zen::software::port_randomizer() {
 }
 
 # @function zen::software::infobox
-# @description Builds the header or footer for the software installer.
+# Builds the header or footer for the software installer.
+# @description This function builds the header or footer for the software installer, displaying relevant information.
 # @arg $1 string Name of the application.
 # @arg $2 string Color to use for the text.
 # @arg $3 string Action being performed (add, update, backup, reset, remove, reinstall).
@@ -204,7 +207,8 @@ zen::software::infobox() {
 }
 
 # @function zen::software::options::process
-# @description Processes software options from a comma-separated string.
+# Processes software options from a comma-separated string.
+# @description This function processes software options from a comma-separated string, exporting variables for further use.
 # @arg $1 string String of options in "option1=value1,option2=value2" format.
 # @note Variables are exported and used in other functions.
 # shellcheck disable=SC2034
@@ -249,7 +253,8 @@ zen::software::options::process() {
 }
 
 # @function zen::software::backup::create
-# @description Handles the creation of software backups.
+# Handles the creation of software backups.
+# @description This function handles the creation of software backups, ensuring the backup directory exists and backing up specified files.
 # @arg $1 string Name of the application.
 # @note Variable is defined in the main script.
 # shellcheck disable=SC2154
@@ -280,12 +285,14 @@ zen::software::backup::create() {
 }
 
 # @function zen::software::get_config_key_value
-# @description Retrieves a key/value from a YAML configuration file.
+# Retrieves a key/value from a YAML configuration file.
+# @description This function retrieves a key/value from a YAML configuration file using a specified 'yq' expression.
 # @arg $1 string Path to the YAML configuration file.
 # @arg $2 string 'yq' expression to evaluate in the configuration file.
 # @return The value of the specified key or expression.
 # @example
 #   zen::software::get_config_key_value "config_file_path" "yq_expression"
+# @note This function will replace placeholders '%i' and '$app_name' with actual values.
 zen::software::get_config_key_value() {
 	local software_config_file="$1"
 	local yq_expression="$2"
@@ -317,7 +324,8 @@ zen::software::get_config_key_value() {
 }
 
 # @function zen::software::autogen
-# @description Automatically generates random values for specified keys.
+# Automatically generates random values for specified keys.
+# @description This function automatically generates random values for specified keys, such as API keys, ports, and passwords.
 # @note Variables are exported and used in other functions.
 # shellcheck disable=SC2034
 # Disable SC2034 because the variables are exported and used in other functions

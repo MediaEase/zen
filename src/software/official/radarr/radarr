@@ -36,10 +36,9 @@ zen::software::radarr::add() {
 # @arg $1 string Indicates whether to use a prerelease version of Radarr.
 # @global user An associative array containing user-specific information.
 # @example
-#   # the following disables pre-release (develop):
-#   zen::software::radarr::config "false"
-#   # the following enables pre-release (nightly):
-#   zen::software::radarr::config "true"
+#   zen::software::radarr::config "false"  # disables pre-release (develop)
+# @example
+#   zen::software::radarr::config "true" # enables pre-release (nightly)
 zen::software::radarr::config() {
 	local is_prerelease="$1"
 	declare -g url_base
