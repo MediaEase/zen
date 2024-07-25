@@ -307,3 +307,50 @@ zen::validate::input() {
     ;;
   esac
 }
+
+# @function zen::prompt::multi_select
+# @description: Presents a list of options to the user and allows them to select multiple items.
+# @arg $1: string (optional) - Custom prompt message.
+# @arg $2: string - The name of the variable to store the user's selections.
+# @arg $3 onwards: array (passed by reference) - Array of options to present as choices.
+# @stdout: Custom prompt message followed by a dynamically generated list of options for selection.
+# @exitcode 0: Successful execution, valid selection.
+# @exitcode 1: Invalid selection or no options provided.
+# @example:
+#   zen::prompt::multi_select "Select options:" selected_options options[@]
+zen::prompt::multi_select() {
+  local prompt="${1:-"Select options:"}"
+  local -n output_var="${2:-}"
+  local choices=("${@:3}")
+  local selected=()
+  local choice_num
+
+  echo -e "${prompt}"
+  for index in "${!choices[@]}"; do
+    echo -e "    \e[96m$((index + 1)))\e[0m ${choices[index]}"
+  done
+  echo -e "Enter the numbers of your choices, separated by spaces (e.g., 1 2 3):"
+
+  while true; do
+    printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "common.your_choice") ")"
+    read -r -a choice_nums </dev/tty
+
+    local valid=true
+    selected=()
+    for choice_num in "${choice_nums[@]}"; do
+      if [[ "$choice_num" =~ ^[0-9]+$ ]] && ((choice_num >= 1 && choice_num <= ${#choices[@]})); then
+        selected+=("${choices[choice_num - 1]}")
+      else
+        valid=false
+        break
+      fi
+    done
+
+    if $valid; then
+      break
+    else
+      echo -e "\e[31m$(zen::i18n::translate "common.invalid_input")\e[0m"
+    fi
+  done
+  export output_var="${selected[*]}"
+}
