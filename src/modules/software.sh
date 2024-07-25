@@ -372,3 +372,100 @@ zen::software::autogen() {
 		fi
 	done
 }
+
+# @function zen::software::create
+# @description Prompts the user for details to create a new software entry.
+# @stdout Collects software details and creates the software entry.
+# shellcheck disable=SC2154
+# Disable SC2154 because the variables are exported and used in other functions
+# @example
+#   zen::software::create
+zen::software::create() {
+	echo "Creating a new software entry..."
+	zen::prompt::input "Enter the software name: " "" software_name
+	if [[ -z "$software_name" ]]; then
+		mflibs::status::error "Software name cannot be empty."
+		exit 1
+	fi
+	software_name_sanitized=$(zen::common::capitalize::first "$software_name")
+	software_name_lowered=$(zen::common::lowercase "$software_name")
+	zen::prompt::input "Enter the Category Group for the software: " "" group
+	zen::prompt::input "Enter the software repository URL: " "github" software_repo
+	zen::prompt::input "Enter the software documentation URL: " "url" software_docs
+	zen::prompt::input "Enter the software homepage URL: " "url" homepage
+	zen::prompt::yn "Is the software multi-user? (yes/no)" multi_user
+	zen::prompt::yn "Is this app will use a port? (yes/no)" use_port
+	if [[ "$use_port" == "yes" ]]; then
+		zen::prompt::input "Let MediaEase choose a port for you using port range? (yes/no)" "" use_random_port
+		if [[ "$use_random_port" == "yes" ]]; then
+			zen::prompt::input "Enter the default port range for the software: (Ex: 5780-6001)" "port_range" port_range
+			zen::prompt::input "Enter the SSL port range for the software: (Ex: 11245-11287)" "port_range" ssl_port_range
+		else
+			zen::prompt::input "Enter the default port for the software: " "numeric" default_port
+			zen::prompt::input "Enter the SSL port for the software: " "numeric" ssl_port
+		fi
+	fi
+	zen::prompt::yn "Is this app will use a service? (yes/no)" use_service
+	if [[ "$use_service" == "yes" ]]; then
+		zen::prompt::input "Enter the service directives for the software (comma separated list): (Ex: Type=simple, Environment=TMPDIR=/home/%i/tmp/$software_name_sanitized)" "" service_directives
+	fi
+	zen::prompt::yn "Is this app compatible with MediaEase Autogen feature? (yes/no)" use_autogen
+	if [[ "$use_autogen" == "yes" ]]; then
+		declare -a autogen_keys
+		declare -a selected_autogen_keys
+		declare -a selected_autogen_keys_yaml
+		autogen_keys=("Api Key" "SSL Port" "Default Port" "Password" "Port Range")
+		selected_autogen_keys=()
+		zen::prompt::multi_select "Select the autogen keys for the software: " selected_autogen_keys autogen_keys[@]
+		selected_autogen_keys_yaml=()
+		for key in "${selected_autogen_keys[@]}"; do
+			mapfile -t autogen_key_array <<<"$(echo "$key" | tr '[:upper:]' '[:lower:]' | tr ' ' '_')"
+			selected_autogen_keys_yaml+=("${autogen_key_array[@]}")
+		done
+	fi
+
+	# Generate the software entry
+	software_dir="/opt/MediaEase/MediaEase/zen/src/software/experimental/$software_name_lowered"
+	mflibs::dir::mkcd "$software_dir"
+	cat <<EOL >"$software_dir/config.yaml"
+arguments:
+  app_name: $software_name_sanitized
+  altname: $software_name_lowered
+  description: $software_name_lowered._description
+  pro_only: true
+  logo_path: $software_name_lowered.png
+  group: $group
+  details:
+    docs: $software_docs
+    github: $software_repo
+    homepage: $homepage
+  multi_user: $([ "$multi_user" == "yes" ] && echo "true" || echo "false")
+  ports:
+    - default: ${port_range:-"12001-13999"}
+    - ssl: ${ssl_port_range:-"35001-35999"}
+  service_directives:
+    - ${service_directives//, / }
+  files:
+    - service: /etc/systemd/system/$software_name_lowered@.service
+    - proxy: /etc/caddy/softwares/%i.$software_name_lowered.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$software_name_lowered
+    - data: /home/%i/.config/$software_name_lowered
+    - install: /opt/%i/$software_name_sanitized
+  autogen:
+    - ${selected_autogen_keys_yaml[@]}
+EOL
+
+	cp -pR /opt/MediaEase/MediaEase/zen/src/extras/templates/app_script.tpl "$software_dir/$software_name_lowered"
+	sed -i "s/{{ SOFTWARE_NAME }}/$software_name_sanitized/g; s/{{ SOFTWARE_NAME_LOWERED }}/$software_name_lowered/g" "$software_dir/$software_name_lowered"
+
+	mflibs::shell::text::yellow "################################################################################"
+	mflibs::shell::text::yellow "# Software $software_name_sanitized created successfully."
+	mflibs::shell::text::yellow "# You can find the generated files in $software_dir"
+	mflibs::shell::text::yellow "# Generated files: $software_dir/config.yaml, $software_dir/$software_name_lowered"
+	mflibs::shell::text::yellow "# Please update the configuration file with the correct values."
+	mflibs::shell::text::yellow "# "
+	mflibs::shell::text::yellow "# Learn more about how to create a software entry in the documentation."
+	mflibs::shell::text::yellow "# https://mediaease.github.io/docs/mediaease/components/zen/README.md"
+	mflibs::shell::text::yellow "################################################################################"
+}
