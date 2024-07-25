@@ -455,6 +455,7 @@ arguments:
   autogen:
     - ${selected_autogen_keys_yaml[@]}
 EOL
+	convert -background none -resize 128x128 "/opt/MediaEase/MediaEase/zen/src/extras/templates/app_logo.png" "$software_dir/$software_name_lowered.png"
 	cp -pR /opt/MediaEase/MediaEase/zen/src/extras/templates/app_script.tpl "$software_dir/$software_name_lowered"
 	sed -i "s/{{ SOFTWARE_NAME }}/$software_name_sanitized/g; s/{{ SOFTWARE_NAME_LOWERED }}/$software_name_lowered/g" "$software_dir/$software_name_lowered"
 	declare -A translation_files
@@ -467,7 +468,7 @@ EOL
 	mflibs::shell::text::yellow "# Software $software_name_sanitized created successfully."
 	mflibs::shell::text::yellow "# You can find the generated files in $software_dir"
 	mflibs::shell::text::yellow "# Generated files: $software_dir/config.yaml, $software_dir/$software_name_lowered"
-	mflibs::shell::text::yellow "# Please update the configuration file with the correct values."
+	mflibs::shell::text::yellow "# Please update the configuration file and the logo used with the correct values."
 	mflibs::shell::text::yellow "# Don't forget to add a correct description for the software in the translations files."
 	mflibs::shell::text::yellow "# Translation files updated:"
 	for file in "${!translation_files[@]}"; do
