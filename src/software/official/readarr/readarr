@@ -21,7 +21,6 @@ zen::software::readarr::add() {
 	# grab the correct release
 	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Readarr/Readarr" "$is_prerelease" "linux-core-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
-	mflibs::file::chmod "/opt/${user[username]}/$app_name/Readarr" "a+x"
 	zen::software::readarr::config "$is_prerelease"
 	# generate the service file, this will also start it
 	zen::service::generate "$app_name" "$software_config_file"
@@ -69,7 +68,9 @@ zen::software::readarr::config() {
 RCON
 
 	# generate the proxy configuration
-	zen::common::fix::permissions "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
+	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+	zen::permission::user_exec "/opt/${user[username]}/$app_name/Readarr" "${user[username]}"
 	zen::proxy::generate "$app_name" "$default_port" "$url_base"
 	mflibs::shell::text::green "$(zen::i18n::translate "software.application_configured" "$app_name")"
 }
