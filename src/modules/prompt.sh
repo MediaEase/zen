@@ -131,3 +131,31 @@ zen::prompt::code() {
     fi
   done
 }
+
+# @function zen::prompt::password
+# @description: Prompts the user to input a password. The input is hidden from the terminal.
+# @example:
+#   zen::prompt::password "Enter your password:" "password"
+# @arg $1: string - Custom prompt message.
+# @arg $2: string - The password the user must input.
+# @stdout: Custom prompt message and hidden password input.
+# @exitcode 0: Correct password entered.
+# @exitcode 1: Incorrect input, continues prompting.
+# @caution Ensure that the password provided is kept secure and not easily guessable.
+# @important This function is useful for securing sensitive operations by requiring user verification.
+zen::prompt::password() {
+  local prompt="${1:-}"
+  local password="${2:-}"
+
+  while true; do
+    printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
+    zen::vault::pass::decode "$password"
+    mflibs::shell::text::cyan " ➜ "
+    read -r reply </dev/tty
+    if [[ "$reply" == "$password" ]]; then
+      return 0
+    else
+      mflibs::shell::text::red "$(zen::i18n::translate "common.invalid_input" "$reply")"
+    fi
+  done
+}
