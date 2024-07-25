@@ -292,6 +292,19 @@ zen::common::capitalize::first() {
 	echo "$capitalized_string"
 }
 
+# @function zen::common::lowercase
+# Converts a string to lowercase.
+# @description This function converts a given string to lowercase, ensuring consistent formatting for display text.
+# @arg $1 string String to be converted to lowercase.
+# @stdout Transformed string in lowercase.
+zen::common::lowercase() {
+	local input_string="$1"
+	local lowercase_string
+
+	lowercase_string="${input_string,,}"
+	echo "$lowercase_string"
+}
+
 # @function zen::common::shell::color::randomizer
 # Selects a random color code for shell output styling.
 # @description This function randomly selects a color code for styling shell outputs, adding visual diversity to command line interfaces.
