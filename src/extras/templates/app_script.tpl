@@ -14,11 +14,10 @@
 # @global app_name_sanitized A sanitized version of the application name for display.
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
-# @note Disables SC2154 because the variable is defined in the main script.
-# shellcheck disable=SC2154
 # @example
 #   zen software add {{ SOFTWARE_NAME_LOWERED }} -u <username>
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::add() {
+    # TODO: Implement this function
 }
 
 ################################################################################
@@ -30,6 +29,7 @@ zen::software::{{ SOFTWARE_NAME_LOWERED }}::add() {
 # @example
 #   zen::software::{{ SOFTWARE_NAME_LOWERED }}::config
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::config() {
+    # TODO: Implement this function
 }
 
 # @function zen::software::{{ SOFTWARE_NAME_LOWERED }}::update
@@ -40,6 +40,7 @@ zen::software::{{ SOFTWARE_NAME_LOWERED }}::config() {
 # @example
 #   zen software update {{ SOFTWARE_NAME_LOWERED }} -u <username>
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::update() {
+    # TODO: Implement this function
 }
 
 # @function zen::software::{{ SOFTWARE_NAME_LOWERED }}::remove
@@ -49,31 +50,32 @@ zen::software::{{ SOFTWARE_NAME_LOWERED }}::update() {
 # @example
 #   zen software remove {{ SOFTWARE_NAME_LOWERED }} -u <username>
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::remove() {
+    # TODO: Implement this function
 }
 
 # @function zen::software::{{ SOFTWARE_NAME_LOWERED }}::backup
 # @alias Backup {{ SOFTWARE_NAME }}
 # @description Creates a backup for {{ SOFTWARE_NAME }} settings for a user.
-# @note This function is currently a placeholder and needs implementation.
 # @example
 #   zen software backup {{ SOFTWARE_NAME_LOWERED }} -u <username>
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::backup() {
-
+    # TODO: Implement this function
 }
 
 # @function zen::software::{{ SOFTWARE_NAME_LOWERED }}::reset
+# @alias Reset {{ SOFTWARE_NAME }}
 # @description Resets {{ SOFTWARE_NAME }} settings for a user.
-# @note This function is currently a placeholder and needs implementation.
 # @example
 #   zen software reset {{ SOFTWARE_NAME_LOWERED }} -u <username>
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::reset() {
-	
+	# TODO: Implement this function
 }
 
 # @function zen::software::{{ SOFTWARE_NAME_LOWERED }}::reinstall
+# @alias Reinstall {{ SOFTWARE_NAME }}
 # @description Reinstalls {{ SOFTWARE_NAME }} for a user.
-# @note This function is currently a placeholder and needs implementation.
 # @example
 #   zen software reinstall {{ SOFTWARE_NAME_LOWERED }} -u <username>
 zen::software::{{ SOFTWARE_NAME_LOWERED }}::reinstall() {
+    # TODO: Implement this function
 }
