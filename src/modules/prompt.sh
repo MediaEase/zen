@@ -159,3 +159,151 @@ zen::prompt::password() {
     fi
   done
 }
+
+# @function zen::prompt::input
+# @description: Safely prompts the user for input and stores the result in a variable. The prompt message is customizable. We can filter things like email, URL, etc.
+# @example:
+#   zen::prompt::input "Enter your email address:" "email" email
+# @arg $1: string - Custom prompt message.
+# @arg $2: string (optional) - Filter for the input (e.g., 'email', 'url', 'ip', 'ipv4', 'ipv6', 'mac', 'hostname', 'fqdn', 'domain', 'github', 'docs', 'port_range', ).
+# @arg $3: string - The variable to store the user's input.
+# @stdout: Custom prompt message and user input.
+# @exitcode 0: Successful execution, valid input.
+# @exitcode 1: Invalid input, continues prompting.
+# @important This function is useful for validating user input and ensuring that the input matches a specific format.
+zen::prompt::input() {
+  local prompt="${1:-}"
+  local filter="${2:-}"
+  local output_var_name="${3:-}"
+  local reply
+
+  while true; do
+    printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
+    read -r reply </dev/tty
+    if [[ -n "$filter" ]]; then
+      if zen::validate::input "$filter" "$reply"; then
+        export "$output_var_name"="$reply"
+        return 0
+      else
+        mflibs::shell::text::red "$(zen::i18n::translate "common.invalid_input" "$reply")"
+      fi
+    else
+      export "$output_var_name"="$reply"
+      return 0
+    fi
+  done
+}
+
+# @function zen::validate::input
+# @description: Validates user input based on a specific filter.
+# @arg $1: string - Filter for the input (e.g., 'email', 'url', 'ip', 'ipv4', 'ipv6', 'mac', 'hostname', 'fqdn', 'domain', 'numeric', 'group').
+# @arg $2: string - The user's input to validate.
+# @exitcode 0: Successful execution, valid input.
+# @exitcode 1: Invalid input.
+# @example
+#   zen::validate::input "email" "contact@me.com" # returns 0
+# @example
+#   zen::validate::input "email" "contact@me" # returns 1
+# @example
+#   zen::validate::input "url" "https://example.com" # returns 0
+# @example
+#   zen::validate::input "url" "example.com" # returns 1
+# @example
+#   zen::validate::input "ip" "192.168.1.1" # returns 0
+# @example
+#   zen::validate::input "ip" "256.256.256.256" # returns 1
+# @example
+#   zen::validate::input "ipv4" "192.168.1.1" # returns 0
+# @example
+#   zen::validate::input "ipv4" "256.256.256.256" # returns 1
+# @example
+#   zen::validate::input "ipv6" "2001:0db8:85a3:0000:0000:8a2e:0370:7334" # returns 0
+# @example
+#   zen::validate::input "ipv6" "2001:0db8:85a3::8a2e:0370:7334" # returns 1
+# @example
+#   zen::validate::input "mac" "00:1A:2B:3C:4D:5E" # returns 0
+# @example
+#   zen::validate::input "mac" "00:1A:2B:3C:4D:5E:6F" # returns 1
+# @example
+#   zen::validate::input "hostname" "example-hostname" # returns 0
+# @example
+#   zen::validate::input "hostname" "example_hostname" # returns 1
+# @example
+#   zen::validate::input "fqdn" "example.com" # returns 0
+# @example
+#   zen::validate::input "fqdn" "example..com" # returns 1
+# @example
+#   zen::validate::input "domain" "example.com" # returns 0
+# @example
+#   zen::validate::input "domain" "example" # returns 1
+# @example
+#   zen::validate::input "group" "media" # returns 0
+# @example
+#   zen::validate::input "group" "unsupported_group" # returns 1
+# @example
+#   zen::validate::input "github" "https://github.com/MediaEase/shdoc" # returns 0
+# @example
+#   zen::validate::input "github" "MediaEase/shdoc" # returns 0
+# @example
+#   zen::validate::input "docs" "https://example.com/docs" # returns 0
+# @example
+#   zen::validate::input "docs" "https://example.com/documentation" # returns 1
+# @example
+#   zen::validate::input "port_range" "8000-9000" # returns 0
+# @example
+#   zen::validate::input "port_range" "8000:9000" # returns 1
+# @example
+#   zen::validate::input "numeric" "12345" # returns 0
+# @example
+#   zen::validate::input "numeric" "12345a" # returns 1
+zen::validate::input() {
+  local filter="$1"
+  local input="$2"
+  case "$filter" in
+  email)
+    [[ "$input" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+    ;;
+  url)
+    [[ "$input" =~ ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} ]]
+    ;;
+  ip)
+    [[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+    ;;
+  ipv4)
+    [[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+    ;;
+  ipv6)
+    [[ "$input" =~ ^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$ ]]
+    ;;
+  mac)
+    [[ "$input" =~ ^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$ ]]
+    ;;
+  hostname)
+    [[ "$input" =~ ^[a-zA-Z0-9.-]+$ ]]
+    ;;
+  fqdn)
+    [[ "$input" =~ ^([a-zA-Z0-9.-]+\.)+[a-zA-Z]{2,}$ ]]
+    ;;
+  domain)
+    [[ "$input" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+    ;;
+  group)
+    [[ "$input" =~ ^(full|automation|media|remote|download)$ ]]
+    ;;
+  github)
+    [[ "$input" =~ ^(https://(github|gitlab)\.com/[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+|[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)$ ]]
+    ;;
+  docs)
+    [[ "$input" =~ ^https://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/docs ]]
+    ;;
+  port_range)
+    [[ "$input" =~ ^[0-9]+-[0-9]+$ ]]
+    ;;
+  numeric)
+    [[ "$input" =~ ^[0-9]+$ ]]
+    ;;
+  *)
+    return 1
+    ;;
+  esac
+}
