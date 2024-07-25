@@ -96,28 +96,10 @@ zen::common::git::get_release() {
 	mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "common.release_found" "$repo_name"): $release_version")"
 	[[ -d $target_dir ]] && rm -rf "$target_dir"
 	mflibs::dir::mkcd "$target_dir"
-	local file_extension="${release_url##*.}"
 	wget -q "$release_url"
 	local downloaded_file
 	downloaded_file="$(basename "$release_url")"
-	case "$file_extension" in
-	zip)
-		unzip -q "$downloaded_file" >/dev/null 2>&1
-		;;
-	tar)
-		tar -xf "$downloaded_file" --strip-components=1 >/dev/null 2>&1
-		;;
-	gz)
-		tar -xvzf "$downloaded_file" --strip-components=1 >/dev/null 2>&1
-		;;
-	deb)
-		dpkg -i "$downloaded_file" >/dev/null 2>&1
-		;;
-	*)
-		mflibs::status::error "$(zen::i18n::translate "common.unsupported_file_type" "$file_extension")"
-		return 1
-		;;
-	esac
+	mflibs::file::extract "$downloaded_file"
 	rm -f "$downloaded_file"
 	if [[ "$target_dir" == /opt/* ]]; then
 		local username
