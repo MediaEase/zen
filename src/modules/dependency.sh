@@ -306,7 +306,6 @@ zen::dependency::external::install() {
 zen::apt::add_source() {
 	local source_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/apt_sources.yaml"
-
 	[[ -z "$source_name" ]] && {
 		printf "Source name is required.\n"
 		return 1
@@ -320,6 +319,18 @@ zen::apt::add_source() {
 	local recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
 	local trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 
+	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && {
+		echo "Debug: source_name=$source_name"
+		echo "Debug: dependencies_file=$dependencies_file"
+		echo "Debug: source_url_template=$source_url_template"
+		echo "Debug: source_url=$source_url"
+		echo "Debug: arch=$arch"
+		echo "Debug: include_deb_src=$include_deb_src"
+		echo "Debug: gpg_key_url=$gpg_key_url"
+		echo "Debug: recv_keys=$recv_keys"
+		echo "Debug: trusted_key_url=$trusted_key_url"
+	}
+
 	[[ -z "$source_url" ]] && {
 		printf "URL for %s not found in YAML file.\n" "$source_name"
 		return 1
@@ -331,6 +342,7 @@ zen::apt::add_source() {
 	if [[ -n "$gpg_key_url" ]]; then
 		local gpg_key_file
 		gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
+		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: gpg_key_file=$gpg_key_file"
 		[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
 		wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
 			printf "Failed to process GPG key for %s\n" "$source_name"
@@ -343,10 +355,18 @@ zen::apt::add_source() {
 		[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 	fi
 	if [[ -n "$recv_keys" ]]; then
-		sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || { printf "Failed to receive keys for %s\n" "$source_name"; }
+		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Receiving keys for $source_name"
+		sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
+			printf "Failed to receive keys for %s\n" "$source_name"
+			return 1
+		}
 	fi
 	if [[ -n "$trusted_key_url" ]]; then
-		wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || { printf "Failed to process trusted key for %s\n" "$source_name"; }
+		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Processing trusted key for $source_name"
+		wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
+			printf "Failed to process trusted key for %s\n" "$source_name"
+			return 1
+		}
 	fi
 
 	mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_added" "$source_name")"
