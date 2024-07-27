@@ -289,7 +289,7 @@ zen::dependency::external::install() {
 	mflibs::status::success "$(zen::i18n::translate "dependency.external_dependencies_installed" "$app_name")"
 }
 
-# @function zen::apt::add_source
+# @function zen::dependency::apt::add_source
 # # Adds a new APT source and its GPG key.
 # @description This function adds a new APT source and its corresponding GPG key from a YAML configuration file.
 # It handles different options like architecture, inclusion of source repositories, and GPG key processing.
@@ -300,10 +300,10 @@ zen::dependency::external::install() {
 # @caution Ensure the GPG key is from a trusted source to avoid security risks.
 # @important The architecture specified must match the system architecture.
 # @example
-#   zen::apt::add_source "php"
+#   zen::dependency::apt::add_source "php"
 # shellcheck disable=SC2155
 # Disable SC2155 because if the command fails, it will exit the script.
-zen::apt::add_source() {
+zen::dependency::apt::add_source() {
 	local source_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/apt_sources.yaml"
 	[[ -z "$source_name" ]] && {
@@ -372,14 +372,14 @@ zen::apt::add_source() {
 	mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_added" "$source_name")"
 }
 
-# @function zen::apt::remove_source
+# @function zen::dependency::apt::remove_source
 # Removes an APT source and its GPG key.
 # @description This function removes an APT source and its GPG key.
 # It deletes the corresponding source list files and GPG keys for the specified source.
 # @arg $1 string Name of the source to be removed.
 # @stdout Removes specified APT source and its GPG key.
 # @caution Removing a source can impact system stability if other packages depend on it.
-zen::apt::remove_source() {
+zen::dependency::apt::remove_source() {
 	local source_name="$1"
 
 	if [[ -z "$source_name" ]]; then
@@ -399,14 +399,14 @@ zen::apt::remove_source() {
 	mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_removed" "$source_name")"
 }
 
-# @function zen::apt::update_source
+# @function zen::dependency::apt::update_source
 # Updates APT sources based on a YAML configuration.
 # @description This function updates APT sources based on the definitions in the apt_sources.yaml file.
 # It recreates source list files and GPG keys for each source defined in the configuration.
 # @global MEDIAEASE_HOME string Path to MediaEase configurations.
 # @stdout Updates APT sources and GPG keys based on the YAML configuration.
 # @note The function iterates over all sources defined in the YAML file and applies their configurations.
-zen::apt::update_source() {
+zen::dependency::apt::update_source() {
 	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/apt_sources.yaml"
 	local source_names
 	source_names=$(yq e '.sources | keys' "$dependencies_file")
