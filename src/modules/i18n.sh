@@ -45,32 +45,54 @@ zen::i18n::load_locale_file() {
 #      zen::i18n::generate::system_locale "fr"
 zen::i18n::generate::system_locale() {
 	local lang="$1"
+	lang="fr"
 	declare -A system_lang=(
 		["en"]="en_US.UTF-8"
 		["fr"]="fr_FR.UTF-8"
 	)
 	if [[ -z "${system_lang[$lang]}" ]]; then
 		mflibs::status::warn "${lang} is not a valid language, loading default language (en)"
-		exit 1
 	fi
-	declare -g locale_setting="${system_lang[$lang]}"
+	declare -g locale_setting
+	locale_setting="${system_lang[$lang]}"
 
 	# Check if the intended locale is already in use
 	local current_locale
+	current_locale=$(locale | grep 'LANG=' | cut -d= -f2)
 	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Current locale: $current_locale"
 	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Desired locale: $locale_setting"
-	current_locale=$(locale | grep 'LANG=' | cut -d= -f2)
 	if [[ "$current_locale" != "$locale_setting" ]]; then
 		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Updating locale settings..."
 		echo "LANG=\"$locale_setting\"" >/etc/default/locale
 		echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
 		echo "LANGUAGE=\"$locale_setting\"" >>/etc/default/locale
-		echo "$locale_setting UTF-8" >>/etc/locale.gen
+		locale_base=$(echo "$locale_setting" | cut -d. -f1)
+		locale_encoding=$(echo "$locale_setting" | cut -d. -f2)
+		tmpfile=$(mktemp)
+		while IFS= read -r line; do
+			if [[ "$line" =~ ^#\ *en_US.UTF-8\ UTF-8 ]]; then
+				echo "en_US.UTF-8 UTF-8" >>"$tmpfile"
+			elif [[ "$line" =~ ^en_US.UTF-8\ UTF-8 ]]; then
+				if [[ "$locale_base" != "en_US" ]]; then
+					echo "# en_US.UTF-8 UTF-8" >>"$tmpfile"
+				else
+					echo "$line" >>"$tmpfile"
+				fi
+			elif [[ "$line" =~ ^#\ *$locale_base\ $locale_encoding ]]; then
+				echo "$locale_base $locale_encoding" >>"$tmpfile"
+			else
+				echo "$line" >>"$tmpfile"
+			fi
+		done </etc/locale.gen
+		if ! grep -q "^$locale_base $locale_encoding" "$tmpfile"; then
+			echo "$locale_base $locale_encoding" >>"$tmpfile"
+		fi
+		mv "$tmpfile" /etc/locale.gen
 		export LANG="$locale_setting"
 		export LC_ALL="$locale_setting"
 		export LANGUAGE="$locale_setting"
 		mflibs::log "locale-gen $locale_setting >/dev/null 2>&1"
-		mflibs::log "update-locale LANG=\"$locale_setting\" LC_ALL=\"$locale_setting\" LANGUAGE=\"$locale_setting\""
+		mflibs::log "update-locale LANG=\"$locale_setting\" LC_ALL=\"$locale_setting\" LANGUAGE=\"$locale_setting\" >/dev/null 2>&1"
 	fi
 }
 
