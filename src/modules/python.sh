@@ -51,7 +51,7 @@ zen::python::venv::create() {
 # @note Ensure that the path and requirements file are correct to avoid installation errors.
 zen::python::venv::build() {
 	local path="$1"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	local python_dependencies
 	local requirements_path="$path/requirements.txt"
 

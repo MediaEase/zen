@@ -22,7 +22,7 @@
 # @note Handles APT actions, reinstall, and non-interactive mode.
 # @warning `yq` tool is required for parsing YAML files.
 zen::dependency::apt::manage() {
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	local action="$1"
 	local software_name="${2:-}"
 	local option="$3"
@@ -129,9 +129,9 @@ zen::dependency::apt::install::inline() {
 #   echo "$dependencies" # Outputs: "curl,libssl-dev,ffmpeg"
 zen::dependency::apt::get_string() {
 	local software_name="$1"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	local separator="${2:- }"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	local dependencies_string
 	dependencies_string=$(yq e ".${software_name}.apt" "$dependencies_file")
 	if [[ "$separator" == "," ]]; then
@@ -228,7 +228,7 @@ zen::dependency::apt::update() {
 # @caution Ensure that the dependencies are not required by other software before removal.
 zen::dependency::apt::remove() {
 	local software_name="$1"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	local installed_count
 	installed_count=$(zen::software::is::installed "$software_name" "*" | wc -l)
 	if [[ $installed_count -le 1 ]]; then
@@ -257,7 +257,7 @@ zen::dependency::apt::remove() {
 # @warning Ensure the external dependencies do not conflict with existing installations.
 zen::dependency::external::install() {
 	local app_name="$1"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/dependencies.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	if [[ -z "$app_name" ]]; then
 		printf "Application name is required.\n"
 		return 1
@@ -305,7 +305,7 @@ zen::dependency::external::install() {
 # Disable SC2155 because if the command fails, it will exit the script.
 zen::dependency::apt::add_source() {
 	local source_name="$1"
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/apt_sources.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/apt_sources.yaml"
 	[[ -z "$source_name" ]] && {
 		printf "Source name is required.\n"
 		return 1
@@ -407,7 +407,7 @@ zen::dependency::apt::remove_source() {
 # @stdout Updates APT sources and GPG keys based on the YAML configuration.
 # @note The function iterates over all sources defined in the YAML file and applies their configurations.
 zen::dependency::apt::update_source() {
-	local dependencies_file="${MEDIAEASE_HOME}/MediaEase/zen/src/apt_sources.yaml"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/apt_sources.yaml"
 	local source_names
 	source_names=$(yq e '.sources | keys' "$dependencies_file")
 
