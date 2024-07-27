@@ -57,16 +57,19 @@ zen::i18n::generate::system_locale() {
 
 	# Check if the intended locale is already in use
 	local current_locale
+	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Current locale: $current_locale"
+	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Desired locale: $locale_setting"
 	current_locale=$(locale | grep 'LANG=' | cut -d= -f2)
 	if [[ "$current_locale" != "$locale_setting" ]]; then
+		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Updating locale settings..."
 		echo "LANG=\"$locale_setting\"" >/etc/default/locale
 		echo "LC_ALL=\"$locale_setting\"" >>/etc/default/locale
+		echo "LANGUAGE=\"$locale_setting\"" >>/etc/default/locale
 		echo "$locale_setting UTF-8" >>/etc/locale.gen
 		export LANG="$locale_setting"
 		export LC_ALL="$locale_setting"
 		export LANGUAGE="$locale_setting"
 		mflibs::log "locale-gen $locale_setting >/dev/null 2>&1"
-		locale-gen "$locale_setting" >/dev/null 2>&1
 		mflibs::log "update-locale LANG=\"$locale_setting\" LC_ALL=\"$locale_setting\" LANGUAGE=\"$locale_setting\""
 	fi
 }
