@@ -258,11 +258,10 @@ zen::dependency::external::install() {
 	local app_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	if [[ -z "$app_name" ]]; then
-		printf "Application name is required.\n"
-		return 1
+		mflibs::status::error "dependency.external_dependencies_missing"
 	fi
 	# Parsing each external dependency
-	mflibs::shell::text::white "$(zen::i18n::translate "dependency.installing_external_dependencies" "$app_name")"
+	mflibs::status::info "$(zen::i18n::translate "dependency.installing_external_dependencies" "$app_name")"
 	local entries
 	entries=$(yq e ".${app_name}.external[] | to_entries[]" "$dependencies_file")
 	local software_name install_command
@@ -280,8 +279,7 @@ zen::dependency::external::install() {
 			rm "$temp_script" 2>/dev/null
 
 			if [[ $install_status -ne 0 ]]; then
-				printf "Installation failed for %s in %s with status %d\n" "$software_name" "$app_name" "$install_status"
-				return 1
+				mflibs::status::error "$(zen::i18n::translate "dependency.external_dependencies_failed" "$software_name" "$app_name" "$install_status")"
 			fi
 		fi
 	done <<<"$entries"
