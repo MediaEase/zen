@@ -304,8 +304,7 @@ zen::dependency::apt::add_source() {
 	local source_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/zen/src/apt_sources.yaml"
 	[[ -z "$source_name" ]] && {
-		printf "Source name is required.\n"
-		return 1
+		mflibs::status::error "$(zen::i18n::translate "dependency.source_name_required")"
 	}
 
 	local source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
@@ -329,12 +328,10 @@ zen::dependency::apt::add_source() {
 	}
 
 	[[ -z "$source_url" ]] && {
-		printf "URL for %s not found in YAML file.\n" "$source_name"
-		return 1
+		mflibs::status::error "$(zen::i18n::translate "dependency.source_url_missing" "$source_name")"
 	}
 	[[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && {
-		printf "Architecture %s not supported for %s\n" "$arch" "$source_name"
-		return 1
+		mflibs::status::error "$(zen::i18n::translate "dependency.architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
 	}
 	if [[ -n "$gpg_key_url" ]]; then
 		local gpg_key_file
