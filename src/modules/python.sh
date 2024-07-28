@@ -146,8 +146,8 @@ zen::python::venv::remove() {
 zen::python::add::profile() {
 	local target_file="$1"
 	{
-		printf "export PYENV_ROOT=\"/opt/pyenv\"\n"
-		printf "export PATH=\"/opt/pyenv/bin:\$PATH\"\n"
+		printf "export PYENV_ROOT=\"%s/pyenv\"\n" "$HOME"
+		printf "[[ -d \$PYENV_ROOT/bin ]] && export PATH=\"\$PYENV_ROOT/bin:\$PATH\"\n"
 		printf "eval \"\$(pyenv init -)\"\n"
 		printf "eval \"\$(pyenv virtualenv-init -)\"\n"
 		printf "source %s/.cargo/env\n" "$HOME"
