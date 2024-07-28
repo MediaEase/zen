@@ -192,12 +192,12 @@ zen::dependency::apt::pin() {
 # @note The function checks for and resolves locked dpkg situations before proceeding.
 # @caution Ensure that no other package management operations are running concurrently.
 zen::dependency::apt::update() {
-	mflibs::shell::text::white "$(zen::i18n::translate 'dependency.updating_system')"
+	mflibs::status::info "$(zen::i18n::translate 'dependency.updating_system')"
 	# check if fuser is installed
 	if command -v fuser >/dev/null 2>&1; then
 		if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
-			mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked')"
-			mflibs::shell::text::yellow "$(zen::i18n::translate 'dependency.dpkg_locked_info')"
+			mflibs::status::warn "$(zen::i18n::translate 'dependency.dpkg_locked')"
+			mflibs::status::warn "$(zen::i18n::translate 'dependency.dpkg_locked_info')"
 			rm -f /var/cache/debconf/{config.dat,passwords.dat,templates.dat}
 			rm -f /var/lib/dpkg/updates/0*
 			find /var/lib/dpkg/lock* /var/cache/apt/archives/lock* -exec rm -rf {} \;
@@ -211,10 +211,9 @@ zen::dependency::apt::update() {
 	mflibs::log "apt-get -yqq autoclean"
 
 	if ! apt-get check >/dev/null 2>&1; then
-		mflibs::shell::text::red "$(zen::i18n::translate 'dependency.apt_check_failed')"
-		exit 1
+		mflibs::status::error "$(zen::i18n::translate 'dependency.apt_check_failed')"
 	fi
-	mflibs::shell::text::green "$(zen::i18n::translate "dependency.system_updated")"
+	mflibs::status::success "$(zen::i18n::translate "dependency.system_updated")"
 }
 
 # @function zen::dependency::apt::remove
