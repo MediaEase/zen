@@ -15,10 +15,10 @@ export EDITOR=nano
 # Automatic setting of $DISPLAY
 function get::xserver {
     case $TERM in
-        xterm )
-            XSERVER=$(who am i | awk '{print $NF}' | tr -d ')''(')
-            XSERVER=${XSERVER%%:*}
-            ;;
+    xterm)
+        XSERVER=$(who am i | awk '{print $NF}' | tr -d ')''(')
+        XSERVER=${XSERVER%%:*}
+        ;;
     esac
 }
 
@@ -35,23 +35,43 @@ export DISPLAY
 [[ -f /etc/bashrc ]] && . "/etc/bashrc"
 
 # colors
-_black_bold='\e[1;30m'
 _red_bold='\e[1;31m'
 _green_bold='\e[1;32m'
 _blue_bold='\e[1;34m'
 _white_bold='\e[1;37m'
+_yellow_bold='\e[1;33m'
 _red_bg='\e[41m'
 _nc='\e[m'
 _alert=${_white_bold}${_red_bg}
 
-echo -e "\n${_blue_bold}+------------------------------- MediaEase Server -------------------------------+${_nc}"
-echo -e "${_blue_bold}|${_nc} You are logged in as: ${_red_bold}root${_nc}                                                     ${_blue_bold}|${_nc}"
-echo -e "${_blue_bold}+--------------------------------------------------------------------------------+${_nc}"
-echo -e "${_blue_bold}|${_nc} Prompt Style Options:                                                          ${_blue_bold}|${_nc}"
-echo -e "${_blue_bold}|${_nc}  - ${_green_bold}basic_on${_nc}: Color-coded load & CPU average (default)                          ${_blue_bold}|${_nc}"
-echo -e "${_blue_bold}|${_nc}  - ${_green_bold}custom_off${_nc}: Revert to the default prompt                                    ${_blue_bold}|${_nc}"
-echo -e "${_blue_bold}+--------------------------------------------------------------------------------+${_nc}\n"
+# Function to determine user color
+function user_color {
+    if [[ "${USER}" == "root" ]]; then
+        echo -en "${_red_bold}"
+    else
+        echo -en "${_green_bold}"
+    fi
+}
 
+# Function to strip color codes for length calculation
+function strip_color_codes {
+    local input="$1"
+    echo -e "$input" | sed -r 's/\x1B\[[0-9;]*[mK]//g'
+}
+
+# Display login message
+login_message="You are logged in as: $(user_color)${USER}friofoirfoer${_nc}"
+login_message_length=$(strip_color_codes "$login_message" | wc -c)
+padding_length=$((66 - login_message_length - 2))
+padding=$(printf "%*s" "$padding_length" "")
+
+echo -e "\n${_blue_bold}+----------------------- MediaEase Server -----------------------+${_nc}"
+echo -e "${_blue_bold}|${_nc} ${login_message}${padding// / }${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}+----------------------------------------------------------------+${_nc}"
+echo -e "${_blue_bold}|${_nc} Prompt Style Options:                                          ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}|${_nc}  - ${_green_bold}custom_on${_nc}: Color-coded Disk usage (default)                 ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}|${_nc}  - ${_green_bold}custom_off${_nc}: Revert to the default prompt                    ${_blue_bold}|${_nc}"
+echo -e "${_blue_bold}+----------------------------------------------------------------+${_nc}\n"
 
 # Function to display exit message
 function on::exit {
@@ -59,66 +79,31 @@ function on::exit {
 }
 trap on::exit EXIT
 
-NCPU=$(grep -c 'processor' /proc/cpuinfo)
-SLOAD=$(( 100 * NCPU ))
-MLOAD=$(( 200 * NCPU ))
-XLOAD=$(( 400 * NCPU ))
-
-function load {
-    local SYSLOAD
-    SYSLOAD=$(cut -d " " -f1 /proc/loadavg | tr -d '.')
-    echo $((10#$SYSLOAD))
+function disk::usage {
+    df -BM "$PWD" | awk 'NR==2 {print $4}'
 }
 
-function load_color {
-    local SYSLOAD
-    SYSLOAD=$(load)
-    if [ "${SYSLOAD}" -gt "${XLOAD}" ]; then
+function disk::color {
+    local used
+    used=$(df -P "$PWD" | awk 'NR==2 {sub(/%/,""); print $5}')
+    if [ "${used}" -ge 95 ]; then
         echo -en "${_alert}"
-    elif [ "${SYSLOAD}" -gt "${MLOAD}" ]; then
-        echo -en "${_alert}"
-    elif [ "${SYSLOAD}" -gt "${SLOAD}" ]; then
-        echo -en "${_green_bold}"
+    elif [ "${used}" -ge 90 ]; then
+        echo -en "${_yellow_bold}"
     else
-        echo -en "${_blue_bold}"
-    fi
-}
-
-function disk_color {
-    if [ ! -w "${PWD}" ]; then
-        echo -en "${_alert}"
-    elif [ -s "${PWD}" ]; then
-        local used
-        used=$(command df -P "$PWD" | awk 'END {print $5} {sub(/%/,"")}')
-        if [ "${used}" -gt 95 ]; then
-            echo -en "${_alert}"
-        elif [ "${used}" -gt 90 ]; then
-            echo -en "${_green_bold}"
-        else
-            echo -en "${_blue_bold}"
-        fi
-    else
-        echo -en "${_nc}"
-    fi
-}
-
-function job_color {
-    if [ "$(jobs -s | wc -l)" -gt "0" ]; then
         echo -en "${_green_bold}"
-    elif [ "$(jobs -r | wc -l)" -gt "0" ]; then
-        echo -en "${_blue_bold}"
     fi
 }
 
-function basic_on() {
+function custom_on {
     PROMPT_COMMAND="history -a"
     case ${TERM} in
-        *term | rxvt | linux)
-            PS1="\[\$(load_color)\][\A \u@\h]\[\]${_white_bold}\[\][\w]${_nc} "
-            ;;
-        *)
-            PS1="[\u@\h \A][\w] "
-            ;;
+    *term | rxvt | linux)
+        PS1="\[\033[01;37m\][\A] \[\$(user_color)\]\u\[\033[01;37m\]@\[\033[01;34m\]\h \[\033[01;37m\][Free: \[\$(disk::color)\]\$(disk::usage)\[\033[01;37m\]] \[\033[00m\]\$ "
+        ;;
+    *)
+        PS1="[\u@\h \A][\w] "
+        ;;
     esac
 }
 
@@ -130,7 +115,7 @@ function custom_off {
     eval "$(dircolors)"
 }
 
-transfer(){
+transfer() {
     if [ $# -eq 0 ]; then
         printf "No arguments specified.\nUsage:\n  transfer <file|directory>\n  ... | transfer <file_name>" >&2
         return 1
@@ -157,10 +142,11 @@ transfer(){
     fi
 }
 
-basic_on
+custom_on
 custom_off
 
-basic_on; export basic_on
+custom_on
+export custom_on
 
 # Aliases and completions
 alias ls='ls --color=auto'
@@ -187,3 +173,4 @@ export HISTCONTROL HISTIGNORE HISTSIZE HISTFILESIZE
 # used for setting locale see /etc/default/locale in debian
 # shellcheck disable=SC1091
 [[ -r "/etc/default/locale" ]] && . "/etc/default/locale" && export LC_ALL
+eval "$(pyenv virtualenv-init -)"
