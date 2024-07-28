@@ -19,7 +19,7 @@ if [[ $USER == 'root' ]]; then
 
     local -a commands software_ops user_ops support_ops set_ops log_ops migrate_ops pull_ops
     commands=("software" "user" "support" "set" "pull" "service" "log" "migrate")
-    software_ops=("add" "remove" "reinstall" "update" "backup" "restore" "reset")
+    software_ops=("add" "remove" "reinstall" "update" "backup" "restore" "reset" "create")
     user_ops=("add" "remove" "ban" "unban" "set")
     support_ops=("enable" "disable")
     set_ops=("${settings[@]}")
@@ -29,9 +29,9 @@ if [[ $USER == 'root' ]]; then
 
     case "${COMP_WORDS[1]}" in
     software)
-      if [[ "${COMP_WORDS[2]}" =~ ^(add|remove|reinstall|update|backup|restore|reset)$ ]] && [[ "$prev_word" == "-u" ]]; then
+      if [[ "${COMP_WORDS[2]}" =~ ^(add|remove|reinstall|update|backup|restore|reset|create)$ ]] && [[ "$prev_word" == "-u" ]]; then
         mapfile -t COMPREPLY < <(compgen -W "${users[*]}" -- "$current")
-      elif [[ "${COMP_WORDS[2]}" =~ ^(add|remove|reinstall|update|backup|restore|reset)$ ]]; then
+      elif [[ "${COMP_WORDS[2]}" =~ ^(add|remove|reinstall|update|backup|restore|reset|create)$ ]]; then
         mapfile -t COMPREPLY < <(compgen -W "${software_apps[*]}" -- "$current")
       else
         mapfile -t COMPREPLY < <(compgen -W "${software_ops[*]}" -- "$current")
