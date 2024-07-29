@@ -142,44 +142,62 @@ zen::dependency::apt::get_string() {
 
 # @function zen::dependency::apt::pin
 # Manages the list of pinned APT packages by adding or removing packages.
-# @description This function adds or removes APT packages from a list stored in a configuration file.
-# It reads the current list from the file, modifies it based on the specified action (add or remove), and then writes the updated list back to the file.
+# @description This function modifies the list of APT packages pinned in a preference file.
+# It can add a package with an optional version specification or remove an existing package entry.
+# The function ensures that the preference file does not contain unnecessary blank lines after modifications.
 # @arg $1 string The action to perform ("add" or "remove").
 # @arg $2 string The package name to add or remove.
-# @note The configuration file is expected to be located at /root/.mediaease/config.
+# @arg $3 string Optional: The version to pin the package to (e.g., ">= 2.8.4"). If not specified, the package will be pinned without a version constraint.
+# @note The preference file is located at /etc/apt/preferences.d/mediaease.
 # @example
-#   zen::dependency::apt::pin add "curl"
+#   zen::dependency::apt::pin add "curl" ">= 7.68.0"
 #   zen::dependency::apt::pin remove "curl"
 zen::dependency::apt::pin() {
 	local action="$1"
 	local package="$2"
-	local config_file="/root/.mediaease/config"
-	local list
-	list=$(sed -n '2p' "$config_file")
-
-	case "$action" in
-	add)
-		if [[ -z "$list" ]]; then
-			echo "$package" >"$config_file"
+	local version="${3:-}"
+	local preference_file="/etc/apt/preferences.d/mediaease"
+	local preference_content
+	local updated_content=""
+	local entry_found=false
+	[[ -f "$preference_file" ]] || touch "$preference_file"
+	preference_content=$(<"$preference_file")
+	while IFS= read -r line; do
+		if [[ "$line" == "Package: $package" ]]; then
+			entry_found=true
+			if [[ "$action" == "remove" ]]; then
+				# Skip this package entry (Package, Pin, Pin-Priority)
+				read -r line # Skip Pin line
+				read -r line # Skip Pin-Priority line
+			elif [[ "$action" == "add" ]]; then
+				updated_content+="Package: $package\n"
+				if [[ -n "$version" ]]; then
+					updated_content+="Pin: version $version\n"
+				else
+					updated_content+="Pin: release *\n"
+				fi
+				updated_content+="Pin-Priority: 1001\n"
+			fi
+		elif [[ "$line" =~ ^(Package:|Pin:|Pin-Priority:) ]]; then
+			if [[ "$entry_found" == true && "$action" == "remove" ]]; then
+				continue
+			fi
+			updated_content+="$line\n"
 		else
-			echo "${list},${package}" >"$config_file"
+			updated_content+="$line\n"
 		fi
-		;;
-	remove)
-		if [[ -n "$list" ]]; then
-			list=${list//,$package/}
-			list=${list//"$package,"/}
-			list=${list//"$package"/}
-			list=${list//,,/,}
-			list=${list#,}
-			list=${list%,}
-			echo "$list" >"$config_file"
+	done <<<"$preference_content"
+	if [[ "$action" == "add" ]] && [[ $entry_found == false ]]; then
+		[[ -n "$updated_content" ]] && updated_content+="\n"
+		updated_content+="Package: $package\n"
+		if [[ -n "$version" ]]; then
+			updated_content+="Pin: version $version\n"
+		else
+			updated_content+="Pin: release *\n"
 		fi
-		;;
-	*)
-		return 1
-		;;
-	esac
+		updated_content+="Pin-Priority: 1001\n"
+	fi
+	echo -e "$updated_content" >"$preference_file"
 }
 
 # @function zen::dependency::apt::update
