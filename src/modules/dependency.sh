@@ -155,13 +155,20 @@ zen::dependency::apt::get_string() {
 zen::dependency::apt::pin() {
 	local action="$1"
 	local package="$2"
-	local version="${3:-}"
+	local pin_spec="${3:-}"
 	local preference_file="/etc/apt/preferences.d/mediaease"
 	local preference_content
 	local updated_content=""
 	local entry_found=false
 	[[ -f "$preference_file" ]] || touch "$preference_file"
 	preference_content=$(<"$preference_file")
+	if [[ "$pin_spec" == ">= "* || "$pin_spec" == "<= "* ]]; then
+		pin_spec="version ${pin_spec:2}*"
+	elif [[ "$pin_spec" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+		pin_spec="version $pin_spec*"
+	elif [[ "$pin_spec" != *"release"* ]]; then
+		pin_spec="version $pin_spec"
+	fi
 	while IFS= read -r line; do
 		if [[ "$line" == "Package: $package" ]]; then
 			entry_found=true
@@ -171,10 +178,8 @@ zen::dependency::apt::pin() {
 				read -r line # Skip Pin-Priority line
 			elif [[ "$action" == "add" ]]; then
 				updated_content+="Package: $package\n"
-				if [[ -n "$version" ]]; then
-					updated_content+="Pin: version $version\n"
-				else
-					updated_content+="Pin: release *\n"
+				if [[ -n "$pin_spec" ]]; then
+					updated_content+="Pin: $pin_spec\n"
 				fi
 				updated_content+="Pin-Priority: 1001\n"
 			fi
@@ -190,10 +195,8 @@ zen::dependency::apt::pin() {
 	if [[ "$action" == "add" ]] && [[ $entry_found == false ]]; then
 		[[ -n "$updated_content" ]] && updated_content+="\n"
 		updated_content+="Package: $package\n"
-		if [[ -n "$version" ]]; then
-			updated_content+="Pin: version $version\n"
-		else
-			updated_content+="Pin: release *\n"
+		if [[ -n "$pin_spec" ]]; then
+			updated_content+="Pin: $pin_spec\n"
 		fi
 		updated_content+="Pin-Priority: 1001\n"
 	fi
