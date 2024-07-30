@@ -116,8 +116,9 @@ zen::vault::pass::encode() {
 #    zen::vault::pass::decode "username.type"
 zen::vault::pass::decode() {
 	local key="$1"
+	local context=${2:-main}
 	local hashed_key
-	hashed_key=$(zen::vault::pass::encode "$key")
+	hashed_key=$(zen::vault::pass::encode "$key" "$context")
 	local hashed_password
 	hashed_password=$(yq e ".$hashed_key" "$credentials_file")
 	if [[ -n "$hashed_password" ]]; then
@@ -193,6 +194,7 @@ zen::vault::pass::update() {
 #    zen::vault::pass::reveal "username.type"
 zen::vault::pass::reveal() {
 	local key="$1"
+	[[ "$key" == "system.mediease_beta" && "$context" == "zen" ]] && mflibs::status::error "$(zen::i18n::translate "vault.unable_to_reveal_this_key")"
 	zen::vault::pass::decode "$key"
 }
 
