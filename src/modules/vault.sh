@@ -117,12 +117,15 @@ zen::vault::pass::encode() {
 #    zen::vault::pass::decode "username.type"
 zen::vault::pass::decode() {
 	local key="$1"
-	local hashed_key
-	hashed_key=$(zen::vault::pass::encode "$key")
-	local hashed_password
+	local name type
+	local encoded_name encoded_type hashed_key hashed_password
+	IFS='.' read -r name type <<<"$key"
+	encoded_name=$(zen::vault::pass::encode "$name")
+	encoded_type=$(zen::vault::pass::encode "$type")
+	hashed_key="${encoded_name}.${encoded_type}"
 	hashed_password=$(yq e ".$hashed_key" "$credentials_file")
 	if [[ -n "$hashed_password" ]]; then
-		echo -n "$hashed_password" | base64 --decode
+		echo "$hashed_password" | base64 --decode
 	else
 		return 1
 	fi
@@ -172,7 +175,6 @@ zen::vault::pass::update() {
 	local key="$1"
 	local password="$2"
 	local hashed_key hashed_password
-	zen::vault::init
 	hashed_key=$(zen::vault::pass::encode "$key")
 	hashed_password=$(zen::vault::pass::encode "$password")
 
@@ -189,12 +191,24 @@ zen::vault::pass::update() {
 # @function zen::vault::pass::reveal
 # @description Reveals the password associated with a given key from the vault.
 # @arg $1 string "The key whose password is to be revealed."
+# $arg $2 string "The context of the key."
 # @return "Reveals the associated password if successful."
 # @example
 #    zen::vault::pass::reveal "username.type"
+# @example
+#    zen::vault::pass::reveal "username.type" "context" # Optionally pass a context to reveal protected passwords.
 zen::vault::pass::reveal() {
 	local key="$1"
-	zen::vault::pass::decode "$key"
+	local context=${2:-main}
+	if [[ "$key" == "system.mediease_beta" && "$context" != "mediaease" ]]; then
+		mflibs::status::error "$(zen::i18n::translate "vault.unable_to_reveal_this_key")"
+	elif [[ "$key" != "system.mediease_beta" && $context == "main" || "$key" != "system.mediease_beta" && $context == "zen" ]]; then
+		declare -g VAULT_PASSWORD
+		VAULT_PASSWORD=$(zen::vault::pass::decode "$@")
+		[[ $context == "main" ]] && printf "Password for %s is : %s\n" "$key" "$VAULT_PASSWORD"
+		[[ $context == "zen" ]] && echo -n "$VAULT_PASSWORD"
+		export VAULT_PASSWORD
+	fi
 }
 
 # @function zen::vault::permissions
