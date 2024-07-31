@@ -98,12 +98,13 @@ zen::vault::create() {
 # @example
 #    zen::vault::pass::encode "password"
 zen::vault::pass::encode() {
-	local string="$1"
+	local string="${1}"
 	if [[ -z "$string" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "vault.encode_no_string")"
 		return 1
 	fi
-	echo -n "$string" | base64
+	string=$(echo -n "$string" | base64)
+	echo -n "${string%%=*}"
 }
 
 # @function zen::vault::pass::decode
@@ -116,9 +117,8 @@ zen::vault::pass::encode() {
 #    zen::vault::pass::decode "username.type"
 zen::vault::pass::decode() {
 	local key="$1"
-	local context=${2:-main}
 	local hashed_key
-	hashed_key=$(zen::vault::pass::encode "$key" "$context")
+	hashed_key=$(zen::vault::pass::encode "$key")
 	local hashed_password
 	hashed_password=$(yq e ".$hashed_key" "$credentials_file")
 	if [[ -n "$hashed_password" ]]; then
@@ -194,7 +194,6 @@ zen::vault::pass::update() {
 #    zen::vault::pass::reveal "username.type"
 zen::vault::pass::reveal() {
 	local key="$1"
-	[[ "$key" == "system.mediease_beta" && "$context" == "zen" ]] && mflibs::status::error "$(zen::i18n::translate "vault.unable_to_reveal_this_key")"
 	zen::vault::pass::decode "$key"
 }
 
