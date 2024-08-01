@@ -464,6 +464,9 @@ EOL
 		yq e ".\"$string\" = \"Placeholder to describe $software_name_lowered\"" "$file" -i
 		translation_files["$file"]="updated"
 	done
+	cd /srv/harmonyui || mflibs::status::error "$(zen::i18n::translate 'common.failed_to_change_directory' "/srv/harmonyui")"
+	username="$(zen::database::select "username" "users" "roles LIKE '%ROLE_ADMIN%'")"
+	su -c "symfony console harmony:scan:apps" "$username"
 	mflibs::shell::text::yellow "################################################################################"
 	mflibs::shell::text::yellow "# Software $software_name_sanitized created successfully."
 	mflibs::shell::text::yellow "# You can find the generated files in $software_dir"
