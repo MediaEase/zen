@@ -34,15 +34,16 @@ zen::database::query() {
   sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
 }
 
-# @function zen::database::select::count
-# @description Executes a SELECT COUNT operation on the database.
-# @arg $1 string Name of the table for counting records.
-# @arg $2 string Columns to be counted (optional, defaults to '*').
-# @arg $3 string Conditions for counting (optional).
-# @arg $4 string Additional SQL clauses like ORDER BY, GROUP BY (optional).
-# @stdout Outputs the count result or errors.
+# @function zen::database::select
+# @description Executes a SELECT operation on the database.
+# @arg $1 string The columns to select (e.g., '*', 'username', etc.).
+# @arg $2 string The table name from which to select records.
+# @arg $3 string (optional) The WHERE clause conditions for filtering records.
+# @arg $4 string (optional) Additional SQL clauses like ORDER BY, GROUP BY.
+# @arg $5 int (optional) Set to 1 to use DISTINCT, defaults to 0.
+# @stdout Outputs the selected records or errors.
 # @return Returns the exit status of the sqlite3 command.
-# @note Constructs a SELECT COUNT query based on the provided arguments.
+# @note Constructs and executes a SELECT query based on the provided arguments.
 zen::database::select() {
   local select_clause="$1"
   local table="$2"
