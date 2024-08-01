@@ -148,14 +148,15 @@ zen::vault::pass::store() {
 	type=$(echo "$key" | cut -d'.' -f2)
 	hashed_type=$(zen::vault::pass::encode "$type")
 	hashed_username=$(zen::vault::pass::encode "$username")
-	hashed_password=$(zen::vault::pass::encode "$password")
+	key="$hashed_username.$hashed_type"
 
 	mflibs::status::info "$(zen::i18n::translate "vault.storing_password" "$username" "$type")"
-	if yq e ".$hashed_username.$hashed_type" "$credentials_file" &>/dev/null; then
-		mflibs::status::error "$(zen::i18n::translate "vault.key_exists")"
+	if yq e ".$key" "$credentials_file" &>/dev/null; then
+		mflibs::status::error "$(zen::i18n::translate "vault.key_exists" "$key")"
 		return 1
 	else
 		zen::vault::permissions "remove"
+		hashed_password=$(zen::vault::pass::encode "$password")
 		yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
 		zen::vault::permissions "add"
 		mflibs::status::success "$(zen::i18n::translate "vault.store_success")"
