@@ -33,7 +33,7 @@ zen::dependency::apt::manage() {
 	if [[ -n "$software_name" ]]; then
 		dependencies_string=$(yq e ".${software_name}.apt" "$dependencies_file")
 		if [[ -z "$dependencies_string" ]]; then
-			mflibs::status::error "$(zen::i18n::translate 'dependency.no_dependencies_found' "$software_name")"
+			mflibs::status::error "$(zen::i18n::translate "dependency.no_dependencies_found" "$software_name")"
 			return 1
 		fi
 	fi
@@ -58,7 +58,7 @@ zen::dependency::apt::manage() {
 		apt-get "${cmd_options[@]}" && return
 		;;
 	*)
-		mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action")"
+		mflibs::status::error "$(zen::i18n::translate "common.invalid_action" "$action")"
 		return 1
 		;;
 	esac
@@ -88,7 +88,7 @@ zen::dependency::apt::install::inline() {
 			if [[ $verbose -eq 1 ]]; then
 				mflibs::shell::text::white "Installing ${dep}..."
 				if apt-get install "${cmd_options[@]}" "${dep}"; then
-					mflibs::shell::text::green "$(zen::i18n::translate 'dependency.dependency_installed' "${dep}")"
+					mflibs::shell::text::green "$(zen::i18n::translate "dependency.dependency_installed" "${dep}")"
 					((installed_count++))
 				else
 					mflibs::shell::text::red "Failed to install ${dep}."
@@ -109,11 +109,11 @@ zen::dependency::apt::install::inline() {
 		fi
 	done
 
-	mflibs::status::info "$(zen::i18n::translate 'dependency.installed_count' "$installed_count")"
+	mflibs::status::info "$(zen::i18n::translate "dependency.installed_count" "$installed_count")"
 	if [[ ${#failed_deps[@]} -gt 0 ]]; then
-		mflibs::status::warn "$(zen::i18n::translate 'dependency.failed_dependencies' "${failed_deps[*]}")"
+		mflibs::status::warn "$(zen::i18n::translate "dependency.failed_dependencies" "${failed_deps[*]}")"
 	fi
-	mflibs::status::success "$(zen::i18n::translate 'dependency.installation_complete')"
+	mflibs::status::success "$(zen::i18n::translate "dependency.installation_complete")"
 }
 
 # @function zen::dependency::apt::get_string
@@ -213,12 +213,12 @@ zen::dependency::apt::pin() {
 # @note The function checks for and resolves locked dpkg situations before proceeding.
 # @caution Ensure that no other package management operations are running concurrently.
 zen::dependency::apt::update() {
-	mflibs::status::info "$(zen::i18n::translate 'dependency.updating_system')"
+	mflibs::status::info "$(zen::i18n::translate "dependency.updating_system")"
 	# check if fuser is installed
 	if command -v fuser >/dev/null 2>&1; then
 		if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
-			mflibs::status::warn "$(zen::i18n::translate 'dependency.dpkg_locked')"
-			mflibs::status::warn "$(zen::i18n::translate 'dependency.dpkg_locked_info')"
+			mflibs::status::warn "$(zen::i18n::translate "dependency.dpkg_locked")"
+			mflibs::status::warn "$(zen::i18n::translate "dependency.dpkg_locked_info")"
 			rm -f /var/cache/debconf/{config.dat,passwords.dat,templates.dat}
 			rm -f /var/lib/dpkg/updates/0*
 			find /var/lib/dpkg/lock* /var/cache/apt/archives/lock* -exec rm -rf {} \;
@@ -232,7 +232,7 @@ zen::dependency::apt::update() {
 	mflibs::log "apt-get -yqq autoclean"
 
 	if ! apt-get check >/dev/null 2>&1; then
-		mflibs::status::error "$(zen::i18n::translate 'dependency.apt_check_failed')"
+		mflibs::status::error "$(zen::i18n::translate "dependency.apt_check_failed")"
 	fi
 	mflibs::status::success "$(zen::i18n::translate "dependency.system_updated")"
 }

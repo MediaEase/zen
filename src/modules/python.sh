@@ -67,7 +67,7 @@ zen::python::venv::build() {
 	# Install Python dependencies from dependencies.yaml file
 	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
 	if [[ -z "$python_dependencies" ]]; then
-		mflibs::status::error "$(zen::i18n::translate 'dependency.no_python_dependencies_found' "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "dependency.no_python_dependencies_found" "$app_name")"
 		deactivate
 		return 1
 	fi
@@ -78,7 +78,7 @@ zen::python::venv::build() {
 		mflibs::log "pip install --quiet --use-pep517 ${dependency}"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
-			mflibs::status::error "$(zen::i18n::translate 'dependency.python_dependency_install_failed' "$dependency")"
+			mflibs::status::error "$(zen::i18n::translate "dependency.python_dependency_install_failed" "$dependency")"
 			exit_status=1
 		fi
 	done

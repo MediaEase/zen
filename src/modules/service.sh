@@ -108,10 +108,10 @@ zen::service::manage() {
 	check_service_status() {
 		sleep 2
 		if systemctl is-active --quiet "$service_name"; then
-			mflibs::shell::text::green "$(zen::i18n::translate 'service.service_running' "$service_name")"
+			mflibs::shell::text::green "$(zen::i18n::translate "service.service_running" "$service_name")"
 			return 1
 		else
-			mflibs::shell::text::red "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
+			mflibs::shell::text::red "$(zen::i18n::translate "service.service_not_running" "$service_name")"
 			return 0
 		fi
 	}
@@ -119,14 +119,14 @@ zen::service::manage() {
 	case $action in
 	start)
 		if zen::service::manage "status" "$service_name"; then
-			mflibs::status::error "$(zen::i18n::translate 'service.service_already_running' "$service_name")"
+			mflibs::status::error "$(zen::i18n::translate "service.service_already_running" "$service_name")"
 			return 1
 		fi
 		systemctl start "$service_name"
 		;;
 	stop)
 		if ! zen::service::manage "status" "$service_name"; then
-			mflibs::status::error "$(zen::i18n::translate 'service.service_not_running' "$service_name")"
+			mflibs::status::error "$(zen::i18n::translate "service.service_not_running" "$service_name")"
 			return 1
 		fi
 		systemctl stop "$service_name"
@@ -148,7 +148,7 @@ zen::service::manage() {
 		check_service_status
 		;;
 	*)
-		mflibs::status::error "$(zen::i18n::translate 'common.invalid_action' "$action" "$service_name")"
+		mflibs::status::error "$(zen::i18n::translate "common.invalid_action" "$action" "$service_name")"
 		return 2
 		;;
 	esac
