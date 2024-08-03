@@ -2,14 +2,24 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Configurations](#configurations)
-- [Types of Contributions](#types-of-contributions)
-- [Issues and Feature Requests](#issues-and-feature-requests)
-- [How to Submit a Pull Request](#how-to-submit-a-pull-request)
-- [Review Process](#review-process)
-- [Branch Naming](#branch-naming)
-- [Commit Message](#commit-message)
+- [Contributing](#contributing)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Development environment](#development-environment)
+  - [Configurations](#configurations)
+    - [Better-Commits](#better-commits)
+    - [Git-Flow](#git-flow)
+  - [Types of Contributions](#types-of-contributions)
+    - [Bugfix](#bugfix)
+    - [Hotfix](#hotfix)
+    - [Feature](#feature)
+  - [Issues and Feature Requests](#issues-and-feature-requests)
+  - [How to Submit a Pull Request](#how-to-submit-a-pull-request)
+    - [For Features](#for-features)
+    - [For Bugfixes/Hotfixes](#for-bugfixeshotfixes)
+  - [Review Process](#review-process)
+  - [Branch Naming](#branch-naming)
+  - [Commit Message](#commit-message)
 
 
 [Git-Flow]: https://github.com/nvie/gitflow/wiki/Installation
@@ -29,8 +39,8 @@ Be sure to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-
 Then, you can clone the repo :
 
  ```bash
- git clone https://github.com/MediaEase/HarmonyUI
- cd HarmonyUI
+ git clone https://github.com/MediaEase/zen
+ cd zen
  ``` 
 
 > on Linux distributions (bash > 4.x)
