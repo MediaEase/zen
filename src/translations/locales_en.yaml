@@ -56,7 +56,7 @@ vault:
   credentials_file_created: "Credentials file created."
   encode_no_string: "No string provided for encoding."
   storing_password: "Storing password..."
-  key_exists: "Key already exists... Exitting."
+  key_exists: "Key {arg0} already exists... Exitting."
   store_success: "Password stored successfully."
   key_not_found: "Key not found."
   credentials_file_found: "Credentials file found."
