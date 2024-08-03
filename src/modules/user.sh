@@ -34,12 +34,11 @@ zen::user::create() {
 	mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
 	if [[ -n "${password}" ]]; then
 		zen::user::password::set "${username}" "${password}"
-		zen::vault::pass::store "${username}.main" "${password}"
 	else
 		password=$(zen::user::password::generate 16)
 		zen::user::password::set "${username}" "${password}"
-		zen::vault::pass::store "${username}.main" "${password}"
 	fi
+	zen::vault::pass::store "${username}.main" "${password}"
 	[ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
