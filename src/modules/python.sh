@@ -149,7 +149,11 @@ zen::python::add::profile() {
 		printf "export PYENV_ROOT=\"%s/pyenv\"\n" "$HOME"
 		printf "[[ -d \$PYENV_ROOT/bin ]] && export PATH=\"\$PYENV_ROOT/bin:\$PATH\"\n"
 		printf "eval \"\$(pyenv init -)\"\n"
-		printf "eval \"\$(pyenv virtualenv-init -)\"\n"
 		printf "source %s/.cargo/env\n" "$HOME"
 	} >>"$target_file"
+	if [[ "$target_file" == "$HOME/.bashrc" ]]; then
+		{
+			printf "eval \"\$(pyenv virtualenv-init -)\"\n"
+		} >>"$target_file"
+	fi
 }
