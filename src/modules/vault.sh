@@ -174,7 +174,6 @@ zen::vault::pass::update() {
 		zen::vault::permissions "add"
 	else
 		mflibs::status::error "$(zen::i18n::translate "vault.key_not_found")"
-		return 1
 	fi
 }
 
@@ -224,6 +223,5 @@ zen::vault::permissions() {
 		mflibs::log "chown -R root:root $credentials_file"
 	else
 		mflibs::status::error "$(zen::i18n::translate "vault.invalid_action" "$action")"
-		return 1
 	fi
 }
