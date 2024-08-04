@@ -336,18 +336,6 @@ zen::dependency::apt::add_source() {
 	local recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
 	local trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 
-	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && {
-		echo "Debug: source_name=$source_name"
-		echo "Debug: dependencies_file=$dependencies_file"
-		echo "Debug: source_url_template=$source_url_template"
-		echo "Debug: source_url=$source_url"
-		echo "Debug: arch=$arch"
-		echo "Debug: include_deb_src=$include_deb_src"
-		echo "Debug: gpg_key_url=$gpg_key_url"
-		echo "Debug: recv_keys=$recv_keys"
-		echo "Debug: trusted_key_url=$trusted_key_url"
-	}
-
 	[[ -z "$source_url" ]] && {
 		mflibs::status::error "$(zen::i18n::translate "dependency.source_url_missing" "$source_name")"
 	}
