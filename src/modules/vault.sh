@@ -29,13 +29,9 @@ zen::vault::init() {
 		salt=$(head -n 1 "$salt_file")
 	else
 		zen::vault::create
-		return 0
 	fi
 
-	if [[ -f "$credentials_file" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "vault.credentials_file_found")"
-		export credentials_file
-	else
+	if [[ ! -f "$credentials_file" ]]; then
 		# Hashing to determine vault path
 		# vault_name is a global variable
 		# shellcheck disable=SC2154
@@ -43,12 +39,9 @@ zen::vault::init() {
 		local vault_dir="${vault_base_dir}/${hash:0:32}"
 		local vault_file="${hash:32}.yaml"
 		declare -g credentials_file="${vault_dir}/${vault_file}"
-		if [[ ! -f "$credentials_file" ]]; then
-			mflibs::status::error "$(zen::i18n::translate "vault.credentials_file_not_found")"
-			return 1
-		fi
+		export credentials_file
 	fi
-
+	mflibs::status::success "$(zen::i18n::translate "vault.vault_initialized")"
 }
 
 # @function zen::vault::create
@@ -103,7 +96,8 @@ zen::vault::pass::encode() {
 		mflibs::status::error "$(zen::i18n::translate "vault.encode_no_string")"
 		return 1
 	fi
-	echo -n "$string" | base64 | sed 's/=*$//'
+	string=$(echo -n "$string" | base64)
+	echo -n "${string%%=*}"
 }
 
 # @function zen::vault::pass::decode
@@ -142,15 +136,15 @@ zen::vault::pass::decode() {
 zen::vault::pass::store() {
 	local key="$1"
 	local password="$2"
-	local username type hashed_password hashed_username hashed_key
+	local username type hashed_password hashed_username
 	username=$(echo "$key" | cut -d'.' -f1)
 	type=$(echo "$key" | cut -d'.' -f2)
 	hashed_type=$(zen::vault::pass::encode "$type")
 	hashed_username=$(zen::vault::pass::encode "$username")
-	hashed_key="$hashed_username.$hashed_type"
+	key="$hashed_username.$hashed_type"
 
 	mflibs::status::info "$(zen::i18n::translate "vault.storing_password" "$username" "$type")"
-	if yq e ".$hashed_key" "$credentials_file" &>/dev/null; then
+	if yq e ".$key" "$credentials_file" &>/dev/null; then
 		mflibs::status::error "$(zen::i18n::translate "vault.key_exists" "$key")"
 		return 1
 	else
