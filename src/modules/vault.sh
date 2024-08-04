@@ -119,7 +119,7 @@ zen::vault::pass::decode() {
 	if [[ -n "$hashed_password" ]]; then
 		echo "$hashed_password" | base64 --decode
 	else
-		return 1
+		mflibs::status::error "$(zen::i18n::translate "vault.unable_to_decode_key")"
 	fi
 }
 
