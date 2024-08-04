@@ -135,24 +135,21 @@ zen::vault::pass::decode() {
 zen::vault::pass::store() {
 	local key="$1"
 	local password="$2"
-	local username type hashed_password hashed_username
+	local username type hashed_password hashed_username hashed_key
 	username=$(echo "$key" | cut -d'.' -f1)
 	type=$(echo "$key" | cut -d'.' -f2)
 	hashed_type=$(zen::vault::pass::encode "$type")
 	hashed_username=$(zen::vault::pass::encode "$username")
-	key="$hashed_username.$hashed_type"
-
+	hashed_key=".$hashed_username.$hashed_type"
 	mflibs::status::info "$(zen::i18n::translate "vault.storing_password" "$username" "$type")"
-	if yq e ".$key" "$credentials_file" &>/dev/null; then
+	if [[ $(yq e "$hashed_key" "$credentials_file") != "null" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "vault.key_exists" "$key")"
-		return 1
-	else
-		zen::vault::permissions "remove"
-		hashed_password=$(zen::vault::pass::encode "$password")
-		yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
-		zen::vault::permissions "add"
-		mflibs::status::success "$(zen::i18n::translate "vault.store_success")"
 	fi
+	zen::vault::permissions "remove"
+	hashed_password=$(zen::vault::pass::encode "$password")
+	yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
+	zen::vault::permissions "add"
+	mflibs::status::success "$(zen::i18n::translate "vault.store_success")"
 }
 
 # @function zen::vault::pass::update
