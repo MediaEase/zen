@@ -33,9 +33,8 @@ mediaease:
           chown -R $CADDYFILE_OWNER /etc/caddy
     - pnpm:
         install: |
-          curl -fsSL https://get.pnpm.io/install.sh | sh >/dev/null 2>&1
-          cp -pR /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm
-          chmod +x /usr/local/bin/pnpm
+          wget -qO- https://get.pnpm.io/install.sh | sh >/dev/null 2>&1
+          chmod +x /usr/local/bin/pnpm/pnpm
 airsonic:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default ffmpeg
 autodl:

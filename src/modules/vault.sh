@@ -103,8 +103,7 @@ zen::vault::pass::encode() {
 		mflibs::status::error "$(zen::i18n::translate "vault.encode_no_string")"
 		return 1
 	fi
-	string=$(echo -n "$string" | base64)
-	echo -n "${string%%=*}"
+	echo -n "$string" | base64 | sed 's/=*$//'
 }
 
 # @function zen::vault::pass::decode
@@ -143,15 +142,15 @@ zen::vault::pass::decode() {
 zen::vault::pass::store() {
 	local key="$1"
 	local password="$2"
-	local username type hashed_password hashed_username
+	local username type hashed_password hashed_username hashed_key
 	username=$(echo "$key" | cut -d'.' -f1)
 	type=$(echo "$key" | cut -d'.' -f2)
 	hashed_type=$(zen::vault::pass::encode "$type")
 	hashed_username=$(zen::vault::pass::encode "$username")
-	key="$hashed_username.$hashed_type"
+	hashed_key="$hashed_username.$hashed_type"
 
 	mflibs::status::info "$(zen::i18n::translate "vault.storing_password" "$username" "$type")"
-	if yq e ".$key" "$credentials_file" &>/dev/null; then
+	if yq e ".$hashed_key" "$credentials_file" &>/dev/null; then
 		mflibs::status::error "$(zen::i18n::translate "vault.key_exists" "$key")"
 		return 1
 	else
