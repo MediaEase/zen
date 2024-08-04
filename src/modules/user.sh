@@ -47,11 +47,13 @@ zen::user::create() {
     export PYENV_ROOT=\"\$HOME/.config/pyenv\"
     log \"\$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "python.failed_to_install_pyenv")\"
     log \"\$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "python.failed_to_install_uv")\"
-    "
-	su - "${username}" -c "
+	echo \"export PATH=\$PYENV_ROOT/bin:\$PATH\" >> ~/.bashrc
+    echo \"eval \\\"\$(pyenv init --path)\\\"\" >> ~/.bashrc
+    echo \"eval \\\"\$(pyenv init -)\\\"\" >> ~/.bashrc
     chmod -R g+s \"\$HOME/.config/pyenv\" >/dev/null 2>&1
     setfacl -R -d -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
     setfacl -R -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+	$HOME/.config/pyenv/pyenv update >/dev/null 2>&1
     "
 	mflibs::status::success "$(zen::i18n::translate "user.user_created" "$username")"
 }
