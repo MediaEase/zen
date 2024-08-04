@@ -78,6 +78,7 @@ zen::vault::create() {
 	credentials_file="${vault_dir}/${vault_file}"
 	touch "$credentials_file"
 	zen::vault::permissions "add"
+	export credentials_file
 
 	mflibs::status::success "$(zen::i18n::translate "vault.vault_created")"
 }
