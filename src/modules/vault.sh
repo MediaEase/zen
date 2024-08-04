@@ -95,10 +95,8 @@ zen::vault::pass::encode() {
 	local string="${1}"
 	if [[ -z "$string" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "vault.encode_no_string")"
-		return 1
 	fi
-	string=$(echo -n "$string" | base64)
-	echo -n "${string%%=*}"
+	echo -n "$string" | base64 | sed 's/=*$//'
 }
 
 # @function zen::vault::pass::decode
