@@ -42,6 +42,17 @@ zen::user::create() {
 	[ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
+	cd /home/"${username}" || return 1
+	su - "${username}" -c "
+    export PYENV_ROOT=\"\$HOME/.config/pyenv\"
+    log \"\$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "python.failed_to_install_pyenv")\"
+    log \"\$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "python.failed_to_install_uv")\"
+    "
+	su - "${username}" -c "
+    chmod -R g+s \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+    setfacl -R -d -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+    setfacl -R -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+    "
 	mflibs::status::success "$(zen::i18n::translate "user.user_created" "$username")"
 }
 
