@@ -309,70 +309,91 @@ zen::dependency::external::install() {
 
 # @function zen::dependency::apt::add_source
 # # Adds a new APT source and its GPG key.
-# @description This function adds a new APT source and its corresponding GPG key from a YAML configuration file.
+# @description This function adds new APT sources and their corresponding GPG keys from a YAML configuration file.
 # It handles different options like architecture, inclusion of source repositories, and GPG key processing.
 # @global MEDIAEASE_HOME string Path to MediaEase configurations.
-# @arg $1 string Name of the source as specified in the YAML configuration.
-# @stdout Adds new APT source and GPG key based on the YAML configuration.
-# @note The function evaluates and applies settings from the YAML configuration for the specified source.
+# @arg $1 string|array Name of the source(s) as specified in the YAML configuration.
+# @stdout Adds new APT source(s) and GPG key(s) based on the YAML configuration.
+# @note The function evaluates and applies settings from the YAML configuration for the specified source(s).
 # @caution Ensure the GPG key is from a trusted source to avoid security risks.
 # @important The architecture specified must match the system architecture.
 # @example
 #   zen::dependency::apt::add_source "php"
-# shellcheck disable=SC2155
-# Disable SC2155 because if the command fails, it will exit the script.
+#   zen::dependency::apt::add_source "php" "nginx"
 zen::dependency::apt::add_source() {
-	local source_name="$1"
+	local sources=("$@")
 	local dependencies_file="${MEDIAEASE_HOME}/zen/src/apt_sources.yaml"
-	[[ -z "$source_name" ]] && {
-		mflibs::status::error "$(zen::i18n::translate "dependency.source_name_required")"
-	}
+	local counter=0
+	local total_sources=${#sources[@]}
 
-	local source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
-	local source_url=$(eval echo "$source_url_template")
-	local arch=$(yq e ".sources.${source_name}.options.arch" "$dependencies_file")
-	local include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
-	local gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
-	local recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
-	local trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
+	for source_name in "${sources[@]}"; do
+		local status_icon
+		local failed=false
 
-	[[ -z "$source_url" ]] && {
-		mflibs::status::error "$(zen::i18n::translate "dependency.source_url_missing" "$source_name")"
-	}
-	[[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]] && {
-		mflibs::status::error "$(zen::i18n::translate "dependency.architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
-	}
-	if [[ -n "$gpg_key_url" ]]; then
-		local gpg_key_file
-		gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
-		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: gpg_key_file=$gpg_key_file"
-		[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
-		wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
-			printf "Failed to process GPG key for %s\n" "$source_name"
-			return 1
+		[[ -z "$source_name" ]] && {
+			mflibs::status::error "$(zen::i18n::translate "dependency.source_name_required")"
+			failed=true
 		}
-		echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
-		[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
-	else
-		echo "deb $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
-		[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
-	fi
-	if [[ -n "$recv_keys" ]]; then
-		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Receiving keys for $source_name"
-		sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
-			printf "Failed to receive keys for %s\n" "$source_name"
-			return 1
-		}
-	fi
-	if [[ -n "$trusted_key_url" ]]; then
-		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Processing trusted key for $source_name"
-		wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
-			printf "Failed to process trusted key for %s\n" "$source_name"
-			return 1
-		}
-	fi
+		local source_url_template source_url arch include_deb_src gpg_key_url recv_keys trusted_key_url
+		source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
+		source_url=$(eval echo "$source_url_template")
+		arch=$(yq e ".sources.${source_name}.options.arch" "$dependencies_file")
+		include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
+		gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
+		recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
+		trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 
-	mflibs::status::success "$(zen::i18n::translate "dependency.apt_source_added" "$source_name")"
+		if [[ -z "$source_url" ]]; then
+			mflibs::status::error "$(zen::i18n::translate "dependency.source_url_missing" "$source_name")"
+			failed=true
+		fi
+		if [[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]]; then
+			mflibs::status::error "$(zen::i18n::translate "dependency.architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
+			failed=true
+		fi
+		if [[ "$failed" == false ]]; then
+			if [[ -n "$gpg_key_url" ]]; then
+				local gpg_key_file
+				gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
+				[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: gpg_key_file=$gpg_key_file"
+				[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
+				wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
+					mflibs::shell::text::red "$(zen::i18n::translate "dependency.gpg_key_failed" "$source_name")"
+					failed=true
+				}
+				echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+				[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+			else
+				echo "deb $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+				[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+			fi
+			if [[ -n "$recv_keys" ]]; then
+				[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Receiving keys for $source_name"
+				sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
+					mflibs::shell::text::red "$(zen::i18n::translate "dependency.recv_keys_failed" "$source_name")"
+					failed=true
+				}
+			fi
+			if [[ -n "$trusted_key_url" ]]; then
+				[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Processing trusted key for $source_name"
+				wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
+					mflibs::shell::text::red "$(zen::i18n::translate "dependency.trusted_key_failed" "$source_name")"
+					failed=true
+				}
+			fi
+		fi
+		if [[ "$failed" == false ]]; then
+			status_icon="mflibs::shell::icon::check::green \"$source_name\""
+			counter=$((counter + 1))
+		else
+			status_icon="mflibs::shell::icon::cross::red \"$source_name\""
+		fi
+		eval "$status_icon"
+		if [[ $counter -lt $total_sources && "$failed" == false ]]; then
+			echo -n " | "
+		fi
+	done
+	mflibs::status::info "$(zen::i18n::translate "dependency.sources_added" "$counter" "$total_sources")"
 }
 
 # @function zen::dependency::apt::remove_source
