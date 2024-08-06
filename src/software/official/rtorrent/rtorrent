@@ -39,7 +39,7 @@ zen::software::rtorrent::add() {
                     if sudo dpkg -i "$deb_file"; then
                         mflibs::shell::text::green "$(zen::i18n::translate "software.deb_file_installed" "$deb_file")"
                     else
-                        mflibs::shell::text::error "$(zen::i18n::translate "software.deb_file_install_failed" "$deb_file")"
+                        mflibs::shell::text::error "$(zen::i18n::translate "software.deb_file_install" "$deb_file")"
                     fi
                 fi
             done
@@ -58,7 +58,7 @@ zen::software::rtorrent::add() {
 # @description Configures rTorrent for a user, including setting up configuration files and proxy settings.
 # @global user An associative array containing user-specific information.
 zen::software::rtorrent::config() {
-    mflibs::shell::text::white "$(zen::i18n::translate "software.configuring_application" "$app_name")"
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configuring_app" "$app_name")"
     zen::software::autogen
     mkdir -p "/home/${user[username]}/.config/${app_name}"
     cp -pR "/opt/MediaEase/zen/src/software/official/rtorrent/.rtorrent.rc.tpl" "/home/${user[username]}/.config/${app_name}/.rtorrent.rc"
@@ -73,7 +73,7 @@ zen::software::rtorrent::config() {
     # we can't use the zen::proxy::generate function because rtorrent is a bit different
     zen::software::rtorrent::proxy::generate "/etc/caddy/softwares/${user[username]}.scgi.caddy"
 
-    mflibs::shell::text::green "$(zen::i18n::translate "software.application_configured" "$app_name")"
+    mflibs::shell::text::green "$(zen::i18n::translate "messages.software.configuring_app" "$app_name")"
 }
 
 # @function zen::software::rtorrent::update

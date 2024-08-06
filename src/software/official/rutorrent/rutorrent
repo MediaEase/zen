@@ -32,7 +32,7 @@ zen::software::rutorrent::add() {
         zen::software::rutorrent::plugins::resolve
         zen::software::rutorrent::fix::quota
     else
-        mflibs::status::info "$(zen::i18n::translate "software.already_installed_by_others" "ruTorrent")"
+        mflibs::status::info "$(zen::i18n::translate "messages.software.already_installed_by_others" "ruTorrent")"
         zen::software::rutorrent::fix::quota
     fi
 }

@@ -30,7 +30,7 @@ zen::user::create() {
 
 	# If the user is not an admin, restrict the shell
 	[ "$is_admin" == false ] && theshell="/bin/rbash"
-	mflibs::status::header "$(zen::i18n::translate "user.creating_user" "$username")"
+	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_user" "$username")"
 	mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
 	if [[ -n "${password}" ]]; then
 		zen::user::password::set "${username}" "${password}"
@@ -45,8 +45,8 @@ zen::user::create() {
 	cd /home/"${username}" || return 1
 	su - "${username}" -c "
     export PYENV_ROOT=\"\$HOME/.config/pyenv\"
-    log \"\$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "python.failed_to_install_pyenv")\"
-    log \"\$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "python.failed_to_install_uv")\"
+    log \"\$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "errors.python.pyenv_install")\"
+    log \"\$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "errors.python.uv_install")\"
 	echo \"export PATH=\$PYENV_ROOT/bin:\$PATH\" >> ~/.bashrc
     echo \"eval \\\"\$(pyenv init --path)\\\"\" >> ~/.bashrc
     echo \"eval \\\"\$(pyenv init -)\\\"\" >> ~/.bashrc
@@ -55,7 +55,7 @@ zen::user::create() {
     setfacl -R -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
 	$HOME/.config/pyenv/pyenv update >/dev/null 2>&1
     "
-	mflibs::status::success "$(zen::i18n::translate "user.user_created" "$username")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.user_creation" "$username")"
 }
 
 # @function zen::user::groups::upgrade
@@ -71,26 +71,26 @@ zen::user::groups::upgrade() {
 	local group="$2"
 
 	if [[ "$group" == "sudo" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG sudo ${username}"
 		mflibs::log "echo \"${username} ALL=(ALL) NOPASSWD:ALL\" >> /etc/sudoers"
 	elif [[ "$group" == "media" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG media ${username}"
 	elif [[ "$group" == "download" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG download ${username}"
 	elif [[ "$group" == "streaming" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG streaming ${username}"
 	elif [[ "$group" == "default" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG default ${username}"
 	else
-		mflibs::status::error "$(zen::i18n::translate "user.invalid_group" "$group")"
+		mflibs::status::error "$(zen::i18n::translate "errors.user.invalid_group_name" "$group")"
 		return 1
 	fi
-	mflibs::status::success "$(zen::i18n::translate "user.user_added_to_group" "$username" "$group")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.user_added_to_group" "$username" "$group")"
 }
 
 # @function zen::user::groups::create_groups
@@ -101,13 +101,13 @@ zen::user::groups::upgrade() {
 # @note Creates predefined groups like media, download, streaming, and default.
 zen::user::groups::create_groups() {
 	local groups=("full" "download" "streaming" "automation")
-	mflibs::status::header "$(zen::i18n::translate "user.creating_default_groups")"
+	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_default_groups")"
 	for group in "${groups[@]}"; do
 		if ! grep -q "^${group}:" /etc/group; then
 			mflibs::log "groupadd ${group}"
 		fi
 	done
-	mflibs::status::success "$(zen::i18n::translate "user.default_groups_created")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.base_groups_created")"
 }
 
 # @function zen::user::check
@@ -120,8 +120,8 @@ zen::user::groups::create_groups() {
 # shellcheck disable=SC2154
 # Disable SC2154 because the variable is defined in the main script
 zen::user::check() {
-	[[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "user.user_not_found" "${username}")" && zen::lock::cleanup && exit 1; }
-	[[ ${users_all[*]} != *"${username}"* ]] && { mflibs::status::error "$(zen::i18n::translate "user.user_not_mediaease_user" "${username}")" && zen::lock::cleanup && exit 1; }
+	[[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_found" "${username}")" && zen::lock::cleanup && exit 1; }
+	[[ ${users_all[*]} != *"${username}"* ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_in_mediaease" "${username}")" && zen::lock::cleanup && exit 1; }
 }
 
 # @function zen::user::is::admin
@@ -132,7 +132,7 @@ zen::user::check() {
 # @note User must be loaded with zen::user::load before calling this function.
 zen::user::is::admin() {
 	[[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]] && {
-		mflibs::status::info "$(zen::i18n::translate "user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "user.user_is_not_admin")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "messages.user.user_is_not_admin")"
 		zen::lock::cleanup
 		exit 1
 	}
@@ -168,11 +168,11 @@ zen::user::load() {
 	user_columns=("id" "group_id" "preference_id" "username" "roles" "password" "email" "is_verified" "api_key" "registered_at" "activated_at" "registration_ip" "is_banned")
 	zen::database::load_config "$(zen::database::select "*" "user" "$where_clause")" "user" 3 "user_columns"
 	if [[ -z "${user[username]}" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "user.user_not_found" "${username}")"
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.user_not_found" "${username}")"
 		zen::lock::cleanup
 		exit 1
 		# else
-		# mflibs::shell::text::green "$(zen::i18n::translate "user.user_found" "${username}")"
+		# mflibs::shell::text::green "$(zen::i18n::translate "umessages.user.user_found" "${username}")"
 	fi
 }
 
@@ -222,10 +222,10 @@ zen::user::password::generate() {
 zen::user::password::set() {
 	local username="$1"
 	local password="$2"
-	mflibs::status::info "$(zen::i18n::translate "user.setting_password_for" "$username")"
+	mflibs::status::info "$(zen::i18n::translate "messages.user.setting_password" "$username")"
 	echo "${username}:${password}" | chpasswd 2>/dev/null
 	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd
 	mkdir -p /etc/htpasswd.d
 	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd.d/htpasswd."${username}"
-	mflibs::status::success "$(zen::i18n::translate "user.password_set" "$username")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.password_set" "$username")"
 }

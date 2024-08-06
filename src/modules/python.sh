@@ -26,14 +26,13 @@ zen::python::venv::create() {
 	local username="${user[username]}"
 
 	if [[ -z "$path" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "python.venv_create.no_path")"
-		return 1
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_create_no_path")"
 	fi
-	mflibs::shell::text::white "$(zen::i18n::translate "python.venv_create_creating" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_required_dependencies" "$app_name")"
 
 	cd "$path" || return 1
 	sudo -u "${username}" python3 -m venv venv || return 1
-	mflibs::shell::text::green "$(zen::i18n::translate "python.venv_create_success" "$app_name")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install" "$app_name")"
 }
 
 # @function zen::python::venv::build
@@ -56,51 +55,49 @@ zen::python::venv::build() {
 	local requirements_path="$path/requirements.txt"
 
 	if [[ -z "$path" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "python.venv_install_no_path")"
-		return 1
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_remove")"
 	fi
 
 	# Activate the virtual environment
 	# shellcheck disable=SC1091
 	source "$path/venv/bin/activate"
-	mflibs::shell::text::green "$(zen::i18n::translate "python.venv_install_activated")"
+	mflibs::shell::text::green "$(zen::i18n::translate "messages.python.venv_install_activated")"
 	# Install Python dependencies from dependencies.yaml file
 	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
 	if [[ -z "$python_dependencies" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "dependency.no_python_dependencies_found" "$app_name")"
 		deactivate
-		return 1
+		mflibs::status::error "$(zen::i18n::translate "errors.python.no_dependencies_found" "$app_name")"
 	fi
-	mflibs::shell::text::white "$(zen::i18n::translate "python.venv_install_required_dependencies" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_required_dependencies" "$app_name")"
 	local exit_status=0
 	IFS=' ' read -ra DEPS <<<"$python_dependencies"
 	for dependency in "${DEPS[@]}"; do
 		mflibs::log "pip install --quiet --use-pep517 ${dependency}"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
-			mflibs::status::error "$(zen::i18n::translate "dependency.python_dependency_install_failed" "$dependency")"
+			mflibs::status::error "$(zen::i18n::translate "errors.python.dependency_install" "$dependency")"
 			exit_status=1
 		fi
 	done
-	mflibs::shell::text::green "$(zen::i18n::translate "python.venv_install_required_dependencies_success" "$app_name")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install_requirements" "$app_name")"
 
 	# Install requirements from requirements.txt file
 	if [[ $exit_status -eq 0 && -f "$requirements_path" ]]; then
-		mflibs::shell::text::white "$(zen::i18n::translate "python.venv_install_requirements" "$app_name")"
+		mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_requirements" "$app_name")"
 		mflibs::log "pip install --use-pep517 --quiet --exists-action s -r $requirements_path"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
-			mflibs::status::error "$(zen::i18n::translate "python.venv_install_requirements_error" "$software_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove_requirements" "$software_name")"
 			exit_status=1
 		fi
-		mflibs::shell::text::green "$(zen::i18n::translate "python.venv_install_requirements_success" "$software_name")"
+		mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install_requirements" "$software_name")"
 	fi
 
 	# Deactivate the virtual environment
 	deactivate
 
 	if [[ $exit_status -eq 0 ]]; then
-		mflibs::status::success "$(zen::i18n::translate "python.venv_install_success" "$software_name")"
+		mflibs::status::success "$(zen::i18n::translate "success.python.venv_install" "$software_name")"
 	fi
 
 	return $exit_status
@@ -120,19 +117,17 @@ zen::python::venv::build() {
 zen::python::venv::remove() {
 	local path="$1"
 	if [[ -z "$path" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "python.venv_remove_no_path")"
-		return 1
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_create_no_path")"
 	fi
 
 	cd "$path" || return 1
 	if ! sudo -u "${user[username]}" bash -c "source venv/bin/activate && pip uninstall -y -r requirements.txt"; then
-		mflibs::status::error "$(zen::i18n::translate "python.venv_remove_error" "$app_name")"
-		return 1
+		mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove" "$app_name")"
 	fi
 	cd ..
 	rm -rf "$path"
 
-	mflibs::status::success "$(zen::i18n::translate "python.venv_remove_success" "$app_name")"
+	mflibs::status::success "$(zen::i18n::translate "success.python.venv_remove" "$app_name")"
 }
 
 # @function zen::python::add::profile

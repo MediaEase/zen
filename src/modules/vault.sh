@@ -41,7 +41,7 @@ zen::vault::init() {
 		declare -g credentials_file="${vault_dir}/${vault_file}"
 		export credentials_file
 	fi
-	mflibs::status::success "$(zen::i18n::translate "vault.vault_initialized")"
+	mflibs::status::success "$(zen::i18n::translate "success.vault.vault_initialized")"
 }
 
 # @function zen::vault::create
@@ -53,7 +53,7 @@ zen::vault::create() {
 	local salt hash vault_dir vault_file
 	declare salt_file="/root/.mediaease/config"
 	declare vault_base_dir="/etc/.mediaease"
-	mflibs::status::header "$(zen::i18n::translate "vault.create_vault")"
+	mflibs::status::header "$(zen::i18n::translate "messages.vault.creating_vault")"
 	if [[ -z "$user_salt" ]]; then
 		read -r -sp "Enter your salt key: " user_salt
 		printf "\n"
@@ -64,7 +64,7 @@ zen::vault::create() {
 	echo "$salt" >"$salt_file"
 	chmod 600 "$salt_file"
 	chattr +i "$salt_file"
-	mflibs::status::info "$(zen::i18n::translate "vault.salt_stored")"
+	mflibs::status::info "$(zen::i18n::translate "success.vault.salt_stored")"
 
 	# Hashing to determine vault path
 	hash=$(echo -n "${vault_name}${salt}" | sha256sum | cut -d' ' -f1)
@@ -80,7 +80,7 @@ zen::vault::create() {
 	zen::vault::permissions "add"
 	export credentials_file
 
-	mflibs::status::success "$(zen::i18n::translate "vault.vault_created")"
+	mflibs::status::success "$(zen::i18n::translate "success.vault.vault_creation")"
 }
 
 # @function zen::vault::pass::encode
@@ -94,7 +94,7 @@ zen::vault::create() {
 zen::vault::pass::encode() {
 	local string="${1}"
 	if [[ -z "$string" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "vault.encode_no_string")"
+		mflibs::status::error "$(zen::i18n::translate "errors.vault.no_string_to_encode")"
 	fi
 	echo -n "$string" | base64 | sed 's/=*$//'
 }
@@ -141,15 +141,15 @@ zen::vault::pass::store() {
 	hashed_type=$(zen::vault::pass::encode "$type")
 	hashed_username=$(zen::vault::pass::encode "$username")
 	hashed_key=".$hashed_username.$hashed_type"
-	mflibs::status::info "$(zen::i18n::translate "vault.storing_password" "$username" "$type")"
+	mflibs::status::info "$(zen::i18n::translate "messages.vault.storing_password" "$username" "$type")"
 	if [[ $(yq e "$hashed_key" "$credentials_file") != "null" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "vault.key_exists" "$key")"
+		mflibs::status::error "$(zen::i18n::translate "errors.vault.key_already_exists" "$key")"
 	fi
 	zen::vault::permissions "remove"
 	hashed_password=$(zen::vault::pass::encode "$password")
 	yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
 	zen::vault::permissions "add"
-	mflibs::status::success "$(zen::i18n::translate "vault.store_success")"
+	mflibs::status::success "$(zen::i18n::translate "success.vault.password_store")"
 }
 
 # @function zen::vault::pass::update
@@ -173,7 +173,7 @@ zen::vault::pass::update() {
 		yq e -i ".$hashed_key = \"$hashed_password\"" "$credentials_file"
 		zen::vault::permissions "add"
 	else
-		mflibs::status::error "$(zen::i18n::translate "vault.key_not_found")"
+		mflibs::status::error "$(zen::i18n::translate "errors.vault.key_missing")"
 	fi
 }
 

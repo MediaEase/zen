@@ -23,7 +23,7 @@ zen::software::is::installed() {
 	local user_id="$2"
 
 	if [[ -z "$software" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "software.software_name_not_found")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing")"
 		return 1
 	fi
 
@@ -35,7 +35,7 @@ zen::software::is::installed() {
 
 	if [[ "$user_id" != "*" ]]; then
 		if [[ -z "$user_id" ]]; then
-			mflibs::status::error "$(zen::i18n::translate "common.user_id_not_found")"
+			mflibs::status::error "$(zen::i18n::translate "errors.user.user_id_missing")"
 			return 1
 		fi
 		additional_clauses="AND srv.user_id = ${user_id} "
@@ -71,7 +71,7 @@ zen::software::port_randomizer() {
 
 	port_range=$(yq e ".arguments.ports[] | select(.${port_type} != null) | .${port_type}" "$software_config_file")
 	if [[ -z "$port_range" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "software.no_port_range_found" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.port_range_missing" "$app_name")"
 		return 1
 	fi
 
@@ -99,7 +99,7 @@ zen::software::port_randomizer() {
 			((retries--))
 		done
 
-		mflibs::status::error "$(zen::i18n::translate "software.port_range_unavailable" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "software.port_in_use" "$app_name")"
 		return 1
 	else
 		while ((retries > 0)); do
@@ -111,7 +111,7 @@ zen::software::port_randomizer() {
 			((retries--))
 		done
 
-		mflibs::status::error "$(zen::i18n::translate "software.port_unavailable" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.port_in_use" "$app_name")"
 		return 1
 	fi
 }
@@ -159,7 +159,7 @@ zen::software::infobox() {
 	intro)
 		case "$action" in
 		add | update | backup | reset | remove | reinstall)
-			translated_string=$(zen::i18n::translate "software.header_info_$action" "$app_name_sanitized")
+			translated_string=$(zen::i18n::translate "headers.software.$action" "$app_name_sanitized")
 			;;
 		*)
 			translated_string="Action: $action"
@@ -174,10 +174,10 @@ zen::software::infobox() {
 	outro)
 		case "$action" in
 		add | update | backup | reset | remove | reinstall)
-			outro=$(zen::i18n::translate "software.footer_info_$action" "$app_name_sanitized")
+			outro=$(zen::i18n::translate "footer.software.$action" "$app_name_sanitized")
 			# shellcheck disable=SC2154
-			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "software.access_link" "$app_name_sanitized" "$url_base")
-			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "software.docs_link" "$app_name_sanitized" "$url_base")
+			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "links.software.access_url" "$app_name_sanitized" "$url_base")
+			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "links.software.documentation" "$app_name_sanitized" "$url_base")
 			;;
 		*)
 			translated_string="Action completed: $action"
@@ -200,6 +200,7 @@ zen::software::infobox() {
 		;;
 	*)
 		printf "Invalid infobox type specified %s\n" "$infobox_type"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_infobox_type" "$infobox_type")"
 		return 1
 		;;
 	esac
@@ -238,7 +239,7 @@ zen::software::options::process() {
 			software_key="$option_value"
 			;;
 		*)
-			mflibs::status::error "$(zen::i18n::translate "common.invalid_option" "$option_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_option" "$option_name")"
 			exit 1
 			;;
 		esac
@@ -271,15 +272,15 @@ zen::software::backup::create() {
 	readarray -t files_to_backup < <(yq e ".arguments.files[].*" "$software_config_file" | sed "s/%i/${user[username]}/g; s/\$app_name/$app_name/g")
 
 	if [ ${#files_to_backup[@]} -eq 0 ]; then
-		mflibs::status::error "$(zen::i18n::translate "software.no_files_for_backup" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.no_backup_files" "$app_name")"
 		return 1
 	fi
 
-	mflibs::shell::text::white "$(zen::i18n::translate "software.creating_backup" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.creating_backup" "$app_name")"
 	if tar -czf "$backup_file" "${files_to_backup[@]}" >/dev/null 2>&1; then
-		mflibs::shell::text::green "$(zen::i18n::translate "software.backup_created" "$backup_file")"
+		mflibs::shell::text::green "$(zen::i18n::translate "success.software.backup_created" "$backup_file")"
 	else
-		mflibs::status::error "$(zen::i18n::translate "software.backup_failed" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.no_backup_files" "$app_name")"
 		return 1
 	fi
 }
@@ -300,19 +301,19 @@ zen::software::get_config_key_value() {
 	local app_name="$4"
 
 	if [[ -z "$software_config_file" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "software.config_file_not_found")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.config_file_missing")"
 		return 1
 	fi
 
 	if [[ ! -f "$software_config_file" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "software.config_file_not_found")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.config_file_missing")"
 		return 1
 	fi
 
 	local key_value
 	key_value=$(yq e "$yq_expression" "$software_config_file")
 	if [[ -z "$key_value" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "software.invalid_config_expression" "$yq_expression")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_config_syntax" "$yq_expression")"
 		return 1
 	fi
 
@@ -361,7 +362,7 @@ zen::software::autogen() {
 			port_range=$(zen::software::port_randomizer "$app_name" "port_range")
 			;;
 		*)
-			mflibs::status::error "$(zen::i18n::translate "software.invalid_autogen_key" "$key")"
+			mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_autogen_key" "$key")"
 			;;
 		esac
 	done
@@ -381,42 +382,42 @@ zen::software::autogen() {
 # @example
 #   zen::software::create
 zen::software::create() {
-	echo "Creating a new software entry..."
-	zen::prompt::input "Enter the software name: " "" software_name
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.creating")"
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_name")" "" software_name
 	if [[ -z "$software_name" ]]; then
-		mflibs::status::error "Software name cannot be empty."
+		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing")"
 		exit 1
 	fi
 	software_name_sanitized=$(zen::common::capitalize::first "$software_name")
 	software_name_lowered=$(zen::common::lowercase "$software_name")
-	zen::prompt::input "Enter the Category Group for the software: " "" group
-	zen::prompt::input "Enter the software repository URL: " "github" software_repo
-	zen::prompt::input "Enter the software documentation URL: " "url" software_docs
-	zen::prompt::input "Enter the software homepage URL: " "url" homepage
-	zen::prompt::yn "Is the software multi-user? (yes/no)" multi_user
-	zen::prompt::yn "Is this app will use a port? (yes/no)" use_port
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_category_group")" "" group
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_repo_url")" "github" software_repo
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_docs_url")" "url" software_docs
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_homepage_url")" "url" homepage
+	zen::prompt::yn "$(zen::i18n::translate "prompts.software.is_multi_user")" multi_user
+	zen::prompt::yn "$(zen::i18n::translate "prompts.software.uses_port")" use_port
 	if [[ "$use_port" == "yes" ]]; then
-		zen::prompt::input "Let MediaEase choose a port for you using port range? (yes/no)" "" use_random_port
+		zen::prompt::input "$(zen::i18n::translate "prompts.software.use_random_port")" "" use_random_port
 		if [[ "$use_random_port" == "yes" ]]; then
-			zen::prompt::input "Enter the default port range for the software: (Ex: 5780-6001)" "port_range" port_range
-			zen::prompt::input "Enter the SSL port range for the software: (Ex: 11245-11287)" "port_range" ssl_port_range
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_port_range")" "port_range" port_range
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_ssl_port_range")" "port_range" ssl_port_range
 		else
-			zen::prompt::input "Enter the default port for the software: " "numeric" default_port
-			zen::prompt::input "Enter the SSL port for the software: " "numeric" ssl_port
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_default_port")" "numeric" default_port
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_ssl_port")" "numeric" ssl_port
 		fi
 	fi
-	zen::prompt::yn "Is this app will use a service? (yes/no)" use_service
+	zen::prompt::yn "$(zen::i18n::translate "prompts.software.uses_service")" use_service
 	if [[ "$use_service" == "yes" ]]; then
-		zen::prompt::input "Enter the service directives for the software (comma separated list): (Ex: Type=simple, Environment=TMPDIR=/home/%i/tmp/$software_name_sanitized)" "" service_directives
+		zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_service_directives")" "" service_directives
 	fi
-	zen::prompt::yn "Is this app compatible with MediaEase Autogen feature? (yes/no)" use_autogen
+	zen::prompt::yn "$(zen::i18n::translate "prompts.software.compatible_with_autogen")" use_autogen
 	if [[ "$use_autogen" == "yes" ]]; then
 		declare -a autogen_keys
 		declare -a selected_autogen_keys
 		declare -a selected_autogen_keys_yaml
 		autogen_keys=("Api Key" "SSL Port" "Default Port" "Password" "Port Range")
 		selected_autogen_keys=()
-		zen::prompt::multi_select "Select the autogen keys for the software: " selected_autogen_keys autogen_keys[@]
+		zen::prompt::multi_select "$(zen::i18n::translate "prompts.software.select_autogen_keys")" selected_autogen_keys autogen_keys[@]
 		selected_autogen_keys_yaml=()
 		for key in "${selected_autogen_keys[@]}"; do
 			mapfile -t autogen_key_array <<<"$(echo "$key" | tr '[:upper:]' '[:lower:]' | tr ' ' '_')"
@@ -464,21 +465,22 @@ EOL
 		yq e ".\"$string\" = \"Placeholder to describe $software_name_lowered\"" "$file" -i
 		translation_files["$file"]="updated"
 	done
-	cd /srv/harmonyui || mflibs::status::error "$(zen::i18n::translate "common.failed_to_change_directory" "/srv/harmonyui")"
+	cd /srv/harmonyui || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "/srv/harmonyui")"
 	username="$(zen::database::select "username" "users" "roles LIKE '%ROLE_ADMIN%'")"
 	su -c "symfony console harmony:scan:apps" "$username"
 	mflibs::shell::text::yellow "################################################################################"
-	mflibs::shell::text::yellow "# Software $software_name_sanitized created successfully."
-	mflibs::shell::text::yellow "# You can find the generated files in $software_dir"
-	mflibs::shell::text::yellow "# Generated files: $software_dir/config.yaml, $software_dir/$software_name_lowered"
-	mflibs::shell::text::yellow "# Please update the configuration file and the logo used with the correct values."
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "success.software.created" "$software_name_sanitized")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.find_generated_files" "$software_dir")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.generated_files" "$software_dir/config.yaml" "$software_dir/$software_name_lowered")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.update_config")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.warn_about_translation_files")"
 	mflibs::shell::text::yellow "# Don't forget to add a correct description for the software in the translations files."
-	mflibs::shell::text::yellow "# Translation files updated:"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.translation_files_updated")"
 	for file in "${!translation_files[@]}"; do
 		mflibs::shell::text::yellow "# - $file"
 	done
 	mflibs::shell::text::yellow "# "
-	mflibs::shell::text::yellow "# Learn more about how to create a software entry in the documentation."
+	mflibs::shell::text::yellow "$(zen::i18n::translate "messages.software.learn_more")"
 	mflibs::shell::text::yellow "# https://mediaease.github.io/docs/mediaease/components/zen/README.md"
 	mflibs::shell::text::yellow "################################################################################"
 }

@@ -31,7 +31,7 @@ zen::common::git::clone() {
 	local repo_url
 	repo_url="https://github.com/$repo_name"
 	if [ -d "$target_dir" ]; then
-		mflibs::status::warn "$(zen::i18n::translate "common.repository_already_exists" "$repo_url")"
+		mflibs::status::warn "$(zen::i18n::translate "errors.common.env_variable_missing" "$repo_url")"
 		return 0
 	fi
 
@@ -46,7 +46,7 @@ zen::common::git::clone() {
 	fi
 
 	if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules"; then
-		mflibs::status::success "$(zen::i18n::translate "common.repository_cloned" "$repo_url")"
+		mflibs::status::success "$(zen::i18n::translate "messages.common.release_found" "$repo_url")"
 
 		local username
 		local group
@@ -65,7 +65,7 @@ zen::common::git::clone() {
 			zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
 		fi
 	else
-		mflibs::status::error "$(zen::i18n::translate "common.repository_clone_failed" "$repo_url")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.repository_clone" "$repo_url")"
 		return 1
 	fi
 }
@@ -88,12 +88,12 @@ zen::common::git::get_release() {
 	local is_prerelease="$3"
 	local release_name="$4"
 	local repo_url
-	mflibs::shell::text::white "$(zen::i18n::translate "common.getting_release" "$repo_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.common.downloading_release" "$repo_name")"
 	repo_url="https://api.github.com/repos/$repo_name/releases"
 	release_url="$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")"
 	declare -g release_version
 	release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
-	mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "common.release_found" "$repo_name"): $release_version")"
+	mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.common.release_found" "$repo_name"): $release_version")"
 	[[ -d $target_dir ]] && rm -rf "$target_dir"
 	mflibs::dir::mkcd "$target_dir"
 	wget -q "$release_url"
@@ -111,7 +111,7 @@ zen::common::git::get_release() {
 	else
 		zen::permission::read_exec "$target_dir" "www-data" "www-data"
 	fi
-	mflibs::shell::text::green "$(zen::i18n::translate "common.release_downloaded" "$repo_name")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.common.release_downloaded" "$repo_name")"
 }
 
 # @function zen::common::git::download_file
@@ -133,16 +133,16 @@ zen::common::git::download_file() {
 
 	# Check if curl is installed
 	if ! command -v curl &>/dev/null; then
-		mflibs::status::error "$(zen::i18n::translate "common.curl_not_installed")"
+		mflibs::status::error "$(zen::i18n::translate "errors.dependency.dependency_missing" "cUrl")"
 		return 1
 	fi
 
 	# Download the file
 	if curl -o "$local_path" "$repo_url"; then
-		mflibs::status::success "$(zen::i18n::translate "common.file_download_success" "$repo_url" "$local_path")"
+		mflibs::status::success "$(zen::i18n::translate "success.common.file_downloaded" "$repo_url" "$local_path")"
 		return 0
 	else
-		mflibs::status::error "$(zen::i18n::translate "common.file_download_failed" "$repo_url")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.file_download" "$repo_url")"
 		return 1
 	fi
 }
@@ -165,7 +165,7 @@ zen::common::git::tree() {
 
 	# Check if curl and jq are installed
 	if ! command -v curl &>/dev/null || ! command -v jq &>/dev/null; then
-		mflibs::status::error "$(zen::i18n::translate "common.required_tools_not_installed")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.required_tools_missing")"
 		return 1
 	fi
 
@@ -175,7 +175,7 @@ zen::common::git::tree() {
 
 	# Check if response is empty or not a valid array
 	if [ -z "$response" ] || ! echo "$response" | jq -e . >/dev/null 2>&1; then
-		mflibs::status::error "$(zen::i18n::translate "common.invalid_api_response")"
+		mflibs::status::error "$(zen::i18n::translate "common.invalid_api_response" "$response")"
 		return 1
 	fi
 
@@ -203,7 +203,7 @@ zen::common::environment::get::variable() {
 	if [[ -n "${!var_name}" ]]; then
 		echo "${!var_name}"
 	else
-		mflibs::status::error "$(zen::i18n::translate "common.env_var_not_found" "$var_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.env_variable_missing" "$var_name")"
 	fi
 }
 
@@ -326,13 +326,13 @@ zen::common::make::install() {
 	if mflibs::log "make $nproc_args $make_args"; then
 		[ -n "$install_dir" ] && make_install_args="DESTDIR=$install_dir $make_install_args"
 		if mflibs::log "make install $make_install_args"; then
-			mflibs::status::success "$(zen::i18n::translate "common.make_install_success" "$source_dir")"
+			mflibs::status::success "$(zen::i18n::translate "success..common.make_install" "$source_dir")"
 		else
-			mflibs::status::error "$(zen::i18n::translate "common.make_install_failed" "$source_dir")"
+			mflibs::status::error "$(zen::i18n::translate "errors.common.make_install" "$source_dir")"
 			return 1
 		fi
 	else
-		mflibs::status::error "$(zen::i18n::translate "common.make_failed" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.make" "$source_dir")"
 		return 1
 	fi
 }
@@ -358,18 +358,18 @@ zen::common::scons::install() {
 	debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
 	cd "$source_dir" || return 1
 	if ! mflibs::log "scons config"; then
-		mflibs::status::error "$(zen::i18n::translate "common.scons_config_failed" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_config" "$source_dir")"
 		return 1
 	fi
 	if ! mflibs::log "scons DEBUG=$debug_flag"; then
-		mflibs::status::error "$(zen::i18n::translate "common.scons_build_failed" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_build" "$source_dir")"
 		return 1
 	fi
 
 	[ -n "$install_dir" ] && scons_install_args="--prefix=$install_dir"
 	if ! mflibs::log "scons $scons_install_args DEBUG=$debug_flag install"; then
-		mflibs::status::error "$(zen::i18n::translate "common.scons_install_failed" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
 		return 1
 	fi
-	mflibs::status::success "$(zen::i18n::translate "common.scons_install_success" "$source_dir")"
+	mflibs::status::success "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
 }

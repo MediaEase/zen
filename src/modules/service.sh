@@ -30,7 +30,7 @@ zen::service::generate() {
 	local start="$3"
 	[[ -z "$start" ]] && start=true
 
-	mflibs::shell::text::white "$(zen::i18n::translate "service.generating_service" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.generating_service" "$app_name")"
 	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
 	service_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("service")).service' "${user[username]}" "$app_name")
 	caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
@@ -65,7 +65,7 @@ zen::service::generate() {
 
 	# Write the content to the service file
 	printf "%s\n" "${service_content[@]}" >"$service_file"
-	mflibs::shell::text::green "$(zen::i18n::translate "service.service_file_created" "$app_name" "$service_name")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.service.service_file_created" "$app_name" "$service_name")"
 	mflibs::log "systemctl daemon-reload"
 	# if not bypass_mode; then
 	zen::service::manage "enable" "$service_name"
@@ -84,7 +84,7 @@ zen::service::generate() {
 		zen::service::build::add_entry "apikey" "$apikey"
 		zen::service::validate "$is_child" "$app_name_sanitized"
 	else
-		mflibs::shell::text::yellow "$(zen::i18n::translate "service.service_bypassed" "$app_name")"
+		mflibs::shell::text::yellow "$(zen::i18n::translate "messages.service.service_bypass_active" "$app_name")"
 	fi
 	export service_name
 }
@@ -108,10 +108,10 @@ zen::service::manage() {
 	check_service_status() {
 		sleep 2
 		if systemctl is-active --quiet "$service_name"; then
-			mflibs::shell::text::green "$(zen::i18n::translate "service.service_running" "$service_name")"
+			mflibs::shell::text::green "$(zen::i18n::translate "success.service.service_started" "$service_name")"
 			return 1
 		else
-			mflibs::shell::text::red "$(zen::i18n::translate "service.service_not_running" "$service_name")"
+			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.service_not_started" "$service_name")"
 			return 0
 		fi
 	}
@@ -119,14 +119,14 @@ zen::service::manage() {
 	case $action in
 	start)
 		if zen::service::manage "status" "$service_name"; then
-			mflibs::status::error "$(zen::i18n::translate "service.service_already_running" "$service_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.service.service_already_running" "$service_name")"
 			return 1
 		fi
 		systemctl start "$service_name"
 		;;
 	stop)
 		if ! zen::service::manage "status" "$service_name"; then
-			mflibs::status::error "$(zen::i18n::translate "service.service_not_running" "$service_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.service.service_not_started" "$service_name")"
 			return 1
 		fi
 		systemctl stop "$service_name"
@@ -148,7 +148,7 @@ zen::service::manage() {
 		check_service_status
 		;;
 	*)
-		mflibs::status::error "$(zen::i18n::translate "common.invalid_action" "$action" "$service_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_action" "$action" "$service_name")"
 		return 2
 		;;
 	esac
@@ -166,7 +166,7 @@ zen::service::build::add_entry() {
 	local value="$2"
 
 	if [[ -n "${api_service[$key]}" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "service.build_entry_exists" "$key")"
+		mflibs::status::error "$(zen::i18n::translate "messages.service.service_entry_exists" "$key")"
 		return 1
 	fi
 	api_service["$key"]="$value"
@@ -183,7 +183,7 @@ zen::service::build::add_entry() {
 zen::service::validate() {
 	local is_child="$1"
 	local app_name_sanitized="$2"
-	mflibs::shell::text::white "$(zen::i18n::translate "service.validating_service" "$app_name_sanitized")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.validating_service" "$app_name_sanitized")"
 	local json_ports json_configuration application_id parent_service_id json_result
 
 	# Assuming api_service[default_port] and api_service[ssl_port] contain simple strings or numbers
@@ -253,5 +253,5 @@ zen::service::validate() {
 
 	# Call the zen::database::insert function
 	zen::database::insert "service" "name, version, status, apikey, ports, configuration, application_id, parent_service_id, user_id" "'$name', '$version', '$status', '$apikey', '$ports', '$configuration', '$application_id', '$parent_service_id', '$user_id'"
-	mflibs::shell::text::green "$(zen::i18n::translate "service.service_validated" "$app_name_sanitized")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.service.service_validated" "$app_name_sanitized")"
 }

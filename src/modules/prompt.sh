@@ -26,7 +26,7 @@ zen::prompt::yn() {
   if [[ "${2:-}" = "Y" ]]; then
     prompt=$(
       mflibs::shell::text::green::sl "[Y]"
-      mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') "
+      mflibs::shell::text::white::sl " $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') "
       mflibs::shell::text::red::sl "[N] "
       mflibs::shell::text::white::sl "(default : "
       mflibs::shell::text::green::sl "Y"
@@ -36,7 +36,7 @@ zen::prompt::yn() {
   elif [[ "${2:-}" = "N" ]]; then
     prompt=$(
       mflibs::shell::text::green::sl "[Y]"
-      mflibs::shell::text::white::sl " $(zen::i18n::translate "common.or" | tr '[:upper:]' '[:lower:]') "
+      mflibs::shell::text::white::sl " $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') "
       mflibs::shell::text::red::sl "[N] "
       mflibs::shell::text::white::sl "(default : "
       mflibs::shell::text::red::sl "N"
@@ -74,7 +74,7 @@ zen::prompt::yn() {
 #   zen::prompt::raid "Choose a RAID level:" chosen_level raid_levels[@]
 # @tip Use this function to help users select from multiple RAID configuration options.
 zen::prompt::raid() {
-  local prompt="${1:-"\e[1;36m$(zen::i18n::translate "common.your_choice")\e[0m"}"
+  local prompt="${1:-"\e[1;36m$(zen::i18n::translate "prompts.common.choice_prompt")\e[0m"}"
   local -n output_var="${2:-}"
   local choices=("${@:3}")
   local choice
@@ -84,13 +84,13 @@ zen::prompt::raid() {
     echo -e "    \e[96m$((index + 1)))\e[0m RAID${choices[index]}"
   done
   while true; do
-    printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "common.your_choice") ")"
+    printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "prompts.common.choice_prompt") ")"
     read -r choice_num </dev/tty
     if [[ "$choice_num" =~ ^[0-9]+$ ]] && ((choice_num >= 1 && choice_num <= ${#choices[@]})); then
       choice="${choices[choice_num - 1]}"
       break
     else
-      echo -e "\e[31m$(zen::i18n::translate "common.invalid_input")\e[0m"
+      echo -e "\e[31m$(zen::i18n::translate "prompts.common.invalid_input")\e[0m"
     fi
   done
   # shellcheck disable=SC2034
@@ -127,7 +127,7 @@ zen::prompt::code() {
     if [[ "$reply" == "$string" ]]; then
       return 0
     else
-      mflibs::shell::text::red "$(zen::i18n::translate "common.invalid_input" "$reply")"
+      mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
     fi
   done
 }
@@ -155,7 +155,7 @@ zen::prompt::password() {
     if [[ "$reply" == "$password" ]]; then
       return 0
     else
-      mflibs::shell::text::red "$(zen::i18n::translate "common.invalid_input" "$reply")"
+      mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
     fi
   done
 }
@@ -185,7 +185,7 @@ zen::prompt::input() {
         export "$output_var_name"="$reply"
         return 0
       else
-        mflibs::shell::text::red "$(zen::i18n::translate "common.invalid_input" "$reply")"
+        mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
       fi
     else
       export "$output_var_name"="$reply"
@@ -332,7 +332,7 @@ zen::prompt::multi_select() {
   echo -e "Enter the numbers of your choices, separated by spaces (e.g., 1 2 3):"
 
   while true; do
-    printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "common.your_choice") ")"
+    printf "%s : " "$(mflibs::shell::text::white::sl " $(zen::i18n::translate "prompts.common.choice_prompt") ")"
     read -r -a choice_nums </dev/tty
 
     local valid=true
@@ -349,7 +349,7 @@ zen::prompt::multi_select() {
     if $valid; then
       break
     else
-      echo -e "\e[31m$(zen::i18n::translate "common.invalid_input")\e[0m"
+      echo -e "\e[31m$(zen::i18n::translate "prompts.common.invalid_input")\e[0m"
     fi
   done
   export output_var="${selected[*]}"

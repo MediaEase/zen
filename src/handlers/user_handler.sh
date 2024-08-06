@@ -109,7 +109,7 @@ zen::user::args::process() {
 			shift 2
 			;;
 		*)
-			mflibs::status::error "$(zen::i18n::translate "common.invalid_option" "$1")"
+			mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_option" "$1")"
 			exit 1
 			;;
 		esac
