@@ -69,6 +69,7 @@ errors:
     composer_install: "Failed to install Composer."
   common:
     env_variable_missing: "Environment variable not found: {arg0}"
+    file_move: "Failed to move file {arg0} to {arg1}."
     invalid_option: "Invalid option: {arg0}"
     invalid_action: "Invalid action: {arg0}"
     insufficient_args: "Insufficient arguments."
@@ -132,6 +133,7 @@ messages:
     creating_user: "Creating user..."
     setting_password: "Setting password for {arg0}..."
     adding_user_to_group: "Adding user {arg0} to group {arg1}..."
+    base_group_creation: "Creating base groups..."
     user_is_admin: "The user is an administrator."
     user_is_not_admin: "The user is not an administrator."
     user_found: "User found: {arg0}"
@@ -154,6 +156,7 @@ messages:
     updating_system: "Updating system..."
     installation_complete: "Installation complete."
     dpkg_locked_info: "Resolving the issue..."
+    dependency_installed: "Dependency {arg0} installed."
   python:
     checking_python_version: "Checking Python version..."
     add_python_profiles: "Adding Python profiles to your paths..."
@@ -208,7 +211,6 @@ success:
     apt_source_added: "APT source for {arg0} added."
     apt_source_removed: "APT source for {arg0} removed."
     unnecessary_packages_removed: "Unnecessary packages removed."
-    dependency_installed: "Dependency {arg0} installed."
     system_update: "System updated."
   python:
     python_version_checked: "Python version checked."
