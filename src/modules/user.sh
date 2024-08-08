@@ -27,6 +27,7 @@ zen::user::create() {
 	local password="$2"
 	local is_admin="$3" # true or false
 	local theshell="/bin/bash"
+	local bashrc="/home/${username}/.bashrc"
 
 	# If the user is not an admin, restrict the shell
 	[ "$is_admin" == false ] && theshell="/bin/rbash"
@@ -43,18 +44,17 @@ zen::user::create() {
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
 	cd /home/"${username}" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "/home/${username}")"
-	su - "${username}" -c "
-    export PYENV_ROOT=\"\$HOME/.config/pyenv\"
-    log \"\$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "errors.python.pyenv_install")\"
-    log \"\$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "errors.python.uv_install")\"
-	echo \"export PATH=\$PYENV_ROOT/bin:\$PATH\" >> ~/.bashrc
-    echo \"eval \\\"\$(pyenv init --path)\\\"\" >> ~/.bashrc
-    echo \"eval \\\"\$(pyenv init -)\\\"\" >> ~/.bashrc
-    chmod -R g+s \"\$HOME/.config/pyenv\" >/dev/null 2>&1
-    setfacl -R -d -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
-    setfacl -R -m g:${username}:rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
-	$HOME/.config/pyenv/pyenv update >/dev/null 2>&1
-    "
+	su - "${username}" -c "export PYENV_ROOT=\"\$HOME/.config/pyenv\""
+	su - "${username}" -c "$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)" || mflibs::status::error "$(zen::i18n::translate "errors.python.pyenv_install")"
+	su - "${username}" -c "$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)" || mflibs::status::error "$(zen::i18n::translate "errors.python.uv_install")"
+	mv "/opt/MediaEase/MediaEase/zen/src/extras/templates/bashrc-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bashrc-user.tpl" "${bashrc}")"
+	[ -f "${bashrc}" ] && echo "export PATH=\$PYENV_ROOT/bin:\$PATH" >>"${bashrc}"
+	[ -f "${bashrc}" ] && echo "eval \"\$(pyenv init --path)\"" >>"${bashrc}"
+	[ -f "${bashrc}" ] && echo "eval \"\$(pyenv init -)\"" >>"${bashrc}"
+	chmod -R g+s \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+	setfacl -R -d -m g:"${username}":rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+	setfacl -R -m g:"${username}":rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
+	su - "${username}" -c "$HOME/.config/pyenv/pyenv update >/dev/null 2>&1"
 	mflibs::status::success "$(zen::i18n::translate "success.user.user_creation" "$username")"
 }
 
