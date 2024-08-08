@@ -42,7 +42,7 @@ zen::user::create() {
 	[ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
-	cd /home/"${username}" || return 1
+	cd /home/"${username}" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "/home/${username}")"
 	su - "${username}" -c "
     export PYENV_ROOT=\"\$HOME/.config/pyenv\"
     log \"\$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)\" || mflibs::status::error \"$(zen::i18n::translate "errors.python.pyenv_install")\"
@@ -88,7 +88,6 @@ zen::user::groups::upgrade() {
 		mflibs::log "usermod -aG default ${username}"
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.user.invalid_group_name" "$group")"
-		return 1
 	fi
 	mflibs::status::success "$(zen::i18n::translate "success.user.user_added_to_group" "$username" "$group")"
 }
@@ -136,7 +135,6 @@ zen::user::is::admin() {
 		zen::lock::cleanup
 		exit 1
 	}
-	return 1
 }
 
 # @function zen::multi::check::id

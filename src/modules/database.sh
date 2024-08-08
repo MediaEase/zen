@@ -22,13 +22,11 @@ zen::database::query() {
 
   if [[ -z "$query" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.database.query_missing")"
-    return 1
   fi
 
   declare -g sqlite3_db
   if [[ ! -f "$sqlite3_db" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.database.db_missing" "$sqlite3_db")"
-    return 1
   fi
   sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
   sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
@@ -149,7 +147,6 @@ zen::database::insert() {
 
   if [[ -z "$table" || -z "$columns" || -z "$values" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.database.arguments_missing")"
-    return 1
   fi
 
   local query="INSERT INTO ${table} (${columns}) VALUES (${values});"
@@ -172,7 +169,6 @@ zen::database::update() {
 
   if [[ -z "$table" || -z "$update_clause" || -z "$where_clause" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.database.arguments_missing")"
-    return 1
   fi
 
   local query="UPDATE ${table} SET ${update_clause} WHERE ${where_clause};"
@@ -193,7 +189,6 @@ zen::database::delete() {
 
   if [[ -z "$table" || -z "$where_clause" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.database.arguments_missing")"
-    return 1
   fi
 
   local query="DELETE FROM ${table} WHERE ${where_clause};"

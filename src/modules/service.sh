@@ -108,11 +108,9 @@ zen::service::manage() {
 	check_service_status() {
 		sleep 2
 		if systemctl is-active --quiet "$service_name"; then
-			mflibs::shell::text::green "$(zen::i18n::translate "success.service.service_started" "$service_name")"
-			return 1
+			mflibs::status::info "$(zen::i18n::translate "success.service.service_started" "$service_name")"
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.service_not_started" "$service_name")"
-			return 0
 		fi
 	}
 
@@ -120,14 +118,12 @@ zen::service::manage() {
 	start)
 		if zen::service::manage "status" "$service_name"; then
 			mflibs::status::error "$(zen::i18n::translate "errors.service.service_already_running" "$service_name")"
-			return 1
 		fi
 		systemctl start "$service_name"
 		;;
 	stop)
 		if ! zen::service::manage "status" "$service_name"; then
 			mflibs::status::error "$(zen::i18n::translate "errors.service.service_not_started" "$service_name")"
-			return 1
 		fi
 		systemctl stop "$service_name"
 		;;
@@ -167,7 +163,6 @@ zen::service::build::add_entry() {
 
 	if [[ -n "${api_service[$key]}" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "messages.service.service_entry_exists" "$key")"
-		return 1
 	fi
 	api_service["$key"]="$value"
 }

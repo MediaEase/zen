@@ -30,8 +30,8 @@ zen::python::venv::create() {
 	fi
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_required_dependencies" "$app_name")"
 
-	cd "$path" || return 1
-	sudo -u "${username}" python3 -m venv venv || return 1
+	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$path")"
+	sudo -u "${username}" python3 -m venv venv || mflibs::status::error "$(zen::i18n::translate "errors.python.venv_create")"
 	mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install" "$app_name")"
 }
 
@@ -120,7 +120,7 @@ zen::python::venv::remove() {
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_create_no_path")"
 	fi
 
-	cd "$path" || return 1
+	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$path")"
 	if ! sudo -u "${user[username]}" bash -c "source venv/bin/activate && pip uninstall -y -r requirements.txt"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove" "$app_name")"
 	fi

@@ -134,16 +134,13 @@ zen::common::git::download_file() {
 	# Check if curl is installed
 	if ! command -v curl &>/dev/null; then
 		mflibs::status::error "$(zen::i18n::translate "errors.dependency.dependency_missing" "cUrl")"
-		return 1
 	fi
 
 	# Download the file
 	if curl -o "$local_path" "$repo_url"; then
 		mflibs::status::success "$(zen::i18n::translate "success.common.file_downloaded" "$repo_url" "$local_path")"
-		return 0
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.common.file_download" "$repo_url")"
-		return 1
 	fi
 }
 
@@ -166,7 +163,6 @@ zen::common::git::tree() {
 	# Check if curl and jq are installed
 	if ! command -v curl &>/dev/null || ! command -v jq &>/dev/null; then
 		mflibs::status::error "$(zen::i18n::translate "errors.common.required_tools_missing")"
-		return 1
 	fi
 
 	# Fetch and list the files
@@ -176,7 +172,6 @@ zen::common::git::tree() {
 	# Check if response is empty or not a valid array
 	if [ -z "$response" ] || ! echo "$response" | jq -e . >/dev/null 2>&1; then
 		mflibs::status::error "$(zen::i18n::translate "common.invalid_api_response" "$response")"
-		return 1
 	fi
 
 	echo "$response" | jq -r '.[] | "\(.type)\t\(.name)"' | while IFS=$'\t' read -r type name; do
@@ -322,18 +317,16 @@ zen::common::make::install() {
 	local make_install_args="$4"
 	local nproc_args
 	nproc_args="-j$(nproc)"
-	cd "$source_dir" || return 1
+	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$source_dir")"
 	if mflibs::log "make $nproc_args $make_args"; then
 		[ -n "$install_dir" ] && make_install_args="DESTDIR=$install_dir $make_install_args"
 		if mflibs::log "make install $make_install_args"; then
 			mflibs::status::success "$(zen::i18n::translate "success..common.make_install" "$source_dir")"
 		else
 			mflibs::status::error "$(zen::i18n::translate "errors.common.make_install" "$source_dir")"
-			return 1
 		fi
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.common.make" "$source_dir")"
-		return 1
 	fi
 }
 
@@ -359,17 +352,14 @@ zen::common::scons::install() {
 	cd "$source_dir" || return 1
 	if ! mflibs::log "scons config"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_config" "$source_dir")"
-		return 1
 	fi
 	if ! mflibs::log "scons DEBUG=$debug_flag"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_build" "$source_dir")"
-		return 1
 	fi
 
 	[ -n "$install_dir" ] && scons_install_args="--prefix=$install_dir"
 	if ! mflibs::log "scons $scons_install_args DEBUG=$debug_flag install"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
-		return 1
 	fi
 	mflibs::status::success "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
 }

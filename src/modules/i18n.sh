@@ -30,7 +30,6 @@ zen::i18n::load_locale_file() {
 		mflibs::status::success "$(zen::i18n::translate "messages.common.language_loaded" "${lang}")"
 	else
 		mflibs::status::error "Locale file not found: $locale_file"
-		return 1
 	fi
 }
 

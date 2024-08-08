@@ -24,7 +24,6 @@ zen::software::is::installed() {
 
 	if [[ -z "$software" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing")"
-		return 1
 	fi
 
 	local select_clause="a.name, a.altname, GROUP_CONCAT(srv.name) as services, srv.application_id, GROUP_CONCAT(srv.ports) as ports, srv.user_id"
@@ -36,7 +35,6 @@ zen::software::is::installed() {
 	if [[ "$user_id" != "*" ]]; then
 		if [[ -z "$user_id" ]]; then
 			mflibs::status::error "$(zen::i18n::translate "errors.user.user_id_missing")"
-			return 1
 		fi
 		additional_clauses="AND srv.user_id = ${user_id} "
 	fi
@@ -72,7 +70,6 @@ zen::software::port_randomizer() {
 	port_range=$(yq e ".arguments.ports[] | select(.${port_type} != null) | .${port_type}" "$software_config_file")
 	if [[ -z "$port_range" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.port_range_missing" "$app_name")"
-		return 1
 	fi
 
 	port_low=$(echo "$port_range" | tr -d '[]' | cut -d'-' -f1)
@@ -100,7 +97,6 @@ zen::software::port_randomizer() {
 		done
 
 		mflibs::status::error "$(zen::i18n::translate "software.port_in_use" "$app_name")"
-		return 1
 	else
 		while ((retries > 0)); do
 			local port=$((port_low + RANDOM % (port_high - port_low + 1)))
@@ -112,7 +108,6 @@ zen::software::port_randomizer() {
 		done
 
 		mflibs::status::error "$(zen::i18n::translate "errors.software.port_in_use" "$app_name")"
-		return 1
 	fi
 }
 
@@ -201,7 +196,6 @@ zen::software::infobox() {
 	*)
 		printf "Invalid infobox type specified %s\n" "$infobox_type"
 		mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_infobox_type" "$infobox_type")"
-		return 1
 		;;
 	esac
 	printf "\n"
@@ -273,7 +267,6 @@ zen::software::backup::create() {
 
 	if [ ${#files_to_backup[@]} -eq 0 ]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.no_backup_files" "$app_name")"
-		return 1
 	fi
 
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.creating_backup" "$app_name")"
@@ -281,7 +274,6 @@ zen::software::backup::create() {
 		mflibs::shell::text::green "$(zen::i18n::translate "success.software.backup_created" "$backup_file")"
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.software.no_backup_files" "$app_name")"
-		return 1
 	fi
 }
 
@@ -302,19 +294,16 @@ zen::software::get_config_key_value() {
 
 	if [[ -z "$software_config_file" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.config_file_missing")"
-		return 1
 	fi
 
 	if [[ ! -f "$software_config_file" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.config_file_missing")"
-		return 1
 	fi
 
 	local key_value
 	key_value=$(yq e "$yq_expression" "$software_config_file")
 	if [[ -z "$key_value" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_config_syntax" "$yq_expression")"
-		return 1
 	fi
 
 	key_value="${key_value//%i/$username}"
