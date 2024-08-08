@@ -41,7 +41,7 @@ zen::vault::init() {
 		declare -g credentials_file="${vault_dir}/${vault_file}"
 		export credentials_file
 	fi
-	mflibs::status::success "$(zen::i18n::translate "success.vault.vault_initialized")"
+	mflibs::status::info "$(zen::i18n::translate "success.vault.vault_initialized")"
 }
 
 # @function zen::vault::create
