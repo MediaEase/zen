@@ -349,7 +349,7 @@ zen::common::scons::install() {
 	local scons_install_args
 	local debug_flag
 	debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
-	cd "$source_dir" || return 1
+	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$source_dir")"
 	if ! mflibs::log "scons config"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_config" "$source_dir")"
 	fi

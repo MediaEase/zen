@@ -143,14 +143,12 @@ raid::format::disk() {
 		mflibs::shell::icon::arrow::yellow
 		mflibs::shell::text::yellow "$(zen::i18n::translate "prompts.common.continue_label") ?"
 	)
-	zen::prompt::yn "$prompt_message" N || {
-		mflibs::status::warn "$(zen::i18n::translate "errors.raid.aborted")"
-	}
+	zen::prompt::yn "$prompt_message" N || mflibs::status::warn "$(zen::i18n::translate "errors.raid.aborted")"
 
 	mflibs::status::header "$(zen::i18n::translate "messages.raid.partitioning_empty_disks")"
 	for disk in "${DISKS_TO_FORMAT[@]}"; do
-		mflibs::log "wipefs -a $disk" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_formatting" "$disk")"; }
-		mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.partition_creation" "$disk")"; }
+		mflibs::log "wipefs -a $disk" || mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_formatting" "$disk")"
+		mflibs::log "parted -s $disk mklabel msdos mkpart primary $filesystem_type 1 100%" || mflibs::status::error "$(zen::i18n::translate "errors.raid.partition_creation" "$disk")"
 		sleep 3
 	done
 	mflibs::status::success "$(zen::i18n::translate "success.raid.partitions_created")"
@@ -167,15 +165,15 @@ raid::create::mdadm::disk() {
 	mflibs::status::header "$(zen::i18n::translate "messages.raid.creating_disk" "$raid_level" "$disk_name")"
 	local command
 	command=$(echo y | mdadm --create --verbose "/dev/$disk_name" --level="$raid_level" --raid-devices="$NUMBER_DISKS" "${DISK_ARRAY[@]}")
-	mflibs::log "$command" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.creation")"; }
+	mflibs::log "$command" || mflibs::status::error "$(zen::i18n::translate "errors.raid.creation")"
 	sleep 5
 	mflibs::status::info "$(zen::i18n::translate "messages.raid.formatting_disk" "$disk_name" "$filesystem_type")"
 	if [[ "$filesystem_type" == "btrfs" ]]; then
-		mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_partition")"; }
+		mflibs::log "mkfs.btrfs -L mediaease -f /dev/$disk_name" || mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_partition")"
 		if [ ! -d "/mnt" ]; then
-			mflibs::log "mkdir -p /mnt" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.create_mount_point")"; }
+			mflibs::log "mkdir -p /mnt" || mflibs::status::error "$(zen::i18n::translate "errors.raid.create_mount_point")"
 		fi
-		mflibs::log "mount /dev/$disk_name /mnt" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_mount")"; }
+		mflibs::log "mount /dev/$disk_name /mnt" || mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_mount")"
 		declare -g subvolume
 		if [[ $mount_point == "/home" ]]; then
 			subvolume="home"
@@ -184,13 +182,13 @@ raid::create::mdadm::disk() {
 		else
 			subvolume="data"
 		fi
-		mflibs::log "btrfs subvolume create /mnt/$subvolume" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.create_subvolume")"; }
-		mflibs::log "btrfs subvolume create /mnt/home" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.create_subvolume")"; }
-		mflibs::log "umount /mnt" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.unmounting_disk")"; }
+		mflibs::log "btrfs subvolume create /mnt/$subvolume" || mflibs::status::error "$(zen::i18n::translate "errors.raid.create_subvolume")"
+		mflibs::log "btrfs subvolume create /mnt/home" || mflibs::status::error "$(zen::i18n::translate "errors.raid.create_subvolume")"
+		mflibs::log "umount /mnt" || mflibs::status::error "$(zen::i18n::translate "errors.raid.unmounting_disk")"
 	elif [[ "$filesystem_type" == "xfs" ]]; then
-		mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_partition")"; }
+		mflibs::log "mkfs.xfs -L mediaease -f /dev/$disk_name" || mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_partition")"
 	else
-		mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_partition")"; }
+		mflibs::log "mkfs.ext4 -L mediaease -F /dev/$disk_name" || mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_partition")"
 	fi
 	mflibs::status::success "$(zen::i18n::translate "messages.raid.disk_partitioned" "$disk_name" "$filesystem_type")"
 	sleep 5
@@ -231,7 +229,7 @@ raid::mount::mdadm::disk() {
 			} >>/etc/fstab
 			[ ! -d "$mount_point" ] && mkdir -p "$mount_point"
 			systemctl daemon-reload
-			mflibs::log "mount -a" || { mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_mount" "$disk_name" "$mount_point")"; }
+			mflibs::log "mount -a" || mflibs::status::error "$(zen::i18n::translate "errors.raid.disk_mount" "$disk_name" "$mount_point")"
 			mflibs::status::success "$(zen::i18n::translate "success.raid.disk_mounted" "$disk_name" "$mount_point")"
 		fi
 	else

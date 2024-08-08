@@ -124,7 +124,7 @@ zen::python::venv::remove() {
 	if ! sudo -u "${user[username]}" bash -c "source venv/bin/activate && pip uninstall -y -r requirements.txt"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove" "$app_name")"
 	fi
-	cd ..
+	cd .. >/dev/null || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "..")"
 	rm -rf "$path"
 
 	mflibs::status::success "$(zen::i18n::translate "success.python.venv_remove" "$app_name")"

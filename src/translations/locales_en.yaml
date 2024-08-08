@@ -75,6 +75,7 @@ errors:
     action_not_specified: "No action specified."
     key_invalid: "Invalid key: {arg0}"
     command_invalid: "Invalid command: {arg0}"
+    get_ipv4: "Failed to get IPv4 address."
     directory_change: "Failed to change directory {arg0}."
     missing_argument: "Missing argument."
     file_download: "Failed to download file."
