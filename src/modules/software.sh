@@ -234,7 +234,6 @@ zen::software::options::process() {
 			;;
 		*)
 			mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_option" "$option_name")"
-			exit 1
 			;;
 		esac
 	done
@@ -375,7 +374,6 @@ zen::software::create() {
 	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_name")" "" software_name
 	if [[ -z "$software_name" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing")"
-		exit 1
 	fi
 	software_name_sanitized=$(zen::common::capitalize::first "$software_name")
 	software_name_lowered=$(zen::common::lowercase "$software_name")

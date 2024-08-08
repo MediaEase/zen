@@ -59,7 +59,6 @@ zen::user::handle_action() {
 		;;
 	*)
 		mflibs::status::error "$(zen::i18n::translate "user.invalid_action" "$action")"
-		exit 1
 		;;
 	esac
 }
@@ -74,7 +73,6 @@ zen::user::args::process() {
 
 	if [[ $# -lt 2 ]]; then
 		mflibs::status::error "$(zen::i18n::translate "user.insufficient_arguments")"
-		exit 1
 	fi
 
 	user_action="$1"
@@ -110,7 +108,6 @@ zen::user::args::process() {
 			;;
 		*)
 			mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_option" "$1")"
-			exit 1
 			;;
 		esac
 	done

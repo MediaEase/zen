@@ -30,7 +30,6 @@ raid::process::args() {
 	# Check if the number of arguments is not equal to 4
 	if [ "$#" -ne 4 ]; then
 		echo "Usage: $0 [RAID_LEVEL] [MOUNT_POINT] [FILESYSTEM_TYPE] [DISK_NAME]"
-		exit 1
 	fi
 	# Declare global variables and set their default values if not provided
 	declare -g raid_level=$1
@@ -48,7 +47,6 @@ raid::process::args() {
 	10) min_disks=4 ;;
 	*)
 		mflibs::status::error "$(zen::i18n::translate "errors.raid.invalid_raid_level" "${raid_levels[@]}")"
-		exit 1
 		;;
 	esac
 	# Check if the filesystem type is valid
@@ -56,7 +54,6 @@ raid::process::args() {
 	ext4 | btrfs | xfs) ;;
 	*)
 		mflibs::status::error "$(zen::i18n::translate "errors.raid.invalid_filesystem_type" "${types[@]}")"
-		exit 1
 		;;
 	esac
 	# Call the disk detection function to initialize related variables
@@ -87,7 +84,6 @@ raid::process::args() {
 			printf "Raid level is now: %s\n" "$raid_level"
 		else
 			mflibs::status::error "$(zen::i18n::translate "errors.raid.raid_creation_not_possible" "$NUMBER_DISKS")"
-			exit 1
 		fi
 	fi
 	# If valid selections are made, proceed with RAID setup
@@ -149,7 +145,6 @@ raid::format::disk() {
 	)
 	zen::prompt::yn "$prompt_message" N || {
 		mflibs::status::warn "$(zen::i18n::translate "errors.raid.aborted")"
-		exit 1
 	}
 
 	mflibs::status::header "$(zen::i18n::translate "messages.raid.partitioning_empty_disks")"

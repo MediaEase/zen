@@ -133,7 +133,6 @@ zen::user::is::admin() {
 	[[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]] && {
 		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "messages.user.user_is_not_admin")"
 		zen::lock::cleanup
-		exit 1
 	}
 }
 
@@ -168,7 +167,6 @@ zen::user::load() {
 	if [[ -z "${user[username]}" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.user_not_found" "${username}")"
 		zen::lock::cleanup
-		exit 1
 		# else
 		# mflibs::shell::text::green "$(zen::i18n::translate "umessages.user.user_found" "${username}")"
 	fi
