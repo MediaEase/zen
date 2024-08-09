@@ -10,35 +10,18 @@ export TPUT=$(which tput)
 export BC=$(which bc)
 
 # Check for necessary utilities
-[[ ! -e $TPUT ]] && echo "tput is missing, please install it (yum install tput/apt-get install tput)"
-[[ ! -e $BC ]] && echo "bc is missing, please install it (yum install bc/apt-get install bc)"
+if [ -z "$TPUT" ]; then
+    echo "tput is missing, please install it (yum install tput/apt-get install tput)"
+fi
+if [ -z "$BC" ]; then
+    echo "bc is missing, please install it (yum install bc/apt-get install bc)"
+fi
+
 COLDBLUE="\e[0;38;5;33m"
 SCOLDBLUE="\[\e[0;38;5;33m\]"
-if [[ ! -e $DFSCRIPT ]]; then
-    cat >"$DFSCRIPT" << 'EOF'
-    #!/bin/bash
-    let TotalBytes=0
-    for Bytes in $(ls -l | grep "^-" | awk '{ print $5 }')
-    do
-        let TotalBytes=$TotalBytes+$Bytes
-    done
-    if [ $TotalBytes -lt 1024 ]; then
-        TotalSize=$(echo -e "scale=1 \n$TotalBytes \nquit$(tput sgr0)" | bc)
-        suffix="b"
-    elif [ $TotalBytes -lt 1048576 ]; then
-        TotalSize=$(echo -e "scale=1 \n$TotalBytes/1024 \nquit$(tput sgr0)" | bc)
-        suffix="kb"
-    elif [ $TotalBytes -lt 1073741824 ]; then
-        TotalSize=$(echo -e "scale=1 \n$TotalBytes/1048576 \nquit$(tput sgr0)" | bc)
-        suffix="Mb"
-    else
-        TotalSize=$(echo -e "scale=1 \n$TotalBytes/1073741824 \nquit$(tput sgr0)" | bc)
-        suffix="Gb"
-    fi
-    echo -en "${TotalSize}${suffix}"
-EOF
-    chmod u+x $DFSCRIPT
-fi
+
+dirsize="$HOME/bin/dirsize.sh"
+chmod u+x "$dirsize"
 
 alias ls='ls --color=auto'
 alias dir='dir --color=auto'
@@ -51,8 +34,8 @@ alias la='ls -A'
 alias l='ls -CF'
 
 set::prompt() {
-    local DG LG NC
-    if [[ $(id -u) -eq 0 ]]; then
+    local DG LG NC DS
+    if [ "$(id -u)" -eq 0 ]; then
         DG="$(tput bold; tput setaf 1)"
         LG="$(tput bold; tput setaf 4)"
         NC="$(tput sgr0)"
@@ -62,7 +45,7 @@ set::prompt() {
         DS="$(tput setaf 2)"
         NC="$(tput sgr0)"
     fi
-    PS1='[\[$LG\]\u\[$NC\]@\[$LG\]\h\[$NC\]]:(\[$LG\]\[$BN\]$($DFSCRIPT)\[$NC\])\w\$ '
+    PS1='[\[$LG\]\u\[$NC\]@\[$LG\]\h\[$NC\]]:(\[$LG\]\[$BN\]$($dirsize)\[$NC\])\w\$ '
 }
 
 case $TERM in
@@ -77,5 +60,19 @@ case $TERM in
         ;;
 esac
 
-[[ -e /etc/bash_completion && ! shopt -oq posix ]] && source /etc/bash_completion
-[[ -e ~/.custom ]] && source ~/.custom
+if [ -e /etc/bash_completion ] && ! shopt -oq posix; then
+    source /etc/bash_completion
+fi
+
+if [ -e ~/.custom ]; then
+    source ~/.custom
+fi
+
+# PYENV
+export PYENV_ROOT="$HOME/.config/pyenv"
+if [ -d "$PYENV_ROOT/bin" ]; then
+    export PATH="$PYENV_ROOT/bin:$PATH"
+fi
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+# PYENV
