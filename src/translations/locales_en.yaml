@@ -172,6 +172,8 @@ messages:
     release_found: "Release found."
     downloading_release: "Getting release..."
     execution_time_total: "Total execution time: {arg0}h {arg1}min {arg2}sec."
+    configuring_bashrc: "Configuring bashrc..."
+    configuring_sendmail: "Configuring sendmail..."
   system:
     securing_ssh: "Securing SSH..."
     reloading_bashrc: "Reloading bashrc..."
@@ -228,6 +230,8 @@ success:
     file_downloaded: "File downloaded."
     make_install: "Make install done."
     scons_install: "SCons install done."
+    bashrc_configured: "Failed to configure bashrc."
+    sendmail_configured: "Failed to configure sendmail."
   system:
     ssh_secured: "SSH secured."
   software:
