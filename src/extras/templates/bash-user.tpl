@@ -20,7 +20,7 @@ fi
 COLDBLUE="\e[0;38;5;33m"
 SCOLDBLUE="\[\e[0;38;5;33m\]"
 
-dirsize="$HOME/bin/dirsize.sh"
+dirsize="$HOME/bin/dirsize"
 chmod u+x "$dirsize"
 
 alias ls='ls --color=auto'
