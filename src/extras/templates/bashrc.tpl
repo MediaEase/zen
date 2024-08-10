@@ -60,7 +60,7 @@ function strip_color_codes {
 }
 
 # Display login message
-login_message="You are logged in as: $(user_color)${USER}friofoirfoer${_nc}"
+login_message="You are logged in as: $(user_color)${USER}${_nc}"
 login_message_length=$(strip_color_codes "$login_message" | wc -c)
 padding_length=$((66 - login_message_length - 2))
 padding=$(printf "%*s" "$padding_length" "")
