@@ -41,20 +41,18 @@ zen::user::create() {
 	fi
 	zen::vault::pass::store "${username}.main" "${password}"
 	[ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
-	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}"
+	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}" /home/"${username}"/bin
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
 	cd /home/"${username}" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "/home/${username}")"
-	su - "${username}" -c "export PYENV_ROOT=\"\$HOME/.config/pyenv\""
-	su - "${username}" -c "$(curl -LsSf https://pyenv.run | bash >/dev/null 2>&1)" || mflibs::status::error "$(zen::i18n::translate "errors.python.pyenv_install")"
-	su - "${username}" -c "$(curl -LsSf https://astral.sh/uv/install.sh | sh - >/dev/null 2>&1)" || mflibs::status::error "$(zen::i18n::translate "errors.python.uv_install")"
-	mv "/opt/MediaEase/MediaEase/zen/src/extras/templates/bashrc-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bashrc-user.tpl" "${bashrc}")"
-	[ -f "${bashrc}" ] && echo "export PATH=\$PYENV_ROOT/bin:\$PATH" >>"${bashrc}"
-	[ -f "${bashrc}" ] && echo "eval \"\$(pyenv init --path)\"" >>"${bashrc}"
-	[ -f "${bashrc}" ] && echo "eval \"\$(pyenv init -)\"" >>"${bashrc}"
-	chmod -R g+s \"\$HOME/.config/pyenv\" >/dev/null 2>&1
-	setfacl -R -d -m g:"${username}":rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
-	setfacl -R -m g:"${username}":rwx \"\$HOME/.config/pyenv\" >/dev/null 2>&1
-	su - "${username}" -c "$HOME/.config/pyenv/pyenv update >/dev/null 2>&1"
+	mv "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize")"
+	chmod +x "/home/${username}/bin/dirsize"
+	local PYENV_ROOT="/home/${username}/.config/pyenv"
+	su - "${username}" -c "export PYENV_ROOT=\"$PYENV_ROOT\"; cd /home/${username}; curl -LsSf https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash >/dev/null 2>&1"
+	chmod -R g+s "$HOME" >/dev/null 2>&1
+	setfacl -R -d -m g:"${username}":rwx "$PYENV_ROOT" >/dev/null 2>&1
+	setfacl -R -m g:"${username}":rwx "$PYENV_ROOT" >/dev/null 2>&1
+	mv "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}")"
+	su - "${username}" -c "export PYENV_ROOT=\"$PYENV_ROOT\"; $PYENV_ROOT/bin/pyenv update >/dev/null 2>&1"
 	mflibs::status::success "$(zen::i18n::translate "success.user.user_creation" "$username")"
 }
 
