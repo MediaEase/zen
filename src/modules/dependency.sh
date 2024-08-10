@@ -213,7 +213,7 @@ zen::dependency::apt::pin() {
 # @note The function checks for and resolves locked dpkg situations before proceeding.
 # @caution Ensure that no other package management operations are running concurrently.
 zen::dependency::apt::update() {
-	mflibs::status::info "$(zen::i18n::translate "messages.dependency.updating_system")"
+	mflibs::status::header "$(zen::i18n::translate "messages.dependency.updating_system")"
 	# check if fuser is installed
 	if command -v fuser >/dev/null 2>&1; then
 		if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
@@ -282,7 +282,7 @@ zen::dependency::external::install() {
 		mflibs::status::error "dependency.external_dependencies_missing"
 	fi
 	# Parsing each external dependency
-	mflibs::status::info "$(zen::i18n::translate "messages.dependency.installing_external_dependencies" "$app_name")"
+	mflibs::status::header "$(zen::i18n::translate "messages.dependency.installing_external_dependencies" "$app_name")"
 	local entries
 	entries=$(yq e ".${app_name}.external[] | to_entries[]" "$dependencies_file")
 	local software_name install_command
@@ -304,7 +304,7 @@ zen::dependency::external::install() {
 			fi
 		fi
 	done <<<"$entries"
-	mflibs::status::success "$(zen::i18n::translate "messages.dependency.external_dependencies_installed" "$app_name")"
+	mflibs::status::success "$(zen::i18n::translate "success.dependency.external_dependencies_installed" "$app_name")"
 }
 
 # @function zen::dependency::apt::add_source
@@ -325,74 +325,87 @@ zen::dependency::apt::add_source() {
 	local dependencies_file="${MEDIAEASE_HOME}/zen/src/apt_sources.yaml"
 	local counter=0
 	local total_sources=${#sources[@]}
-
 	for source_name in "${sources[@]}"; do
 		local status_icon
 		local failed=false
 
-		[[ -z "$source_name" ]] && {
-			mflibs::status::error "$(zen::i18n::translate "dependency.source_name_required")"
+		if [[ -z "$source_name" ]]; then
 			failed=true
-		}
+			mflibs::shell::text::red "$(zen::i18n::translate "dependency.source_name_required")"
+		fi
+
 		local source_url_template source_url arch include_deb_src gpg_key_url recv_keys trusted_key_url
 		source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
 		source_url=$(eval echo "$source_url_template")
 		arch=$(yq e ".sources.${source_name}.options.arch" "$dependencies_file")
 		include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
 		gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
-		recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
-		trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
-
+		if yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -qv 'null'; then
+			recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file")
+		fi
+		if yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -qv 'null'; then
+			trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file")
+		fi
 		if [[ -z "$source_url" ]]; then
-			mflibs::status::error "$(zen::i18n::translate "errors.dependency.source_url_missing" "$source_name")"
 			failed=true
+			mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.source_url_missing" "$source_name")"
 		fi
 		if [[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]]; then
-			mflibs::status::error "$(zen::i18n::translate "errors.dependency.architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
 			failed=true
+			mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
 		fi
+
 		if [[ "$failed" == false ]]; then
 			if [[ -n "$gpg_key_url" ]]; then
 				local gpg_key_file
 				gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
-				[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: gpg_key_file=$gpg_key_file"
-				[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
+				[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file" && echo "Debug: Removed existing GPG key file: $gpg_key_file"
 				wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
 					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.gpg_key_add" "$source_name")"
 					failed=true
 				}
 				echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
-				[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+				[[ "$include_deb_src" == "true" ]] && {
+					echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+				}
 			else
 				echo "deb $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
-				[[ "$include_deb_src" == "true" ]] && echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+				[[ "$include_deb_src" == "true" ]] && {
+					echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+				}
 			fi
-			if [[ -n "$recv_keys" ]]; then
-				[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Receiving keys for $source_name"
+
+			if [[ -n "$recv_keys" && "$recv_keys" != "null" ]]; then
 				sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
 					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.recv_keys" "$source_name")"
 					failed=true
 				}
 			fi
+
 			if [[ -n "$trusted_key_url" ]]; then
-				[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "Debug: Processing trusted key for $source_name"
+				[[ -f "$gpg_key_file" ]] && sudo rm "/etc/apt/trusted.gpg.d/${source_name}.gpg" && echo "Debug: Removed existing trusted key file."
 				wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
 					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.trusted_key_add" "$source_name")"
 					failed=true
+					echo "Debug: Failed to add trusted key for $source_name from $trusted_key_url"
 				}
 			fi
+		else
+			mflibs::status::error "$(zen::i18n::translate "errors.dependency.add_source" "$source_name")"
 		fi
+
 		if [[ "$failed" == false ]]; then
-			status_icon="mflibs::shell::icon::check::green \"$source_name\""
+			status_icon="mflibs::shell::icon::check::green; mflibs::shell::text::white::sl \"$source_name\""
 			counter=$((counter + 1))
 		else
-			status_icon="mflibs::shell::icon::cross::red \"$source_name\""
+			status_icon="mflibs::shell::icon::cross::red ; mflibs::shell::text::white::sl \"$source_name\""
 		fi
 		eval "$status_icon"
 		if [[ $counter -lt $total_sources && "$failed" == false ]]; then
-			echo -n " | "
+			echo -ne "$(mflibs::shell::text::white::sl " | ")"
 		fi
 	done
+	printf "\n"
 	mflibs::status::info "$(zen::i18n::translate "messages.dependency.sources_added_count" "$counter" "$total_sources")"
 }
 
