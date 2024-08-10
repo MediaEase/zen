@@ -34,8 +34,19 @@ mediaease:
     - pnpm:
         install: |
           wget -qO- https://get.pnpm.io/install.sh | sh >/dev/null 2>&1
-          mv /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm
-          chmod +x /usr/local/bin/pnpm
+          PNPM_PATH="/root/.local/share/pnpm"
+          PNPM_BIN="/usr/local/bin"
+          if [ -f "${PNPM_PATH}/pnpm" ]; then
+            for binary in pnpm pnpx; do
+              if [ -f "${PNPM_BIN}/${binary}" ]; then
+                rm -f "${PNPM_BIN}/${binary}" || echo "Failed to remove ${PNPM_BIN}/${binary}"
+              fi
+              cp -pR "${PNPM_PATH}/${binary}" "${PNPM_BIN}/${binary}" || echo "Failed to copy ${PNPM_PATH}/${binary} to ${PNPM_BIN}/${binary}"
+              chmod +x "${PNPM_BIN}/${binary}" || echo "Failed to set executable permissions for ${PNPM_BIN}/${binary}"
+            done
+          else
+            echo "PNPM not found at ${PNPM_PATH}/pnpm"
+          fi
 airsonic:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default ffmpeg
 autodl:
