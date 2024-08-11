@@ -109,8 +109,10 @@ zen::service::manage() {
 		sleep 2
 		if systemctl is-active --quiet "$service_name"; then
 			mflibs::status::info "$(zen::i18n::translate "success.service.service_started" "$service_name")"
+			return 2
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.service_not_started" "$service_name")"
+			return 0
 		fi
 	}
 
