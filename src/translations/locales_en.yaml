@@ -93,6 +93,7 @@ errors:
     invalid_pull_action: "Invalid pull action : {arg0}"
     create_symlink: "Failed to create symlink."
     export_variable: "Failed to export variable: {arg0}."
+    bashrc_missing: "Bashrc file not found."
   system:
     securing_ssh: "Failed to secure SSH."
   raid:
