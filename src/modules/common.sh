@@ -363,3 +363,33 @@ zen::common::scons::install() {
 	fi
 	mflibs::status::success "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
 }
+
+# @function zen::common::bashrc::append
+# Appends a given line to the .bashrc file for a specified user.
+# @description This function appends a specified line to the .bashrc file for a specified user, ensuring that the line is present
+# in future shell sessions. It is useful for adding custom environment variables or aliases to the shell environment.
+# @arg $1 string Line to be appended to the .bashrc file.
+# @arg $2 string (optional) Username whose .bashrc file will be modified. Defaults to the current user if not provided.
+# @exitcode 0 on successful appending.
+# @exitcode 1 on failure.
+# @stdout None.
+zen::common::bashrc::append() {
+	local line="$1"
+	local user="${2:-$USER}" # Default to the current user if no user is specified
+	local bashrc_file
+
+	if [ "$user" = "root" ]; then
+		bashrc_file="/root/.bashrc"
+	else
+		bashrc_file="/home/$user/.bashrc"
+	fi
+
+	# Ensure the .bashrc file exists before trying to append
+	if [ -f "$bashrc_file" ]; then
+		if ! grep -qF "$line" "$bashrc_file"; then
+			echo "$line" >>"$bashrc_file"
+		fi
+	else
+		mflibs::status::error "$(zen::i18n::translate "errors.common.bashrc_missing" "$bashrc_file")"
+	fi
+}
