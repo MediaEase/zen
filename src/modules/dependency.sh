@@ -218,14 +218,17 @@ zen::dependency::apt::update() {
 			mflibs::log "dpkg --configure -a"
 		fi
 	fi
-	mflibs::log "apt-get -yqq update"
-	mflibs::log "apt-get -yqq upgrade"
-	mflibs::log "apt-get -yqq autoremove"
-	mflibs::log "apt-get -yqq autoclean"
+	mflibs::log "apt-get -y${quiet_flag} update"
+	mflibs::log "apt-get -y${quiet_flag} autoremove"
+	mflibs::log "apt-get -y${quiet_flag} autoclean"
 
+	if ! /usr/lib/dpkg/methods/apt/update /var/lib/dpkg/ >/dev/null 2>&1; then
+		mflibs::status::error "$(zen::i18n::translate "errors.dependency.system_update")"
+	fi
 	if ! apt-get check >/dev/null 2>&1; then
 		mflibs::status::error "$(zen::i18n::translate "errors.dependency.apt_check")"
 	fi
+
 	mflibs::status::success "$(zen::i18n::translate "success.dependency.system_update")"
 }
 
