@@ -41,6 +41,7 @@ errors:
     purge: "Failed to purge {arg0}."
     remove: "Failed to remove {arg0}."
     no_dependencies_found: "No dependencies found."
+    system_update: "Failed to update system."
   python:
     venv_install_requirements: "Error occurred while installing requirements."
     venv_remove: "Error occurred while removing virtual environment."
@@ -149,7 +150,7 @@ messages:
     service_bypass_active: "Bypass mode is active - Installation will not be persisted in database."
   dependency:
     installing_dependencies: "Installing dependencies..."
-    installing_external_dependencies: "Installing external dependencies..."
+    installing_external_dependencies: "Installing {arg0} from custom source..."
     removing_unnecessary_packages: "Removing unnecessary packages..."
     adding_sources: "Adding sources..."
     installed_count: "Number of dependencies installed: {arg0}"
@@ -211,7 +212,7 @@ success:
     service_validated: "Service validated."
   dependency:
     dependencies_installed: "Dependencies installed."
-    external_dependencies_installed: "External dependencies installed."
+    external_dependencies_installed: "{arg0} installed."
     apt_source_added: "APT source for {arg0} added."
     apt_source_removed: "APT source for {arg0} removed."
     unnecessary_packages_removed: "Unnecessary packages removed."
