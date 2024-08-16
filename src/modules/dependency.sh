@@ -41,20 +41,12 @@ zen::dependency::apt::manage() {
 	case "$action" in
 	install)
 		# shellcheck disable=SC2154
-		if [[ $verbose -eq 1 ]]; then
-			cmd_options=(-y --allow-unauthenticated)
-		else
-			cmd_options=(-yqq --allow-unauthenticated)
-		fi
+		cmd_options=(-y"${quiet_flag}" --allow-unauthenticated)
 		[[ "$option" == "reinstall" ]] && cmd_options+=(--reinstall)
 		zen::dependency::apt::install::inline "${dependencies_string}" "${cmd_options[@]}" && return
 		;;
 	update | upgrade | check)
-		if [[ $verbose -eq 1 ]]; then
-			cmd_options=("$action" -y)
-		else
-			cmd_options=("$action" -yqq)
-		fi
+		cmd_options=("$action" -y"${quiet_flag}")
 		apt-get "${cmd_options[@]}" && return
 		;;
 	*)
