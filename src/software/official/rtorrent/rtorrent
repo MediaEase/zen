@@ -15,19 +15,19 @@
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
-#zen::common::git::download_file "/tmp/libtorrent-rakshasa_0.9.8.deb" "MediaEase/binaries" "main" "dist/current/libtorrent-rakshasa_0.9.8.deb"
-# zen::common::git::download_file "/tmp/rtorrent_0.9.8.deb" "MediaEase/binaries" "main" "dist/current/rtorrent_0.9.8.deb"
-# zen::common::git::download_file "/tmp/xmlrpc-c_1.51.0.deb" "MediaEase/binaries" "main" "dist/current/xmlrpc-c_1.51.0.deb"
+#zen::git::download_file "/tmp/libtorrent-rakshasa_0.9.8.deb" "MediaEase/binaries" "main" "dist/current/libtorrent-rakshasa_0.9.8.deb"
+# zen::git::download_file "/tmp/rtorrent_0.9.8.deb" "MediaEase/binaries" "main" "dist/current/rtorrent_0.9.8.deb"
+# zen::git::download_file "/tmp/xmlrpc-c_1.51.0.deb" "MediaEase/binaries" "main" "dist/current/xmlrpc-c_1.51.0.deb"
 zen::software::rtorrent::add() {
     if [[ ! -d "/srv/rutorrent" ]]; then
         # download latest precompiled release
         rtorrent_binaries=("xmlrpc-c" "libtorrent-rakshasa" "rtorrent")
-        repo_files=$(zen::common::git::tree "MediaEase/binaries" "main" "dist/current")
+        repo_files=$(zen::git::tree "MediaEase/binaries" "main" "dist/current")
         while IFS= read -r file; do
             for binary in "${rtorrent_binaries[@]}"; do
                 if [[ $file == *"$binary"* ]]; then
                     if [[ $file == *"0.9.8"* || $file == *"xmlrpc-c"* ]]; then
-                        zen::common::git::download_file "/tmp/$file" "$repo_name" "$remote_path/$file"
+                        zen::git::download_file "/tmp/$file" "$repo_name" "$remote_path/$file"
                     fi
                 fi
             done
@@ -89,7 +89,7 @@ zen::software::rtorrent::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::common::git::get_release "/opt/${user[username]}/$app_name" "rTorrent/rTorrent" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "rTorrent/rTorrent" "$is_prerelease" "linux-core-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 

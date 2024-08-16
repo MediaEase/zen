@@ -22,7 +22,7 @@ zen::software::sonarr4k::add() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
-	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Sonarr/Sonarr" "$is_prerelease" "linux-x64.tar.gz"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "Sonarr/Sonarr" "$is_prerelease" "linux-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
 	zen::software::sonarr4k::config "$is_prerelease"
 	# generate the service file, this will also start it
@@ -92,7 +92,7 @@ zen::software::sonarr4k::update() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
-	zen::common::git::get_release "/opt/${user[username]}/$app_name" "Sonarr4k/Sonarr4k" "$is_prerelease" "linux-core-x64.tar.gz"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "Sonarr4k/Sonarr4k" "$is_prerelease" "linux-core-x64.tar.gz"
 	zen::service::manage "start" "$service_name"
 }
 

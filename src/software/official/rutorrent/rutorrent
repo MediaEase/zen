@@ -20,7 +20,7 @@ zen::software::rutorrent::add() {
     local all_users
     # build rutorrent only if the software is not installed by other users
     if [[ $is_installed_by_others -eq 0 ]]; then
-        zen::common::git::clone "Novik/ruTorrent.git" "/srv/rutorrent" "main" "true"
+        zen::git::clone "Novik/ruTorrent.git" "/srv/rutorrent" "main" "true"
         # configure rutorrent main settings
         mflibs::status::info "$(zen::i18n::translate "software.configuring" "ruTorrent")"
         sed -i -e "s|//\$topDirectory = '/';|\$topDirectory = '/home/${user[username]}';|g" \
@@ -71,7 +71,7 @@ zen::software::rutorrent::plugins::resolve() {
             if [[ -d "/srv/rutorrent/plugins/$plugin_name" ]]; then
                 rm -rf "/srv/rutorrent/plugins/$plugin_name"
             fi
-            zen::common::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name" "main"
+            zen::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name" "main"
         done
         # configure rutorrent plugins
         cp -pR "/srv/rutorrent/plugins/diskspace/action.php" "/srv/rutorrent/plugins/diskspace/action.php.bak"
