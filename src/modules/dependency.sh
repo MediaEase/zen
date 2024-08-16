@@ -325,7 +325,7 @@ zen::dependency::apt::add_source() {
 		[[ " ${MFLIBS_LOADED[*]} " =~ debug ]] && debug=1
 		local status_icon
 		local failed=false
-		[[ $debug -eq 1 ]] && echo "Debug: Processing source: $source_name"
+		[[ $debug -eq 1 ]] && printf "Debug: Processing source: %s\n" "$source_name"
 		if [[ -z "$source_name" ]]; then
 			failed=true
 			mflibs::shell::text::red "$(zen::i18n::translate "dependency.source_name_required")"
@@ -336,7 +336,7 @@ zen::dependency::apt::add_source() {
 		arch=$(yq e ".sources.${source_name}.options.arch" "$dependencies_file")
 		include_deb_src=$(yq e ".sources.${source_name}.options.deb-src" "$dependencies_file" | grep -v 'null')
 		gpg_key_url=$(yq e ".sources.${source_name}.options.gpg-key" "$dependencies_file" | grep -v 'null')
-		[[ $debug -eq 1 ]] && echo "Debug: Source URL: $source_url, Arch: $arch, Include Deb-src: $include_deb_src, GPG Key URL: $gpg_key_url"
+		[[ $debug -eq 1 ]] && printf "Debug: Source URL: %s, Arch: %s, Include Deb-src: %s, GPG Key URL: %s\n" "$source_url" "$arch" "$include_deb_src" "$gpg_key_url"
 		if yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -qv 'null'; then
 			recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file")
 		fi
@@ -357,21 +357,21 @@ zen::dependency::apt::add_source() {
 				gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
 				[[ -f "$gpg_key_file" ]] && {
 					sudo rm "$gpg_key_file"
-					[[ $debug -eq 1 ]] && echo "Debug: Removed existing GPG key file: $gpg_key_file"
+					[[ $debug -eq 1 ]] && printf "Debug: Removed existing GPG key file: %s\n" "$gpg_key_file"
 				}
 				wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
 					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.gpg_key_add" "$source_name")"
 					failed=true
 				}
-				echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
-				[[ $debug -eq 1 ]] && echo "Debug: Added GPG key for $source_name"
+				printf "deb [signed-by=%s] %s\n" "$gpg_key_file" "$source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+				[[ $debug -eq 1 ]] && printf "Debug: Added GPG key for %s\n" "$source_name"
 				[[ "$include_deb_src" == "true" ]] && {
-					echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+					printf "deb-src [signed-by=%s] %s\n" "$gpg_key_file" "$source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 				}
 			else
-				echo "deb $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
+				printf "deb %s\n" "$source_url" >"/etc/apt/sources.list.d/${source_name}.list"
 				[[ "$include_deb_src" == "true" ]] && {
-					echo "deb-src $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
+					printf "deb-src %s\n" "$source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
 				}
 			fi
 			if [[ -n "$recv_keys" && "$recv_keys" != "null" ]]; then
@@ -379,17 +379,17 @@ zen::dependency::apt::add_source() {
 					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.recv_keys" "$source_name")"
 					failed=true
 				}
-				[[ $debug -eq 1 ]] && echo "Debug: Received keys for $source_name"
+				[[ $debug -eq 1 ]] && printf "Debug: Received keys for %s\n" "$source_name"
 			fi
 			if [[ -n "$trusted_key_url" ]]; then
 				[[ -f "$gpg_key_file" ]] && {
 					sudo rm "/etc/apt/trusted.gpg.d/${source_name}.gpg"
-					[[ $debug -eq 1 ]] && echo "Debug: Removed existing trusted key file for $source_name source"
+					[[ $debug -eq 1 ]] && printf "Debug: Removed existing trusted key file for %s source\n" "$source_name"
 				}
 				wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
 					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.trusted_key_add" "$source_name")"
 					failed=true
-					[[ $debug -eq 1 ]] && echo "Debug: Failed to add trusted key for $source_name from $trusted_key_url"
+					[[ $debug -eq 1 ]] && printf "Debug: Failed to add trusted key for %s from %s\n" "$source_name" "$trusted_key_url"
 				}
 			fi
 		else
@@ -398,28 +398,28 @@ zen::dependency::apt::add_source() {
 		if [[ $debug -eq 0 ]]; then
 			status_icon=$(
 				if [[ "$failed" == false ]]; then
-					echo "mflibs::shell::icon::check::green; mflibs::shell::text::white::sl \"$source_name\""
+					printf "mflibs::shell::icon::check::green; mflibs::shell::text::white::sl \"%s\"" "$source_name"
 				else
-					echo "mflibs::shell::icon::cross::red ; mflibs::shell::text::white::sl \"$source_name\""
+					printf "mflibs::shell::icon::cross::red ; mflibs::shell::text::white::sl \"%s\"" "$source_name"
 				fi
 			)
-			echo "$status_icon"
-			[[ $counter -lt $((total_sources - 1)) && "$failed" == false ]] && echo -n " | "
+			printf "%s\n" "$status_icon"
+			[[ $counter -lt $((total_sources - 1)) && "$failed" == false ]] && printf " | "
 		else
 			status_icon=$(
 				if [[ "$failed" == false ]]; then
-					echo "Debug: Successfully added $source_name source"
+					printf "Debug: Successfully added %s source" "$source_name"
 				else
-					echo "Debug: Failed to add $source_name source"
+					printf "Debug: Failed to add %s source" "$source_name"
 				fi
 			)
+			printf "%s\n" "$status_icon"
 		fi
 		[[ "$failed" == false ]] && counter=$((counter + 1))
-		echo "$status_icon"
 	done
 	printf "\n"
 	mflibs::status::info "$(zen::i18n::translate "messages.dependency.sources_added_count" "$counter" "$total_sources")"
-	[[ $debug -eq 1 ]] && echo "Debug: Finished adding sources. Total added: $counter out of $total_sources"
+	[[ $debug -eq 1 ]] && printf "Debug: Finished adding sources. Total added: %d out of %d\n" "$counter" "$total_sources"
 }
 
 # @function zen::dependency::apt::remove_source
