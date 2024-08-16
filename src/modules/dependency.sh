@@ -26,8 +26,10 @@ zen::dependency::apt::manage() {
 	local action="$1"
 	local software_name="${2:-}"
 	local option="$3"
+	local current_os="${4:-}"
 	declare -g cmd_options
 	declare -g dependencies_string
+	declare -g os_specific_dependencies_string
 
 	# Extracting dependencies from the YAML file
 	if [[ -n "$software_name" ]]; then
@@ -35,6 +37,14 @@ zen::dependency::apt::manage() {
 		if [[ -z "$dependencies_string" ]]; then
 			mflibs::status::error "$(zen::i18n::translate "errors.dependency.no_dependencies_found" "$software_name")"
 			return 1
+		fi
+	fi
+
+	# Extracting OS-specific dependencies if a valid OS is provided
+	if [[ -n "$current_os" ]]; then
+		os_specific_dependencies_string=$(yq e ".${software_name}.${current_os}.apt" "$dependencies_file")
+		if [[ -n "$os_specific_dependencies_string" ]]; then
+			dependencies_string="${dependencies_string} ${os_specific_dependencies_string}"
 		fi
 	fi
 
