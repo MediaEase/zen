@@ -403,6 +403,8 @@ zen::dependency::apt::add_source() {
 					echo "mflibs::shell::icon::cross::red ; mflibs::shell::text::white::sl \"$source_name\""
 				fi
 			)
+			echo "$status_icon"
+			[[ $counter -lt $((total_sources - 1)) && "$failed" == false ]] && echo -n " | "
 		else
 			status_icon=$(
 				if [[ "$failed" == false ]]; then
