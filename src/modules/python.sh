@@ -129,26 +129,3 @@ zen::python::venv::remove() {
 
 	mflibs::status::success "$(zen::i18n::translate "success.python.venv_remove" "$app_name")"
 }
-
-# @function zen::python::add::profile
-# Adds Python environment configuration to a profile file.
-# @description This function appends Python environment configuration settings to a specified profile file.
-# It sets environment variables and initializes pyenv and pyenv virtualenv, allowing for Python version management and virtual environment handling.
-# @arg $1 string The target file to which the Python environment configuration should be appended.
-# @exitcode 0 Success in appending the configuration.
-# @exitcode 1 Failure in file operation.
-# @note This function assumes that pyenv and pyenv-virtualenv are already installed.
-zen::python::add::profile() {
-	local target_file="$1"
-	{
-		printf "export PYENV_ROOT=\"%s/pyenv\"\n" "$HOME"
-		printf "[[ -d \$PYENV_ROOT/bin ]] && export PATH=\"\$PYENV_ROOT/bin:\$PATH\"\n"
-		printf "eval \"\$(pyenv init -)\"\n"
-		printf "source %s/.cargo/env\n" "$HOME"
-	} >>"$target_file"
-	if [[ "$target_file" == "$HOME/.bashrc" ]]; then
-		{
-			printf "eval \"\$(pyenv virtualenv-init -)\"\n"
-		} >>"$target_file"
-	fi
-}
