@@ -31,7 +31,7 @@ zen::python::venv::create() {
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_required_dependencies" "$app_name")"
 
 	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$path")"
-	sudo -u "${username}" python3 -m venv venv || mflibs::status::error "$(zen::i18n::translate "errors.python.venv_create")"
+	mflibs::log "uv venv" || mflibs::status::error "$(zen::i18n::translate "errors.python.venv_create")"
 	mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install" "$app_name")"
 }
 
@@ -72,7 +72,7 @@ zen::python::venv::build() {
 	local exit_status=0
 	IFS=' ' read -ra DEPS <<<"$python_dependencies"
 	for dependency in "${DEPS[@]}"; do
-		mflibs::log "pip install --quiet --use-pep517 ${dependency}"
+		mflibs::log "uv pip install --quiet ${dependency}"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
 			mflibs::status::error "$(zen::i18n::translate "errors.python.dependency_install" "$dependency")"
@@ -84,7 +84,7 @@ zen::python::venv::build() {
 	# Install requirements from requirements.txt file
 	if [[ $exit_status -eq 0 && -f "$requirements_path" ]]; then
 		mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_requirements" "$app_name")"
-		mflibs::log "pip install --use-pep517 --quiet --exists-action s -r $requirements_path"
+		mflibs::log "uv pip install --quiet --requirement $requirements_path"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
 			mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove_requirements" "$software_name")"
@@ -121,7 +121,9 @@ zen::python::venv::remove() {
 	fi
 
 	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$path")"
-	if ! sudo -u "${user[username]}" bash -c "source venv/bin/activate && pip uninstall -y -r requirements.txt"; then
+	# shellcheck disable=SC1091
+	source venv/bin/activate
+	if ! uv pip uninstall --requirement requirements.txt; then
 		mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove" "$app_name")"
 	fi
 	cd .. >/dev/null || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "..")"
