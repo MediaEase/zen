@@ -88,6 +88,7 @@ zen::user::groups::upgrade() {
 		mflibs::status::error "$(zen::i18n::translate "errors.user.invalid_group_name" "$group")"
 	fi
 	mflibs::status::success "$(zen::i18n::translate "success.user.user_added_to_group" "$username" "$group")"
+	return 0
 }
 
 # @function zen::user::groups::create_groups
@@ -105,6 +106,7 @@ zen::user::groups::create_groups() {
 		fi
 	done
 	mflibs::status::success "$(zen::i18n::translate "success.user.base_groups_created")"
+	return 0
 }
 
 # @function zen::user::check
@@ -117,8 +119,8 @@ zen::user::groups::create_groups() {
 # shellcheck disable=SC2154
 # Disable SC2154 because the variable is defined in the main script
 zen::user::check() {
-	[[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_found" "${username}")" && zen::lock::cleanup && exit 1; }
-	[[ ${users_all[*]} != *"${username}"* ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_in_mediaease" "${username}")" && zen::lock::cleanup && exit 1; }
+	[[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_found" "${username}")" && exit 1; }
+	[[ ${users_all[*]} != *"${username}"* ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_in_mediaease" "${username}")" && exit 1; }
 }
 
 # @function zen::user::is::admin
@@ -128,10 +130,13 @@ zen::user::check() {
 # @return 0 if the user is an admin, 1 otherwise.
 # @note User must be loaded with zen::user::load before calling this function.
 zen::user::is::admin() {
-	[[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]] && {
-		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_admin")" || mflibs::status::error "$(zen::i18n::translate "messages.user.user_is_not_admin")"
-		zen::lock::cleanup
-	}
+	if [[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]]; then
+		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_admin")"
+		return 0
+	else
+		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_not_admin")"
+		return 1
+	fi
 }
 
 # @function zen::multi::check::id
@@ -164,10 +169,10 @@ zen::user::load() {
 	zen::database::load_config "$(zen::database::select "*" "user" "$where_clause")" "user" 3 "user_columns"
 	if [[ -z "${user[username]}" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.user_not_found" "${username}")"
-		zen::lock::cleanup
-		# else
-		# mflibs::shell::text::green "$(zen::i18n::translate "umessages.user.user_found" "${username}")"
+		exit 1
 	fi
+	mflibs::shell::text::green "$(zen::i18n::translate "umessages.user.user_found" "${username}")"
+	return 0
 }
 
 # @function zen::user::ban
@@ -188,6 +193,7 @@ zen::user::ban() {
 		mflibs::status::info "$(zen::i18n::translate "user.banning_user" "$username")"
 		zen::database::update "user" "is_banned=1" "username='$username'"
 	fi
+	return 0
 }
 
 # @section Password Management
