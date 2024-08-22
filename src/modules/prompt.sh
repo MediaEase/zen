@@ -162,6 +162,7 @@ zen::prompt::password() {
 
 # @function zen::prompt::input
 # @description: Safely prompts the user for input and stores the result in a variable. The prompt message is customizable. We can filter things like email, URL, etc.
+#               This function is useful for validating user input and ensuring that the input matches a specific format.
 # @example:
 #   zen::prompt::input "Enter your email address:" "email" email
 # @arg $1: string - Custom prompt message.
@@ -170,16 +171,18 @@ zen::prompt::password() {
 # @stdout: Custom prompt message and user input.
 # @exitcode 0: Successful execution, valid input.
 # @exitcode 1: Invalid input, continues prompting.
-# @important This function is useful for validating user input and ensuring that the input matches a specific format.
 zen::prompt::input() {
   local prompt="${1:-}"
   local filter="${2:-}"
   local output_var_name="${3:-}"
   local reply
+  local read_opts=""
 
   while true; do
     printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
-    read -r reply </dev/tty
+
+    [[ "$filter" == "password" ]] && read_opts="-s"
+    read -r "${read_opts?}" reply </dev/tty
     if [[ -n "$filter" ]]; then
       if zen::validate::input "$filter" "$reply"; then
         export "$output_var_name"="$reply"
@@ -256,51 +259,57 @@ zen::prompt::input() {
 #   zen::validate::input "numeric" "12345" # returns 0
 # @example
 #   zen::validate::input "numeric" "12345a" # returns 1
+# @example
+#   zen::validate::input "password" "password1234" # returns 0
 zen::validate::input() {
   local filter="$1"
   local input="$2"
   case "$filter" in
   email)
-    [[ "$input" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+    [[ "$input" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]] && return 0
     ;;
   url)
-    [[ "$input" =~ ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} ]]
+    [[ "$input" =~ ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} ]] && return 0
     ;;
   ip)
-    [[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+    [[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 0
     ;;
   ipv4)
-    [[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+    [[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 0
     ;;
   ipv6)
-    [[ "$input" =~ ^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$ ]]
+    [[ "$input" =~ ^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$ ]] && return 0
     ;;
   mac)
-    [[ "$input" =~ ^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$ ]]
+    [[ "$input" =~ ^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$ ]] && return 0
     ;;
   hostname)
-    [[ "$input" =~ ^[a-zA-Z0-9.-]+$ ]]
+    [[ "$input" =~ ^[a-zA-Z0-9.-]+$ ]] && return 0
     ;;
   fqdn)
-    [[ "$input" =~ ^([a-zA-Z0-9.-]+\.)+[a-zA-Z]{2,}$ ]]
+    [[ "$input" =~ ^([a-zA-Z0-9.-]+\.)+[a-zA-Z]{2,}$ ]] && return 0
     ;;
   domain)
-    [[ "$input" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+    [[ "$input" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]] && return 0
     ;;
   group)
-    [[ "$input" =~ ^(full|automation|media|remote|download)$ ]]
+    [[ "$input" =~ ^(full|automation|media|remote|download)$ ]] && return 0
     ;;
   github)
-    [[ "$input" =~ ^(https://(github|gitlab)\.com/[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+|[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)$ ]]
+    [[ "$input" =~ ^(https://(github|gitlab)\.com/[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+|[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)$ ]] && return 0
     ;;
   docs)
-    [[ "$input" =~ ^https://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/docs ]]
+    [[ "$input" =~ ^https://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/docs ]] && return 0
     ;;
   port_range)
-    [[ "$input" =~ ^[0-9]+-[0-9]+$ ]]
+    [[ "$input" =~ ^[0-9]+-[0-9]+$ ]] && return 0
     ;;
   numeric)
-    [[ "$input" =~ ^[0-9]+$ ]]
+    [[ "$input" =~ ^[0-9]+$ ]] && return 0
+    ;;
+  password)
+    local bad_characters="[\$&|;><*?()[]{}![:space:]]"
+    [[ ! "$input" =~ [$bad_characters] ]] && return 0
     ;;
   *)
     return 1
