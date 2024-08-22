@@ -14,6 +14,7 @@ errors:
     user_not_found: "User not found: {arg0}"
     user_not_in_mediaease: "This user is not a MediaEase user."
     user_id_missing: "User ID not found: {arg0}"
+    password_set: "Failed to set password."
   vault:
     credentials_file_missing: "Credentials file not found."
     no_string_to_encode: "No string provided for encoding."
@@ -278,6 +279,7 @@ prompts:
     enter_service_directives: "Enter the service directives for the software (comma separated list): (Ex: Type=simple, Environment=TMPDIR=/home/%i/tmp/$software_name)"
     compatible_with_autogen: "Is this app compatible with MediaEase Autogen feature? (yes/no)"
     select_autogen_keys: "Select the autogen keys for the software: "
+  password: "Password contains special characters. Do you want to use this sanitized password: {arg0}"
 
 headers:
   software:
