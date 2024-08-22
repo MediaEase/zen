@@ -22,6 +22,7 @@
 # @arg $3 string Indicates if the user should have admin privileges ('true' or 'false').
 # @return 0 if the user is created successfully, 1 otherwise.
 # @note For non-admin users, the shell is restricted; admin users get sudo privileges without a password requirement.
+# shellcheck disable=SC2154
 zen::user::create() {
 	local username="$1"
 	local password="$2"
@@ -29,9 +30,14 @@ zen::user::create() {
 	local theshell="/bin/bash"
 	local bashrc="/home/${username}/.bashrc"
 
+	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_user" "$username")"
+	# validate password, if return code is not 0, prompt for password
+	while [[ $(zen::validate::input "password" "$password") -ne 0 ]]; do
+		mflibs::log "$(zen::i18n::translate "prompts.user.password_not_correct")"
+		zen::prompt::input "$(zen::i18n::translate "prompts.user.enter_password")" "password" password
+	done
 	# If the user is not an admin, restrict the shell
 	[ "$is_admin" == false ] && theshell="/bin/rbash"
-	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_user" "$username")"
 	mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
 	if [[ -n "${password}" ]]; then
 		zen::user::password::set "${username}" "${password}"
@@ -43,17 +49,15 @@ zen::user::create() {
 	[ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}" /home/"${username}"/bin
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
-	cd /home/"${username}" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "/home/${username}")"
-	mv "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize")"
-	chmod +x "/home/${username}/bin/dirsize"
-	local PYENV_ROOT="/home/${username}/.config/pyenv"
-	su - "${username}" -c "export PYENV_ROOT=\"$PYENV_ROOT\"; cd /home/${username}; curl -LsSf https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash >/dev/null 2>&1"
-	chmod -R g+s "$HOME" >/dev/null 2>&1
-	setfacl -R -d -m g:"${username}":rwx "$PYENV_ROOT" >/dev/null 2>&1
-	setfacl -R -m g:"${username}":rwx "$PYENV_ROOT" >/dev/null 2>&1
-	mv "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}")"
-	su - "${username}" -c "export PYENV_ROOT=\"$PYENV_ROOT\"; $PYENV_ROOT/bin/pyenv update >/dev/null 2>&1"
+	cd /home/"${username}" && {
+		mv "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize")"
+		mv "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}")"
+		zen::permission::fix "/home/${username}" "644" "755" "${username}" "${username}"
+		zen::permission::fix "/opt/${username}" "644" "755" "${username}" "${username}"
+		[[ ! -x "/home/${username}/bin/dirsize" ]] && chmod +x "/home/${username}/bin/dirsize"
+	}
 	mflibs::status::success "$(zen::i18n::translate "success.user.user_creation" "$username")"
+	return 0
 }
 
 # @function zen::user::groups::upgrade
