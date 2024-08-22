@@ -51,13 +51,13 @@ zen::common::environment::set::variable() {
 # Appends given lines to the .bashrc file for a specified user.
 # @description This function appends specified lines to the .bashrc file for a specified user, ensuring that each line is present
 # in future shell sessions. It is useful for adding custom environment variables or aliases to the shell environment.
-# @arg $1 array Lines to be appended to the .bashrc file.
+# @arg $1 string Name of the array containing lines to be appended to the .bashrc file.
 # @arg $2 string (optional) Username whose .bashrc file will be modified. Defaults to the current user if not provided.
 # @exitcode 0 on successful appending.
 # @exitcode 1 on failure.
 # @stdout None.
 zen::common::bashrc::append() {
-	local -n lines="$1"
+	local -n lines_ref="$1"
 	local user="${2:-$USER}"
 	local bashrc_file
 
@@ -68,7 +68,7 @@ zen::common::bashrc::append() {
 	fi
 
 	if [ -f "$bashrc_file" ]; then
-		for line in "${lines[@]}"; do
+		for line in "${lines_ref[@]}"; do
 			if ! grep -qF "$line" "$bashrc_file"; then
 				echo "$line" >>"$bashrc_file"
 			fi
