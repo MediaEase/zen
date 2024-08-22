@@ -44,30 +44,29 @@ zen::git::clone() {
     else
         recurse_submodules=""
     fi
-
-    if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules"; then
-        mflibs::status::success "$(zen::i18n::translate "messages.common.release_found" "$repo_url")"
-
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.common.cloning_repository" "$repo_url")"
+    if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules >/dev/null 2>&1"; then
         local username
         local group
 
         if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
             username=$(echo "$target_dir" | cut -d'/' -f3)
             group=$(getent group | grep "^$username:" | cut -d: -f1)
+        elif [[ "$target_dir" == /root/* ]]; then
+            username="root"
+            group="root"
         else
             username="www-data"
             group="www-data"
         fi
-
-        zen::permission::fix "$target_dir" "755" "644" "$username" "$group"
-
-        if [[ "$target_dir" == /opt/pyenv* || "$target_dir" == /opt/MediaEase* ]]; then
-            zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
-        fi
+        mflibs::log "$(git config --global --add safe.directory "$target_dir")"
+        [[ $username != "root" && $target_dir != /root/* ]] && zen::permission::fix "$target_dir" "755" "644" "$username" "$group"
+        [[ "$target_dir" == /opt/MediaEase* ]] && zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
     else
         mflibs::status::error "$(zen::i18n::translate "errors.common.repository_clone" "$repo_url")"
         return 1
     fi
+    mflibs::shell::text::green "$(zen::i18n::translate "success.common.repository_cloned" "$repo_url")"
 }
 
 # @function zen::git::get_release
