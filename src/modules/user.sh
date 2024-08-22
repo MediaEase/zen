@@ -221,5 +221,12 @@ zen::user::password::set() {
 	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd
 	mkdir -p /etc/htpasswd.d
 	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd.d/htpasswd."${username}"
-	mflibs::status::success "$(zen::i18n::translate "success.user.password_set" "$username")"
+	# check if password in in htpasswd file and htpasswd.d
+	if grep -q "${username}:${password}" /etc/htpasswd && grep -q "${username}:${password}" /etc/htpasswd.d/htpasswd."${username}"; then
+		mflibs::status::success "$(zen::i18n::translate "success.user.password_set" "$username")"
+		return 0
+	else
+		mflibs::status::error "$(zen::i18n::translate "errors.user.password_set" "$username")"
+		return 1
+	fi
 }
