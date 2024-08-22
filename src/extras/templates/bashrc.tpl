@@ -173,11 +173,3 @@ export HISTCONTROL HISTIGNORE HISTSIZE HISTFILESIZE
 # used for setting locale see /etc/default/locale in debian
 # shellcheck disable=SC1091
 [[ -r "/etc/default/locale" ]] && . "/etc/default/locale" && export LC_ALL
-# PYENV
-export PYENV_ROOT="$HOME/.config/pyenv"
-if [ -d "$PYENV_ROOT/bin" ]; then
-    export PATH="$PYENV_ROOT/bin:$PATH"
-fi
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-# PYENV

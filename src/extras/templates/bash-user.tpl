@@ -78,12 +78,3 @@ if [ -e ~/.custom ]; then
     # shellcheck disable=SC1091
     source ~/.custom
 fi
-
-# PYENV
-export PYENV_ROOT="$HOME/.config/pyenv"
-if [ -d "$PYENV_ROOT/bin" ]; then
-    export PATH="$PYENV_ROOT/bin:$PATH"
-fi
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-# PYENV
