@@ -288,6 +288,8 @@ prompts:
     domain_not_correct: "Domain contains special characters. Do you want to use this sanitized domain: {arg0}"
     enter_email: "Enter a new email: "
     email_not_correct: "Email contains special characters. Do you want to use this sanitized email: {arg0}"
+    enter_hostname: "Enter a new hostname: "
+    hostname_not_correct: "Hostname contains special characters. Do you want to use this sanitized hostname: {arg0}"
   password: "Password contains special characters. Do you want to use this sanitized password: {arg0}"
 
 headers:
