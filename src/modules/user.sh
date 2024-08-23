@@ -31,11 +31,6 @@ zen::user::create() {
 	local bashrc="/home/${username}/.bashrc"
 
 	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_user" "$username")"
-	# validate password, if return code is not 0, prompt for password
-	while [[ $(zen::validate::input "password" "$password") -ne 0 ]]; do
-		mflibs::log "$(zen::i18n::translate "prompts.user.password_not_correct")"
-		zen::prompt::input "$(zen::i18n::translate "prompts.user.enter_password")" "password" password
-	done
 	# If the user is not an admin, restrict the shell
 	[ "$is_admin" == false ] && theshell="/bin/rbash"
 	mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
