@@ -181,8 +181,16 @@ zen::prompt::input() {
   while true; do
     printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
 
-    [[ "$filter" == "password" ]] && read_opts="-s"
-    read -r "${read_opts?}" reply </dev/tty
+    if [[ "$filter" == "password" ]]; then
+      read_opts="-s"
+    fi
+    if [[ -n "$read_opts" ]]; then
+      read -r read_opts reply </dev/tty
+      echo ""
+    else
+      read -r reply </dev/tty
+    fi
+
     if [[ -n "$filter" ]]; then
       if zen::validate::input "$filter" "$reply"; then
         export "$output_var_name"="$reply"
@@ -307,9 +315,8 @@ zen::validate::input() {
   numeric)
     [[ "$input" =~ ^[0-9]+$ ]] && return 0
     ;;
-  password)
-    local bad_characters="[\$&|;><*?()[]{}![:space:]]"
-    [[ ! "$input" =~ [$bad_characters] ]] && return 0
+  password | username)
+    [[ ! $input =~ ['!@#$%^&*()_+=<>'] ]] && return 0
     ;;
   *)
     return 1
