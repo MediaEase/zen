@@ -316,7 +316,7 @@ zen::validate::input() {
     [[ "$input" =~ ^[0-9]+$ ]] && return 0
     ;;
   password | username)
-    [[ ! $input =~ ['!@#$%^&*()_+=<>'] ]] && return 0
+    [[ ! $input =~ ['!@#$%^&*()_+=<>?[]|`"'] ]] && return 0
     ;;
   *)
     return 1
