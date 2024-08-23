@@ -279,6 +279,15 @@ prompts:
     enter_service_directives: "Enter the service directives for the software (comma separated list): (Ex: Type=simple, Environment=TMPDIR=/home/%i/tmp/$software_name)"
     compatible_with_autogen: "Is this app compatible with MediaEase Autogen feature? (yes/no)"
     select_autogen_keys: "Select the autogen keys for the software: "
+  user:
+    enter_username: "Enter a new username: "
+    username_not_correct: "Username contains special characters. Do you want to use this sanitized username: {arg0}"
+    enter_password: "Enter a new password: "
+    password_not_correct: "Password contains special characters. Do you want to use this sanitized password: {arg0}"
+    enter_domain: "Enter a new domain: "
+    domain_not_correct: "Domain contains special characters. Do you want to use this sanitized domain: {arg0}"
+    enter_email: "Enter a new email: "
+    email_not_correct: "Email contains special characters. Do you want to use this sanitized email: {arg0}"
   password: "Password contains special characters. Do you want to use this sanitized password: {arg0}"
 
 headers:
