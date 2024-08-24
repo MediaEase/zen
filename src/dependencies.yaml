@@ -38,16 +38,15 @@ mediaease:
     - pnpm:
         install: |
           PNPM_BIN="/usr/local/bin/pnpm"
-          wget -qO- https://get.pnpm.io/install.sh | sh >/dev/null 2>&1
-          for binaries in pnpm pnpx; do
-            if [ -f "${PNPM_BIN}/${binaries}" ]; then
-              [[ -f "${PNPM_BIN}/${binaries}" && -x "${PNPM_BIN}/${binaries}" ]] || chmod +x "${PNPM_BIN}/${binaries}" || echo "Failed to set executable permissions for ${PNPM_BIN}/${binaries}"
-              mv "${PNPM_BIN}/${binaries}" "/usr/local/bin/${binaries}" || echo "Failed to move ${PNPM_BIN}/${binaries} to /usr/local/bin/${binaries}"
-              rm -rf "${PNPM_BIN}" || echo "Failed to remove ${PNPM_BIN}"
-            else
-              echo "PNPM not found at ${PNPM_PATH}"
+          ROOT_PNPM="/root/.local/share/pnpm/"
+          wget -qO- https://get.pnpm.io/install.sh | sh
+          for binary in pnpm pnpx; do
+            if [ -f "${ROOT_PNPM}/${binary}" ]; then
+              [[ -f "${ROOT_PNPM}/${binary}" && -x "${ROOT_PNPM}/${binary}" ]] || chmod +x "${ROOT_PNPM}/${binary}" || echo "Failed to set executable permissions for ${PNPM_BIN}/${binary}"
+              mv "${ROOT_PNPM}/${binary}" "/usr/local/bin/${binary}" || echo "Failed to move ${PNPM_BIN}/${binary} to /usr/local/bin/${binary}"
             fi
           done
+          rm -rf "${ROOT_PNPM}" || echo "Failed to remove ${ROOT_PNPM}"
 airsonic:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default ffmpeg
 autodl:
