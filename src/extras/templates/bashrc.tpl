@@ -155,9 +155,9 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
 # Load bash completions if available
-if [[ -f "/usr/share/bash-completion.d/zen" ]]; then
+if [[ -f "/etc/bash_completion.d/zen" ]]; then
     # shellcheck source=/dev/null
-    . "/usr/share/bash-completion.d/zen"
+    . "/etc/bash_completion.d/zen"
 fi
 
 # History settings
