@@ -209,8 +209,8 @@ success:
     vault_creation: "Vault created."
   service:
     service_file_created: "Service file created."
-    service_started: "Service started."
-    service_validated: "Service validated."
+    service_started: "Service {arg0} started."
+    service_validated: "Service {arg0} validated."
   dependency:
     dependencies_installed: "Dependencies installed."
     external_dependencies_installed: "{arg0} installed."
@@ -282,14 +282,19 @@ prompts:
   user:
     enter_username: "Enter a new username: "
     username_not_correct: "Username contains special characters. Do you want to use this sanitized username: {arg0}"
+    username_validated: "Username validated."
     enter_password: "Enter a new password: "
     password_not_correct: "Password contains special characters. Do you want to use this sanitized password: {arg0}"
+    password_validated: "Password validated."
     enter_domain: "Enter a new domain: "
     domain_not_correct: "Domain contains special characters. Do you want to use this sanitized domain: {arg0}"
+    domain_validated: "Domain validated."
     enter_email: "Enter a new email: "
     email_not_correct: "Email contains special characters. Do you want to use this sanitized email: {arg0}"
+    email_validated: "Email validated."
     enter_hostname: "Enter a new hostname: "
     hostname_not_correct: "Hostname contains special characters. Do you want to use this sanitized hostname: {arg0}"
+    hostname_validated: "Hostname validated."
   password: "Password contains special characters. Do you want to use this sanitized password: {arg0}"
 
 headers:
