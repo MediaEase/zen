@@ -176,16 +176,11 @@ zen::prompt::input() {
   local filter="${2:-}"
   local output_var_name="${3:-}"
   local reply
-  local read_opts=""
 
   while true; do
     printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
-
     if [[ "$filter" == "password" ]]; then
-      read_opts="-s"
-    fi
-    if [[ -n "$read_opts" ]]; then
-      read -r read_opts reply </dev/tty
+      read -r -s reply </dev/tty
       echo ""
     else
       read -r reply </dev/tty
