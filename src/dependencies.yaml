@@ -37,21 +37,17 @@ mediaease:
           chown -R $CADDYFILE_OWNER /etc/caddy
     - pnpm:
         install: |
-          PNPM_PATH="/root/.local/share/pnpm"
-          PNPM_BIN="/usr/local/bin"
+          PNPM_BIN="/usr/local/bin/pnpm"
           wget -qO- https://get.pnpm.io/install.sh | sh >/dev/null 2>&1
-          if [ -d "${PNPM_PATH}" ]; then
-            if [ -d "${PNPM_BIN}/pnpm" ]; then
-              rm -rf "${PNPM_BIN}/pnpm" || echo "Failed to remove ${PNPM_BIN}/pnpm"
+          for binaries in pnpm pnpx; do
+            if [ -f "${PNPM_BIN}/${binaries}" ]; then
+              [[ -f "${PNPM_BIN}/${binaries}" && -x "${PNPM_BIN}/${binaries}" ]] || chmod +x "${PNPM_BIN}/${binaries}" || echo "Failed to set executable permissions for ${PNPM_BIN}/${binaries}"
+              mv "${PNPM_BIN}/${binaries}" "/usr/local/bin/${binaries}" || echo "Failed to move ${PNPM_BIN}/${binaries} to /usr/local/bin/${binaries}"
+              rm -rf "${PNPM_BIN}" || echo "Failed to remove ${PNPM_BIN}"
+            else
+              echo "PNPM not found at ${PNPM_PATH}"
             fi
-            if [ -f "${PNPM_BIN}/pnpx" ]; then
-              rm -f "${PNPM_BIN}/pnpx" || echo "Failed to remove ${PNPM_BIN}/pnpx"
-            fi
-            chmod -R +x "${PNPM_PATH}" || echo "Failed to set executable permissions for files in ${PNPM_PATH}"
-            cp -r "${PNPM_PATH}"/* "${PNPM_BIN}/" || echo "Failed to copy files from ${PNPM_PATH} to ${PNPM_BIN}"
-          else
-            echo "PNPM not found at ${PNPM_PATH}"
-          fi
+          done
 airsonic:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default ffmpeg
 autodl:
