@@ -223,11 +223,11 @@ zen::user::password::set() {
 	local password="$2"
 	mflibs::status::info "$(zen::i18n::translate "messages.user.setting_password" "$username")"
 	echo "${username}:${password}" | chpasswd 2>/dev/null
-	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd
+	encrypted_password=$(openssl passwd -apr1 "${password}")
+	printf "%s:%s\n" "${username}" "${encrypted_password}" >>/etc/htpasswd
 	mkdir -p /etc/htpasswd.d
-	printf "%s:\$(openssl passwd -apr1 %s)\n" "$username" "$password" >>/etc/htpasswd.d/htpasswd."${username}"
-	# check if password in in htpasswd file and htpasswd.d
-	if grep -q "${username}:${password}" /etc/htpasswd && grep -q "${username}:${password}" /etc/htpasswd.d/htpasswd."${username}"; then
+	printf "%s:%s\n" "${username}" "${encrypted_password}" >>/etc/htpasswd.d/htpasswd."${username}"
+	if grep -q "${username}:${encrypted_password}" /etc/htpasswd && grep -q "${username}:${encrypted_password}" /etc/htpasswd.d/htpasswd."${username}"; then
 		mflibs::status::success "$(zen::i18n::translate "success.user.password_set" "$username")"
 		return 0
 	else
