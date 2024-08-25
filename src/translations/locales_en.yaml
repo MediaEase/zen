@@ -102,6 +102,8 @@ errors:
     create_symlink: "Failed to create symlink."
     export_variable: "Failed to export variable: {arg0}."
     bashrc_missing: "Bashrc file not found."
+    create_directory: "Failed to create directory {arg0}."
+    copy: "Failed to copy {arg0} to {arg1}."
   system:
     securing_ssh: "Failed to secure SSH."
   raid:
@@ -146,10 +148,14 @@ messages:
     user_is_admin: "The user is an administrator."
     user_is_not_admin: "The user is not an administrator."
     user_found: "User found: {arg0}"
+    password: "Password"
+    username: "Username"
   vault:
     storing_password: "Storing password..."
     credentials_file_found: "Credentials file found."
     creating_vault: "Creating vault..."
+    last_time: "This is the last time you will see the user salt. Please save it somewhere secure."
+    user_salt: "User salt"
   service:
     generating_service: "Generating service..."
     validating_service: "Validating service..."
@@ -188,11 +194,13 @@ messages:
     downloading_release: "Getting release..."
     execution_time_total: "Total execution time: {arg0}h {arg1}min {arg2}sec."
     configuring_bashrc: "Configuring bashrc..."
-    configuring_sendmail: "Configuring sendmail..."
+    configuring_sendmail: "Configuring sendmail... This may take a while."
     configuring_mediaease_environment: "Configuring MediaEase environment..."
+    credentials: "You can use the following credentials to log in:"
   system:
     securing_ssh: "Securing SSH..."
     reloading_bashrc: "Reloading bashrc..."
+    backup_creation: "Creating backup..."
   raid:
     partitioning_empty_disks: "Creating partitions on empty disks..."
     creating_disk: "Creating RAID{0} disk ({1})..."
@@ -244,6 +252,8 @@ success:
     venv_install: "Virtual environment successfully installed."
   proxy:
     proxy_generated: "Proxy generated."
+    api_reachable: "API reachable."
+    dashboard_reachable: "Dashboard reachable."
   harmonyui:
     composer_dependencies_installed: "Dependencies installed."
     mediaease_configured: "MediaEase configured."
@@ -256,6 +266,8 @@ success:
     sendmail_configured: "Sendmail configured."
   system:
     ssh_secured: "SSH secured."
+    backup_created: "Backup created {arg0}."
+    installation_complete: "{arg0} Installation complete."
   software:
     backup_created: "Backup created."
   raid:
@@ -328,6 +340,7 @@ footers:
   software:
     remove: "{arg0} has been removed from your system."
     add: "Installation finished. {arg0} is now installed on your system."
+    time_elapsed: "Time elapsed: {arg0}"
 
 links:
   software:
