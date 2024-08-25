@@ -10,7 +10,7 @@ divert(-1)dnl
 # encryption and/or authentication.
 #
 # To use this file, add this line to sendmail.mc and possibly submit.mc:
-# `include(`@sysconfdir@/mail/tls/starttls.m4')dnl'
+# `include(`/etc/mail/tls/starttls.m4')dnl'
 #
 #-----------------------------------------------------------------------------
 #
@@ -21,7 +21,7 @@ dnl #---------------------------------------------------------------------
 dnl # Bring in Autoconf results
 dnl #---------------------------------------------------------------------
 ifdef(`sm_version', `dnl',
-`include(`@datadir@/sendmail/cf/debian/autoconf.m4')dnl')
+`include(`/usr/share/sendmail/cf/debian/autoconf.m4')dnl')
 dnl #
 dnl # Check to see if inclusion is valid (version >= 8.11.0, tls enabled)
 ifelse(eval(sm_version_math >= 527104), `1', `dnl
@@ -39,23 +39,23 @@ dnl #
 dnl # Do not touch anything above this line...
 dnl #
 dnl # CA directory - CA certs should be herein
-define(`confCACERT_PATH', `@sysconfdir@/ssl/certs')dnl
+define(`confCACERT_PATH', `/etc/ssl/certs')dnl
 dnl #
 dnl # CA file (may be the same as client/server certificate)
-define(`confCACERT',      `@sysconfdir@/mail/tls/sendmail-server.crt')dnl
+define(`confCACERT',      `/etc/mail/tls/sendmail-server.crt')dnl
 dnl #
 dnl # Server certificate/key (can be in the same file, and shared w/client)
 dnl # NOTE: The key must *NOT* be encrypted !!!
-define(`confSERVER_CERT', `@sysconfdir@/mail/tls/sendmail-server.crt')dnl
-define(`confSERVER_KEY',  `@sysconfdir@/mail/tls/sendmail-common.key')dnl
+define(`confSERVER_CERT', `/etc/mail/tls/sendmail-server.crt')dnl
+define(`confSERVER_KEY',  `/etc/mail/tls/sendmail-common.key')dnl
 dnl #
-dnl # Clien certificate/key (can be in the same file, and shared w/server)
+dnl # Client certificate/key (can be in the same file, and shared w/server)
 dnl # NOTE: The key must *NOT* be encrypted !!!
-define(`confCLIENT_CERT', `@sysconfdir@/mail/tls/sendmail-client.crt')dnl
-define(`confCLIENT_KEY',  `@sysconfdir@/mail/tls/sendmail-common.key')dnl
+define(`confCLIENT_CERT', `/etc/mail/tls/sendmail-client.crt')dnl
+define(`confCLIENT_KEY',  `/etc/mail/tls/sendmail-common.key')dnl
 dnl #
 dnl # DH parameters
-define(`confDH_PARAMETERS',`@sysconfdir@/mail/tls/sendmail-common.prm')dnl
+define(`confDH_PARAMETERS',`/etc/mail/tls/sendmail-common.prm')dnl
 dnl #
 dnl # Optional settings
 define(`confTLS_SRV_OPTIONS', `')dnl          # do not request user certs
