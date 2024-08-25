@@ -287,7 +287,7 @@ zen::validate::input() {
     [[ "$input" =~ ^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$ ]] && return 0
     ;;
   hostname)
-    [[ "$input" =~ ^[a-zA-Z0-9.-]+$ ]] && return 0
+    [[ "$input" =~ ^[a-zA-Z0-9._@-]+$ ]] && return 0
     ;;
   fqdn)
     [[ "$input" =~ ^([a-zA-Z0-9.-]+\.)+[a-zA-Z]{2,}$ ]] && return 0
