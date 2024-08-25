@@ -33,6 +33,8 @@ session.use_strict_mode = 0
 ; Mail settings
 sendmail_path = "/usr/sbin/sendmail -t -i"
 mail.force_extra_parameters = "?ping_threshold=200&max_per_second=2"
+mail.smtp_port = 25
+sendmail_from = mediaease
 
 [Opcache]
 ; Opcache settings for development
@@ -40,9 +42,9 @@ opcache.enable=1
 opcache.memory_consumption=128
 opcache.interned_strings_buffer=8
 opcache.max_accelerated_files=32000
-opcache.revalidate_freq=0  ; Check for updates every request
+opcache.revalidate_freq=0
 opcache.fast_shutdown=1
-opcache.validate_timestamps=1  ; Always validate timestamps
+opcache.validate_timestamps=1
 
 [PHP-FPM]
 ; PHP-FPM Process Manager settings
