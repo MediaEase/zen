@@ -201,6 +201,7 @@ messages:
     securing_ssh: "Securing SSH..."
     reloading_bashrc: "Reloading bashrc..."
     backup_creation: "Creating backup..."
+    installation_complete: "MediaEase installation complete."
   raid:
     partitioning_empty_disks: "Creating partitions on empty disks..."
     creating_disk: "Creating RAID{0} disk ({1})..."
