@@ -58,7 +58,7 @@ zen::user::handle_action() {
 		zen::user::set "$username" "$key" "$value"
 		;;
 	*)
-		mflibs::status::error "$(zen::i18n::translate "user.invalid_action" "$action")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_action" "$action")"
 		;;
 	esac
 }
@@ -72,7 +72,7 @@ zen::user::args::process() {
 	declare -g user_action username email password quota duration key value
 
 	if [[ $# -lt 2 ]]; then
-		mflibs::status::error "$(zen::i18n::translate "user.insufficient_arguments")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.insufficient_args")"
 	fi
 
 	user_action="$1"
