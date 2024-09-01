@@ -30,7 +30,7 @@ zen::user::create() {
 	local theshell="/bin/bash"
 	local bashrc="/home/${username}/.bashrc"
 
-	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_user" "$username")"
+	mflibs::status::header "$(zen::i18n::translate "headers.user.create" "$username")"
 	# If the user is not an admin, restrict the shell
 	[ "$is_admin" == false ] && theshell="/bin/rbash"
 	mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
@@ -45,13 +45,13 @@ zen::user::create() {
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}" /home/"${username}"/bin
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
 	cd /home/"${username}" && {
-		mv "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize")"
-		mv "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.common.file_move" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}")"
+		cp -pR "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.copy" "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize")"
+		cp -pR "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.copy" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}")"
 		zen::permission::fix "/home/${username}" "644" "755" "${username}" "${username}"
 		zen::permission::fix "/opt/${username}" "644" "755" "${username}" "${username}"
 		[[ ! -x "/home/${username}/bin/dirsize" ]] && chmod +x "/home/${username}/bin/dirsize"
 	}
-	mflibs::status::success "$(zen::i18n::translate "success.user.user_creation" "$username")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.create" "$username")"
 	return 0
 }
 
@@ -68,25 +68,25 @@ zen::user::groups::upgrade() {
 	local group="$2"
 
 	if [[ "$group" == "sudo" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.add_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG sudo ${username}"
 		mflibs::log "echo \"${username} ALL=(ALL) NOPASSWD:ALL\" >> /etc/sudoers"
 	elif [[ "$group" == "media" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.add_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG media ${username}"
 	elif [[ "$group" == "download" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.add_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG download ${username}"
 	elif [[ "$group" == "streaming" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.add_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG streaming ${username}"
 	elif [[ "$group" == "default" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "messages.user.adding_user_to_group" "$username" "$group")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.add_to_group" "$username" "$group")"
 		mflibs::log "usermod -aG default ${username}"
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.user.invalid_group_name" "$group")"
 	fi
-	mflibs::status::success "$(zen::i18n::translate "success.user.user_added_to_group" "$username" "$group")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.add_to_group" "$username" "$group")"
 	return 0
 }
 
@@ -98,13 +98,13 @@ zen::user::groups::upgrade() {
 # @note Creates predefined groups like media, download, streaming, and default.
 zen::user::groups::create_groups() {
 	local groups=("full" "download" "streaming" "automation")
-	mflibs::status::header "$(zen::i18n::translate "messages.user.creating_default_groups")"
+	mflibs::status::header "$(zen::i18n::translate "messages.user.create_base_groups")"
 	for group in "${groups[@]}"; do
 		if ! grep -q "^${group}:" /etc/group; then
 			mflibs::log "groupadd ${group}"
 		fi
 	done
-	mflibs::status::success "$(zen::i18n::translate "success.user.base_groups_created")"
+	mflibs::status::success "$(zen::i18n::translate "success.user.create_base_groups")"
 	return 0
 }
 
@@ -118,8 +118,8 @@ zen::user::groups::create_groups() {
 # shellcheck disable=SC2154
 # Disable SC2154 because the variable is defined in the main script
 zen::user::check() {
-	[[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_found" "${username}")" && exit 1; }
-	[[ ${users_all[*]} != *"${username}"* ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.user_not_in_mediaease" "${username}")" && exit 1; }
+	[[ -z ${username} && ${function_process} != "help" ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.not_found" "${username}")" && exit 1; }
+	[[ ${users_all[*]} != *"${username}"* ]] && { mflibs::status::error "$(zen::i18n::translate "errors.user.not_in_mediaease" "${username}")" && exit 1; }
 }
 
 # @function zen::user::is::admin
@@ -130,10 +130,10 @@ zen::user::check() {
 # @note User must be loaded with zen::user::load before calling this function.
 zen::user::is::admin() {
 	if [[ "${user['roles']}" == *'"ROLE_ADMIN"'* ]]; then
-		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_admin")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.is_admin")"
 		return 0
 	else
-		mflibs::status::info "$(zen::i18n::translate "messages.user.user_is_not_admin")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.is_not_admin")"
 		return 1
 	fi
 }
@@ -167,10 +167,10 @@ zen::user::load() {
 	user_columns=("id" "group_id" "preference_id" "username" "roles" "password" "email" "is_verified" "api_key" "registered_at" "activated_at" "registration_ip" "is_banned")
 	zen::database::load_config "$(zen::database::select "*" "user" "$where_clause")" "user" 3 "user_columns"
 	if [[ -z "${user[username]}" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.user_not_found" "${username}")"
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.not_found" "${username}")"
 		exit 1
 	fi
-	mflibs::shell::text::green "$(zen::i18n::translate "umessages.user.user_found" "${username}")"
+	mflibs::shell::text::green "$(zen::i18n::translate "messages.user.found" "${username}")"
 	return 0
 }
 
@@ -186,10 +186,10 @@ zen::user::ban() {
 	local duration="$2"
 
 	if [[ -n "$duration" ]]; then
-		mflibs::status::info "$(zen::i18n::translate "user.banning_user" "$username" "$duration")"
+		mflibs::status::info "$(zen::i18n::translate "messages.user.ban" "$username" "$duration")"
 		zen::database::update "user" "is_banned=1, ban_end_date=DATE_ADD(NOW(), INTERVAL $duration DAY)" "username='$username'"
 	else
-		mflibs::status::info "$(zen::i18n::translate "user.banning_user" "$username")"
+		mflibs::status::info "$(zen::i18n::translate "success.user.ban" "$username")"
 		zen::database::update "user" "is_banned=1" "username='$username'"
 	fi
 	return 0
@@ -221,17 +221,17 @@ zen::user::password::generate() {
 zen::user::password::set() {
 	local username="$1"
 	local password="$2"
-	mflibs::status::info "$(zen::i18n::translate "messages.user.setting_password" "$username")"
+	mflibs::status::info "$(zen::i18n::translate "messages.user.set_password" "$username")"
 	echo "${username}:${password}" | chpasswd 2>/dev/null
 	encrypted_password=$(openssl passwd -apr1 "${password}")
 	printf "%s:%s\n" "${username}" "${encrypted_password}" >>/etc/htpasswd
 	mkdir -p /etc/htpasswd.d
 	printf "%s:%s\n" "${username}" "${encrypted_password}" >>/etc/htpasswd.d/htpasswd."${username}"
 	if grep -q "${username}:${encrypted_password}" /etc/htpasswd && grep -q "${username}:${encrypted_password}" /etc/htpasswd.d/htpasswd."${username}"; then
-		mflibs::status::success "$(zen::i18n::translate "success.user.password_set" "$username")"
+		mflibs::status::success "$(zen::i18n::translate "success.user.set_password" "$username")"
 		return 0
 	else
-		mflibs::status::error "$(zen::i18n::translate "errors.user.password_set" "$username")"
+		mflibs::status::error "$(zen::i18n::translate "errors.user.set_password" "$username")"
 		return 1
 	fi
 }
