@@ -23,7 +23,7 @@ zen::software::is::installed() {
 	local user_id="$2"
 
 	if [[ -z "$software" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing" "$software")"
 	fi
 
 	local select_clause="a.name, a.altname, GROUP_CONCAT(srv.name) as services, srv.application_id, GROUP_CONCAT(srv.ports) as ports, srv.user_id"
@@ -69,7 +69,7 @@ zen::software::port_randomizer() {
 
 	port_range=$(yq e ".arguments.ports[] | select(.${port_type} != null) | .${port_type}" "$software_config_file")
 	if [[ -z "$port_range" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.software.port_range_missing" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.network.port_range_missing" "$app_name")"
 	fi
 
 	port_low=$(echo "$port_range" | tr -d '[]' | cut -d'-' -f1)
@@ -96,7 +96,7 @@ zen::software::port_randomizer() {
 			((retries--))
 		done
 
-		mflibs::status::error "$(zen::i18n::translate "software.port_in_use" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.network.port_in_use" "$app_name")"
 	else
 		while ((retries > 0)); do
 			local port=$((port_low + RANDOM % (port_high - port_low + 1)))
@@ -107,7 +107,7 @@ zen::software::port_randomizer() {
 			((retries--))
 		done
 
-		mflibs::status::error "$(zen::i18n::translate "errors.software.port_in_use" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.network.port_in_use" "$app_name")"
 	fi
 }
 
@@ -169,10 +169,12 @@ zen::software::infobox() {
 	outro)
 		case "$action" in
 		add | update | backup | reset | remove | reinstall)
-			outro=$(zen::i18n::translate "footer.software.$action" "$app_name_sanitized")
+			outro=$(zen::i18n::translate "footers.software.$action" "$app_name_sanitized")
 			# shellcheck disable=SC2154
 			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "links.software.access_url" "$app_name_sanitized" "$url_base")
 			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "links.software.documentation" "$app_name_sanitized" "$url_base")
+			[ "$action" != "remove" ] && mediaease_link=$(zen::i18n::translate "links.software.mediaease" "$app_name_sanitized" "$url_base")
+			[ "$action" != "remove" ] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$app_name_sanitized" "$url_base")
 			;;
 		*)
 			translated_string="Action completed: $action"
@@ -195,7 +197,7 @@ zen::software::infobox() {
 		;;
 	*)
 		printf "Invalid infobox type specified %s\n" "$infobox_type"
-		mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_infobox_type" "$infobox_type")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_infobox_type" "$infobox_type")"
 		;;
 	esac
 	printf "\n"
@@ -265,14 +267,14 @@ zen::software::backup::create() {
 	readarray -t files_to_backup < <(yq e ".arguments.files[].*" "$software_config_file" | sed "s/%i/${user[username]}/g; s/\$app_name/$app_name/g")
 
 	if [ ${#files_to_backup[@]} -eq 0 ]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.software.no_backup_files" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.backup.no_backup_files" "$app_name")"
 	fi
 
-	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.creating_backup" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "headers.backup.create" "$app_name")"
 	if tar -czf "$backup_file" "${files_to_backup[@]}" >/dev/null 2>&1; then
-		mflibs::shell::text::green "$(zen::i18n::translate "success.software.backup_created" "$backup_file")"
+		mflibs::shell::text::green "$(zen::i18n::translate "success.backup.create" "$backup_file")"
 	else
-		mflibs::status::error "$(zen::i18n::translate "errors.software.no_backup_files" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.backup.no_backup_files" "$app_name")"
 	fi
 }
 
@@ -302,7 +304,7 @@ zen::software::get_config_key_value() {
 	local key_value
 	key_value=$(yq e "$yq_expression" "$software_config_file")
 	if [[ -z "$key_value" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_config_syntax" "$yq_expression")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.config_syntax_invalid" "$yq_expression")"
 	fi
 
 	key_value="${key_value//%i/$username}"
@@ -350,7 +352,7 @@ zen::software::autogen() {
 			port_range=$(zen::software::port_randomizer "$app_name" "port_range")
 			;;
 		*)
-			mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_autogen_key" "$key")"
+			mflibs::status::error "$(zen::i18n::translate "errors.software.autogen_key_invalid" "$key")"
 			;;
 		esac
 	done
@@ -370,32 +372,32 @@ zen::software::autogen() {
 # @example
 #   zen::software::create
 zen::software::create() {
-	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.creating")"
-	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_name")" "" software_name
+	mflibs::shell::text::white "$(zen::i18n::translate "headers.software.create_entry")"
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.name")" "" software_name
 	if [[ -z "$software_name" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing")"
+		mflibs::status::error "$(zen::i18n::translate "errors.software.software_name_missing" "$software_name")"
 	fi
 	software_name_sanitized=$(zen::common::capitalize::first "$software_name")
 	software_name_lowered=$(zen::common::lowercase "$software_name")
-	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_category_group")" "" group
-	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_repo_url")" "github" software_repo
-	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_docs_url")" "url" software_docs
-	zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_homepage_url")" "url" homepage
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.category_group")" "" group
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.repo_url")" "github" software_repo
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.docs_url")" "url" software_docs
+	zen::prompt::input "$(zen::i18n::translate "prompts.software.homepage_url")" "url" homepage
 	zen::prompt::yn "$(zen::i18n::translate "prompts.software.is_multi_user")" multi_user
 	zen::prompt::yn "$(zen::i18n::translate "prompts.software.uses_port")" use_port
 	if [[ "$use_port" == "yes" ]]; then
 		zen::prompt::input "$(zen::i18n::translate "prompts.software.use_random_port")" "" use_random_port
 		if [[ "$use_random_port" == "yes" ]]; then
-			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_port_range")" "port_range" port_range
-			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_ssl_port_range")" "port_range" ssl_port_range
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.port_range")" "port_range" port_range
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.ssl_port_range")" "port_range" ssl_port_range
 		else
-			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_default_port")" "numeric" default_port
-			zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_ssl_port")" "numeric" ssl_port
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.default_port")" "numeric" default_port
+			zen::prompt::input "$(zen::i18n::translate "prompts.software.ssl_port")" "numeric" ssl_port
 		fi
 	fi
 	zen::prompt::yn "$(zen::i18n::translate "prompts.software.uses_service")" use_service
 	if [[ "$use_service" == "yes" ]]; then
-		zen::prompt::input "$(zen::i18n::translate "prompts.software.enter_service_directives")" "" service_directives
+		zen::prompt::input "$(zen::i18n::translate "prompts.software.service_directives")" "" service_directives
 	fi
 	zen::prompt::yn "$(zen::i18n::translate "prompts.software.compatible_with_autogen")" use_autogen
 	if [[ "$use_autogen" == "yes" ]]; then
@@ -452,17 +454,16 @@ EOL
 		yq e ".\"$string\" = \"Placeholder to describe $software_name_lowered\"" "$file" -i
 		translation_files["$file"]="updated"
 	done
-	cd /srv/harmonyui || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "/srv/harmonyui")"
+	cd /srv/harmonyui || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "/srv/harmonyui")"
 	username="$(zen::database::select "username" "users" "roles LIKE '%ROLE_ADMIN%'")"
 	su -c "symfony console harmony:scan:apps" "$username"
 	mflibs::shell::text::yellow "################################################################################"
-	mflibs::shell::text::yellow "# $(zen::i18n::translate "success.software.created" "$software_name_sanitized")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "success.software.create" "$software_name_sanitized")"
 	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.find_generated_files" "$software_dir")"
 	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.generated_files" "$software_dir/config.yaml" "$software_dir/$software_name_lowered")"
-	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.update_config")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.update_configuration")"
 	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.warn_about_translation_files")"
-	mflibs::shell::text::yellow "# Don't forget to add a correct description for the software in the translations files."
-	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.translation_files_updated")"
+	mflibs::shell::text::yellow "# $(zen::i18n::translate "messages.software.update_translation_files")"
 	for file in "${!translation_files[@]}"; do
 		mflibs::shell::text::yellow "# - $file"
 	done
