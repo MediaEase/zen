@@ -41,7 +41,7 @@ zen::vault::init() {
 		declare -g credentials_file="${vault_dir}/${vault_file}"
 		export credentials_file
 	fi
-	mflibs::status::info "$(zen::i18n::translate "success.vault.vault_initialized")"
+	mflibs::status::success "$(zen::i18n::translate "success.security.init_vault")"
 }
 
 # @function zen::vault::create
@@ -53,7 +53,7 @@ zen::vault::create() {
 	local salt hash vault_dir vault_file
 	declare salt_file="/root/.mediaease/config"
 	declare vault_base_dir="/etc/.mediaease"
-	mflibs::status::header "$(zen::i18n::translate "messages.vault.creating_vault")"
+	mflibs::status::header "$(zen::i18n::translate "messages.security.create_vault")"
 	if [[ -z "$user_salt" ]]; then
 		read -r -sp "Enter your salt key: " user_salt
 		printf "\n"
@@ -64,7 +64,7 @@ zen::vault::create() {
 	echo "$salt" >"$salt_file"
 	chmod 600 "$salt_file"
 	chattr +i "$salt_file"
-	mflibs::status::info "$(zen::i18n::translate "success.vault.salt_stored")"
+	mflibs::status::info "$(zen::i18n::translate "success.security.store_salt")"
 
 	# Hashing to determine vault path
 	hash=$(echo -n "${vault_name}${salt}" | sha256sum | cut -d' ' -f1)
@@ -80,7 +80,7 @@ zen::vault::create() {
 	zen::vault::permissions "add"
 	export credentials_file
 
-	mflibs::status::success "$(zen::i18n::translate "success.vault.vault_creation")"
+	mflibs::status::success "$(zen::i18n::translate "success.security.create_vault")"
 }
 
 # @function zen::vault::pass::encode
@@ -94,7 +94,7 @@ zen::vault::create() {
 zen::vault::pass::encode() {
 	local string="${1}"
 	if [[ -z "$string" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.vault.no_string_to_encode")"
+		mflibs::status::error "$(zen::i18n::translate "errors.security.no_string_to_encode")"
 	fi
 	echo -n "$string" | base64 | sed 's/=*$//'
 }
@@ -119,7 +119,7 @@ zen::vault::pass::decode() {
 	if [[ -n "$hashed_password" ]]; then
 		echo "$hashed_password" | base64 --decode
 	else
-		mflibs::status::error "$(zen::i18n::translate "vault.unable_to_decode_key")"
+		mflibs::status::error "$(zen::i18n::translate "errors.security.key_not_decodable")"
 	fi
 }
 
@@ -141,15 +141,15 @@ zen::vault::pass::store() {
 	hashed_type=$(zen::vault::pass::encode "$type")
 	hashed_username=$(zen::vault::pass::encode "$username")
 	hashed_key=".$hashed_username.$hashed_type"
-	mflibs::status::info "$(zen::i18n::translate "messages.vault.storing_password" "$username" "$type")"
+	mflibs::status::info "$(zen::i18n::translate "messages.security.store_password" "$username" "$type")"
 	if [[ $(yq e "$hashed_key" "$credentials_file") != "null" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.vault.key_already_exists" "$key")"
+		mflibs::status::error "$(zen::i18n::translate "errors.security.key_already_exists" "$key")"
 	fi
 	zen::vault::permissions "remove"
 	hashed_password=$(zen::vault::pass::encode "$password")
 	yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
 	zen::vault::permissions "add"
-	mflibs::status::success "$(zen::i18n::translate "success.vault.password_store")"
+	mflibs::status::success "$(zen::i18n::translate "success.security.store_password")"
 }
 
 # @function zen::vault::pass::update
@@ -173,7 +173,7 @@ zen::vault::pass::update() {
 		yq e -i ".$hashed_key = \"$hashed_password\"" "$credentials_file"
 		zen::vault::permissions "add"
 	else
-		mflibs::status::error "$(zen::i18n::translate "errors.vault.key_missing")"
+		mflibs::status::error "$(zen::i18n::translate "errors.security.key_missing")"
 	fi
 }
 
@@ -190,7 +190,7 @@ zen::vault::pass::reveal() {
 	local key="$1"
 	local context=${2:-main}
 	if [[ "$key" == "system.mediease_beta" && "$context" != "mediaease" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "vault.unable_to_reveal_this_key")"
+		mflibs::status::error "$(zen::i18n::translate "errors.security.key_not_revealable")"
 	elif [[ "$key" != "system.mediease_beta" && $context == "main" || "$key" != "system.mediease_beta" && $context == "zen" ]]; then
 		declare -g VAULT_PASSWORD
 		VAULT_PASSWORD=$(zen::vault::pass::decode "$@")
@@ -222,6 +222,6 @@ zen::vault::permissions() {
 		mflibs::log "chmod -R 755 $credentials_file"
 		mflibs::log "chown -R root:root $credentials_file"
 	else
-		mflibs::status::error "$(zen::i18n::translate "vault.invalid_action" "$action")"
+		mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_action" "$action")"
 	fi
 }
