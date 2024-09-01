@@ -97,9 +97,7 @@ zen::service::generate() {
 # @return Exits with a status code if an invalid action is provided.
 # @note Wrapper around systemctl commands for service management.
 # @return 0 if the service is successfully started, stopped, or restarted
-# @return 1 if the service is already running or stopped
-# @return 2 if an invalid action is provided
-# @return 3 if the service fails to start, stop, or restart
+# @return 1 if an invalid action is provided
 # @example
 #    zen::service::manage "start" "app_name.service"
 zen::service::manage() {
@@ -108,11 +106,10 @@ zen::service::manage() {
 
 	check_service_status() {
 		if systemctl is-active --quiet "$service_name"; then
-			mflibs::status::info "$(zen::i18n::translate "success.service.running" "$service_name")"
+			mflibs::status::info "$(zen::i18n::translate "success.service.run" "$service_name")"
 			return 0
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.not_running" "$service_name")"
-			return 1
 		fi
 	}
 
@@ -121,38 +118,30 @@ zen::service::manage() {
 		mflibs::status::info "$(zen::i18n::translate "messages.service.start" "$service_name")"
 		if zen::service::manage "status" "$service_name"; then
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.already_running" "$service_name")"
-			return 0
 		fi
 		if systemctl start "$service_name"; then
 			mflibs::status::success "$(zen::i18n::translate "success.service.start" "$service_name")"
-			return 1
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.start" "$service_name")"
-			return 3
 		fi
 		;;
 	stop)
 		mflibs::status::info "$(zen::i18n::translate "messages.service.stop" "$service_name")"
 		if ! zen::service::manage "status" "$service_name"; then
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.not_running" "$service_name")"
-			return 1
 		fi
 		if systemctl stop "$service_name"; then
 			mflibs::status::success "$(zen::i18n::translate "success.service.stop" "$service_name")"
-			return 0
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.stop" "$service_name")"
-			return 3
 		fi
 		;;
 	restart | reload)
 		mflibs::status::info "$(zen::i18n::translate "messages.service.${action}" "$service_name")"
 		if systemctl "$action" "$service_name"; then
 			mflibs::status::success "$(zen::i18n::translate "success.service.${action}" "$service_name")"
-			return 1
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.$action" "$service_name")"
-			return 3
 		fi
 		;;
 	enable)
@@ -160,10 +149,8 @@ zen::service::manage() {
 		mflibs::status::info "$(zen::i18n::translate "messages.service.enable" "$service_name")"
 		if systemctl enable "$service_name" --now >/dev/null 2>&1; then
 			mflibs::status::success "$(zen::i18n::translate "success.service.enable" "$service_name")"
-			return 1
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.enable" "$service_name")"
-			return 3
 		fi
 		;;
 	disable)
@@ -171,10 +158,8 @@ zen::service::manage() {
 		if systemctl stop "$service_name" && systemctl disable "$service_name"; then
 			systemctl daemon-reload
 			mflibs::status::success "$(zen::i18n::translate "success.service.disable" "$service_name")"
-			return 0
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.disable" "$service_name")"
-			return 3
 		fi
 		;;
 	status)
@@ -182,7 +167,7 @@ zen::service::manage() {
 		;;
 	*)
 		mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_action" "$action" "$service_name")"
-		return 2
+		return 1
 		;;
 	esac
 }
