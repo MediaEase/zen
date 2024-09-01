@@ -35,11 +35,11 @@ zen::software::rtorrent::add() {
         for binary in "xmlrpc-c" "libtorrent-rakshasa" "rtorrent"; do
             for deb_file in /tmp/*; do
                 if [[ $deb_file == *"$binary"* ]]; then
-                    mflibs::shell::text::yellow "$(zen::i18n::translate "software.unpacking_deb_file" "$deb_file")"
+                    mflibs::shell::text::yellow "$(zen::i18n::translate "messages.dependency.unpack_deb_file" "$deb_file")"
                     if sudo dpkg -i "$deb_file"; then
-                        mflibs::shell::text::green "$(zen::i18n::translate "software.deb_file_installed" "$deb_file")"
+                        mflibs::shell::text::green "$(zen::i18n::translate "success.dependency.unpack_deb_file" "$deb_file")"
                     else
-                        mflibs::shell::text::error "$(zen::i18n::translate "software.deb_file_install" "$deb_file")"
+                        mflibs::shell::text::error "$(zen::i18n::translate "errors.dependency.unpack_deb_file" "$deb_file")"
                     fi
                 fi
             done
@@ -58,7 +58,7 @@ zen::software::rtorrent::add() {
 # @description Configures rTorrent for a user, including setting up configuration files and proxy settings.
 # @global user An associative array containing user-specific information.
 zen::software::rtorrent::config() {
-    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configuring_app" "$app_name")"
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
     zen::software::autogen
     mkdir -p "/home/${user[username]}/.config/${app_name}"
     cp -pR "/opt/MediaEase/zen/src/software/official/rtorrent/.rtorrent.rc.tpl" "/home/${user[username]}/.config/${app_name}/.rtorrent.rc"
@@ -73,7 +73,7 @@ zen::software::rtorrent::config() {
     # we can't use the zen::proxy::generate function because rtorrent is a bit different
     zen::software::rtorrent::proxy::generate "/etc/caddy/softwares/${user[username]}.scgi.caddy"
 
-    mflibs::shell::text::green "$(zen::i18n::translate "messages.software.configuring_app" "$app_name")"
+    mflibs::shell::text::green "$(zen::i18n::translate "messages.softwared.configured" "$app_name")"
 }
 
 # @function zen::software::rtorrent::update
