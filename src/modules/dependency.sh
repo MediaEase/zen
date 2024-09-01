@@ -35,7 +35,7 @@ zen::dependency::apt::manage() {
 	if [[ -n "$software_name" ]]; then
 		dependencies_string=$(yq e ".${software_name}.apt" "$dependencies_file")
 		if [[ -z "$dependencies_string" ]]; then
-			mflibs::status::error "$(zen::i18n::translate "errors.dependency.no_dependencies_found" "$software_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.dependency.dependencies_missing" "$software_name")"
 			return 1
 		fi
 	fi
@@ -76,6 +76,7 @@ zen::dependency::apt::manage() {
 # @example
 #   zen::dependency::apt::install::inline "package1 package2 package3"
 zen::dependency::apt::install::inline() {
+	mflibs::status::header "$(zen::i18n::translate "headers.dependency.dependencies_install")"
 	local dependencies_string="$1"
 	local cmd_options=("${@:2}")
 	IFS=' ' read -r -a dependencies <<<"$dependencies_string"
@@ -90,7 +91,7 @@ zen::dependency::apt::install::inline() {
 			if [[ $verbose -eq 1 ]]; then
 				mflibs::shell::text::white "Installing ${dep}..."
 				if apt-get install "${cmd_options[@]}" "${dep}"; then
-					mflibs::shell::text::green "$(zen::i18n::translate "messages.dependency.dependency_installed" "${dep}")"
+					mflibs::shell::text::green "$(zen::i18n::translate "messages.dependency.dependency_install" "${dep}")"
 					((installed_count++))
 				else
 					mflibs::shell::text::red "Failed to install ${dep}."
@@ -98,24 +99,24 @@ zen::dependency::apt::install::inline() {
 				fi
 			else
 				if ! apt-get install "${cmd_options[@]}" "${dep}" >/tmp/dep_install_output 2>&1; then
-					printf "%s$(tput setaf 1)✗ $(tput sgr0)" "${dep}"
+					printf "%s %s %s$(tput setaf 1)✗ $(tput sgr0)" "${dep} " "$(tput sgr0)"
 					failed_deps+=("${dep}")
 				else
 					((installed_count++))
-					printf "%s" "${dep}"
+					printf "%s %s %s" "$(tput setaf 6)" "${dep}" "$(tput sgr0)"
 				fi
 				if [[ $i -ne $last_index ]]; then
-					printf " | "
+					printf "%s | %s" "$(tput setaf 7)" "$(tput sgr0)"
 				fi
 			fi
 		fi
 	done
-
-	mflibs::status::info "$(zen::i18n::translate "messages.dependency.installed_count" "$installed_count")"
+	printf "\n"
+	mflibs::status::info "$(zen::i18n::translate "messages.dependency.install_count" "$installed_count")"
 	if [[ ${#failed_deps[@]} -gt 0 ]]; then
-		mflibs::status::warn "$(zen::i18n::translate "errors.dependency.install_dependencies" "${failed_deps[*]}")"
+		mflibs::status::warn "$(zen::i18n::translate "errors.dependency.dependencies_install" "${failed_deps[*]}")"
 	fi
-	mflibs::status::success "$(zen::i18n::translate "messages.dependency.installation_complete")"
+	mflibs::status::success "$(zen::i18n::translate "success.dependency.dependencies_installed")"
 }
 
 # @function zen::dependency::apt::get_string
@@ -215,12 +216,12 @@ zen::dependency::apt::pin() {
 # @note The function checks for and resolves locked dpkg situations before proceeding.
 # @caution Ensure that no other package management operations are running concurrently.
 zen::dependency::apt::update() {
-	mflibs::status::header "$(zen::i18n::translate "messages.dependency.updating_system")"
+	mflibs::status::header "$(zen::i18n::translate "headers.dependency.apt_update")"
 	# check if fuser is installed
 	if command -v fuser >/dev/null 2>&1; then
 		if fuser "/var/lib/dpkg/lock" >/dev/null 2>&1; then
 			mflibs::status::warn "$(zen::i18n::translate "errors.dependency.dpkg_locked")"
-			mflibs::status::warn "$(zen::i18n::translate "messages.dependency.dpkg_locked_info")"
+			mflibs::status::warn "$(zen::i18n::translate "headers.dependency.dpkg_locked_info")"
 			rm -f /var/cache/debconf/{config.dat,passwords.dat,templates.dat}
 			rm -f /var/lib/dpkg/updates/0*
 			find /var/lib/dpkg/lock* /var/cache/apt/archives/lock* -exec rm -rf {} \;
@@ -233,13 +234,13 @@ zen::dependency::apt::update() {
 	mflibs::log "apt-get -y${quiet_flag} autoclean"
 
 	if ! /usr/lib/dpkg/methods/apt/update /var/lib/dpkg/ >/dev/null 2>&1; then
-		mflibs::status::error "$(zen::i18n::translate "errors.dependency.system_update")"
+		mflibs::status::error "$(zen::i18n::translate "errors.dependency.apt_update")"
 	fi
 	if ! apt-get check >/dev/null 2>&1; then
 		mflibs::status::error "$(zen::i18n::translate "errors.dependency.apt_check")"
 	fi
 
-	mflibs::status::success "$(zen::i18n::translate "success.dependency.system_update")"
+	mflibs::status::success "$(zen::i18n::translate "success.dependency.apt_update")"
 }
 
 # @function zen::dependency::apt::remove
@@ -284,10 +285,10 @@ zen::dependency::external::install() {
 	local app_name="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	if [[ -z "$app_name" ]]; then
-		mflibs::status::error "dependency.external_dependencies_missing"
+		mflibs::status::error "errors.dependency.external_dependencies_missing"
 	fi
 	# Parsing each external dependency
-	mflibs::status::header "$(zen::i18n::translate "messages.dependency.installing_external_dependencies" "$app_name")"
+	mflibs::status::header "$(zen::i18n::translate "headers.dependency.external_dependencies_install" "$app_name")"
 	local entries
 	entries=$(yq e ".${app_name}.external[] | to_entries[]" "$dependencies_file")
 	local software_name install_command
@@ -305,11 +306,11 @@ zen::dependency::external::install() {
 			rm "$temp_script" 2>/dev/null
 
 			if [[ $install_status -ne 0 ]]; then
-				mflibs::status::error "$(zen::i18n::translate "errors.dependency.install_external_dependencies" "$software_name" "$app_name" "$install_status")"
+				mflibs::status::error "$(zen::i18n::translate "errors.dependency.external_dependencies_install" "$software_name" "$app_name" "$install_status")"
 			fi
 		fi
 	done <<<"$entries"
-	mflibs::status::success "$(zen::i18n::translate "success.dependency.external_dependencies_installed" "$app_name")"
+	mflibs::status::success "$(zen::i18n::translate "success.dependency.external_dependencies_install" "$app_name")"
 }
 
 # @function zen::dependency::apt::add_source
@@ -333,12 +334,11 @@ zen::dependency::apt::add_source() {
 	for source_name in "${sources[@]}"; do
 		local debug
 		[[ " ${MFLIBS_LOADED[*]} " =~ debug ]] && debug=1
-		local status_icon
 		local failed=false
 		[[ $debug -eq 1 ]] && printf "Debug: Processing source: %s\n" "$source_name"
 		if [[ -z "$source_name" ]]; then
 			failed=true
-			mflibs::shell::text::red "$(zen::i18n::translate "dependency.source_name_required")"
+			mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.source_name_missing")"
 		fi
 		local source_url_template source_url arch include_deb_src gpg_key_url recv_keys trusted_key_url
 		source_url_template=$(yq e ".sources.${source_name}.url" "$dependencies_file")
@@ -359,7 +359,7 @@ zen::dependency::apt::add_source() {
 		fi
 		if [[ -n "$arch" && "$arch" != "null" && "$arch" != "$(dpkg --print-architecture)" ]]; then
 			failed=true
-			mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
+			mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.apt_architecture_mismatch" "$arch" "$(dpkg --print-architecture)")"
 		fi
 		if [[ "$failed" == false ]]; then
 			if [[ -n "$gpg_key_url" ]]; then
@@ -370,7 +370,7 @@ zen::dependency::apt::add_source() {
 					[[ $debug -eq 1 ]] && printf "Debug: Removed existing GPG key file: %s\n" "$gpg_key_file"
 				}
 				wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
-					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.gpg_key_add" "$source_name")"
+					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.apt_gpg_key_add" "$source_name")"
 					failed=true
 				}
 				printf "deb [signed-by=%s] %s\n" "$gpg_key_file" "$source_url" >"/etc/apt/sources.list.d/${source_name}.list"
@@ -386,7 +386,7 @@ zen::dependency::apt::add_source() {
 			fi
 			if [[ -n "$recv_keys" && "$recv_keys" != "null" ]]; then
 				sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
-					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.recv_keys" "$source_name")"
+					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.apt_recv_keys" "$source_name")"
 					failed=true
 				}
 				[[ $debug -eq 1 ]] && printf "Debug: Received keys for %s\n" "$source_name"
@@ -397,23 +397,22 @@ zen::dependency::apt::add_source() {
 					[[ $debug -eq 1 ]] && printf "Debug: Removed existing trusted key file for %s source\n" "$source_name"
 				}
 				wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
-					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.trusted_key_add" "$source_name")"
+					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.apt_trusted_key_add" "$source_name")"
 					failed=true
 					[[ $debug -eq 1 ]] && printf "Debug: Failed to add trusted key for %s from %s\n" "$source_name" "$trusted_key_url"
 				}
 			fi
 		else
-			mflibs::status::error "$(zen::i18n::translate "errors.dependency.add_source" "$source_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.dependency.apt_add_source" "$source_name")"
 		fi
 		if [[ $debug -eq 0 ]]; then
-			status_icon=$(
-				if [[ "$failed" == false ]]; then
-					printf "mflibs::shell::icon::check::green; mflibs::shell::text::white::sl \"%s\"" "$source_name"
-				else
-					printf "mflibs::shell::icon::cross::red ; mflibs::shell::text::white::sl \"%s\"" "$source_name"
-				fi
-			)
-			printf "%s\n" "$status_icon"
+			if [[ "$failed" == false ]]; then
+				mflibs::shell::icon::check::green
+				mflibs::shell::text::white::sl "$source_name"
+			else
+				mflibs::shell::icon::cross::red
+				mflibs::shell::text::white::sl "$source_name"
+			fi
 			[[ $counter -lt $((total_sources - 1)) && "$failed" == false ]] && printf " | "
 		else
 			status_icon=$(
@@ -428,8 +427,7 @@ zen::dependency::apt::add_source() {
 		[[ "$failed" == false ]] && counter=$((counter + 1))
 	done
 	printf "\n"
-	mflibs::status::info "$(zen::i18n::translate "messages.dependency.sources_added_count" "$counter" "$total_sources")"
-	[[ $debug -eq 1 ]] && printf "Debug: Finished adding sources. Total added: %d out of %d\n" "$counter" "$total_sources"
+	mflibs::status::info "$(zen::i18n::translate "messages.dependency.add_source_count" "$counter" "$total_sources")"
 }
 
 # @function zen::dependency::apt::remove_source
@@ -456,7 +454,7 @@ zen::dependency::apt::remove_source() {
 		rm -f "$file"
 	done
 
-	mflibs::status::success "$(zen::i18n::translate "success.dependency.apt_source_removed" "$source_name")"
+	mflibs::status::success "$(zen::i18n::translate "success.dependency.apt_source_remove" "$source_name")"
 }
 
 # @function zen::dependency::apt::update_source
@@ -484,7 +482,7 @@ zen::dependency::apt::update_source() {
 			gpg_key_file="/usr/share/keyrings/${source_name}.gpg"
 			[[ -f "$gpg_key_file" ]] && sudo rm "$gpg_key_file"
 			wget -qO- "$gpg_key_url" | sudo gpg --dearmor -o "$gpg_key_file" || {
-				mflibs::status::error "$(zen::i18n::translate "errors.dependency.gpg_key_add" "$source_name")"
+				mflibs::status::error "$(zen::i18n::translate "errors.dependency.apt_gpg_key_add" "$source_name")"
 			}
 			echo "deb [signed-by=$gpg_key_file] $source_url" >"/etc/apt/sources.list.d/${source_name}.list"
 			[[ "$include_deb_src" == "true" ]] && echo "deb-src [signed-by=$gpg_key_file] $source_url" >>"/etc/apt/sources.list.d/${source_name}.list"
@@ -495,14 +493,14 @@ zen::dependency::apt::update_source() {
 		trusted_key_url=$(yq e ".sources.${source_name}.options.trusted-key" "$dependencies_file" | grep -v 'null')
 		if [[ -n "$trusted_key_url" ]]; then
 			wget -qO- "$trusted_key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${source_name}.gpg" || {
-				mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.trusted_key_add" "$source_name")"
+				mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.apt_trusted_key_add" "$source_name")"
 				continue
 			}
 		fi
 		recv_keys=$(yq e ".sources.${source_name}.options.recv-keys" "$dependencies_file" | grep -v 'null')
 		if [[ -n "$recv_keys" ]]; then
 			sudo gpg --no-default-keyring --keyring "/usr/share/keyrings/${source_name}.gpg" --keyserver keyserver.ubuntu.com --recv-keys "$recv_keys" || {
-				mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.recv_keys" "$source_name")"
+				mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.apt_recv_keys" "$source_name")"
 				continue
 			}
 		fi
