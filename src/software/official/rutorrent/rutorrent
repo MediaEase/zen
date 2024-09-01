@@ -22,17 +22,17 @@ zen::software::rutorrent::add() {
     if [[ $is_installed_by_others -eq 0 ]]; then
         zen::git::clone "Novik/ruTorrent.git" "/srv/rutorrent" "main" "true"
         # configure rutorrent main settings
-        mflibs::status::info "$(zen::i18n::translate "software.configuring" "ruTorrent")"
+        mflibs::status::info "$(zen::i18n::translate "messages.software.configure" "ruTorrent")"
         sed -i -e "s|//\$topDirectory = '/';|\$topDirectory = '/home/${user[username]}';|g" \
             -e "s|\$scgi_host = \"127.0.0.1\";|\$scgi_host = \"unix:///tmp/${user[username]}.rtorrent.socket\";|g" \
             -e "s|\$scgi_port = 5000;|\$scgi_port = 0;|g" \
             -e "s|\$localHostedMode = false;|\$localHostedMode = true;|g" \
             "/srv/rutorrent/conf/config.php"
-        mflibs::status::success "$(zen::i18n::translate "software.configured" "ruTorrent")"
+        mflibs::status::success "$(zen::i18n::translate "success.software.configure" "ruTorrent")"
         zen::software::rutorrent::plugins::resolve
         zen::software::rutorrent::fix::quota
     else
-        mflibs::status::info "$(zen::i18n::translate "messages.software.already_installed_by_others" "ruTorrent")"
+        mflibs::status::info "$(zen::i18n::translate "errors.common.already_installed_by_others" "ruTorrent")"
         zen::software::rutorrent::fix::quota
     fi
 }
@@ -48,7 +48,7 @@ zen::software::rutorrent::add() {
 # @exitcode 1 Failure due to plugin download or configuration errors.
 zen::software::rutorrent::plugins::resolve() {
     if ! $is_installed_by_others; then
-        mflibs::status::info "$(zen::i18n::translate "software.configuring" "ruTorrent plugins")"
+        mflibs::status::info "$(zen::i18n::translate "messages.software.configure" "ruTorrent plugins")"
         rm -rf "/srv/rutorrent/plugins/{filemanager, ratiocolor, geoip2, fileshare, pausewebui, filemanager, mobile, rutorrent-discord}"
         local plugins
         plugins=(
@@ -85,7 +85,7 @@ zen::software::rutorrent::plugins::resolve() {
         # configure spectrogram plugin
         sed -i "s/\$pathToExternals\['sox'\] = ''/\$pathToExternals\['sox'\] = '\/usr\/bin\/sox'/g" /srv/rutorrent/plugins/spectrogram/conf.php
     fi
-    mflibs::status::success "$(zen::i18n::translate "software.configured" "ruTorrent plugins")"
+    mflibs::status::success "$(zen::i18n::translate "success.software.configure" "ruTorrent plugins")"
 }
 
 # @function zen::software::rutorrent::fix::quota
@@ -96,7 +96,7 @@ zen::software::rutorrent::plugins::resolve() {
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to file access or copy errors.
 zen::software::rutorrent::fix::quota() {
-    mflibs::status::info "$(zen::i18n::translate "software.configuring" "quota")"
+    mflibs::status::info "$(zen::i18n::translate "messages.software.configure" "quota")"
     # fix the quota issue
     all_users=$(zen::database::query "SELECT username FROM users;")
     for user in $all_users; do
@@ -106,5 +106,5 @@ zen::software::rutorrent::fix::quota() {
             sed -i "s|{{USERNAME}}|${user}|g" "/srv/rutorrent/conf/users/${user}/config.php"
         fi
     done
-    mflibs::status::success "$(zen::i18n::translate "software.configured" "quota")"
+    mflibs::status::success "$(zen::i18n::translate "success.software.configure" "quota")"
 }
