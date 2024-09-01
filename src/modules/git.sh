@@ -31,7 +31,7 @@ zen::git::clone() {
     local repo_url
     repo_url="https://github.com/$repo_name"
     if [ -d "$target_dir" ]; then
-        mflibs::status::warn "$(zen::i18n::translate "errors.common.env_variable_missing" "$repo_url")"
+        mflibs::status::warn "$(zen::i18n::translate "errors.environment.env_variable_missing" "$repo_url")"
         return 0
     fi
 
@@ -44,7 +44,7 @@ zen::git::clone() {
     else
         recurse_submodules=""
     fi
-    mflibs::shell::text::white "$(zen::i18n::translate "messages.common.cloning_repository" "$repo_url")"
+    mflibs::shell::text::white "$(zen::i18n::translate "headers.git.clone_repo" "$repo_url")"
     if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules >/dev/null 2>&1"; then
         local username
         local group
@@ -63,10 +63,9 @@ zen::git::clone() {
         [[ $username != "root" && $target_dir != /root/* ]] && zen::permission::fix "$target_dir" "755" "644" "$username" "$group"
         [[ "$target_dir" == /opt/MediaEase* ]] && zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
     else
-        mflibs::status::error "$(zen::i18n::translate "errors.common.repository_clone" "$repo_url")"
-        return 1
+        mflibs::status::error "$(zen::i18n::translate "errors.git.clone_repo" "$repo_url")"
     fi
-    mflibs::shell::text::green "$(zen::i18n::translate "success.common.repository_cloned" "$repo_url")"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.git.clone_repo" "$repo_url")"
 }
 
 # @function zen::git::get_release
@@ -87,12 +86,12 @@ zen::git::get_release() {
     local is_prerelease="$3"
     local release_name="$4"
     local repo_url
-    mflibs::shell::text::white "$(zen::i18n::translate "messages.common.downloading_release" "$repo_name")"
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.git.download_release" "$repo_name")"
     repo_url="https://api.github.com/repos/$repo_name/releases"
     release_url="$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")"
     declare -g release_version
     release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
-    mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.common.release_found" "$repo_name"): $release_version")"
+    mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.git.found_release" "$repo_name"): $release_version")"
     [[ -d $target_dir ]] && rm -rf "$target_dir"
     mflibs::dir::mkcd "$target_dir"
     wget -q "$release_url"
@@ -110,7 +109,7 @@ zen::git::get_release() {
     else
         zen::permission::read_exec "$target_dir" "www-data" "www-data"
     fi
-    mflibs::shell::text::green "$(zen::i18n::translate "success.common.release_downloaded" "$repo_name")"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.git.download_release" "$repo_name")"
 }
 
 # @function zen::git::download_file
@@ -137,9 +136,9 @@ zen::git::download_file() {
 
     # Download the file
     if curl -o "$local_path" "$repo_url"; then
-        mflibs::status::success "$(zen::i18n::translate "success.common.file_downloaded" "$repo_url" "$local_path")"
+        mflibs::status::success "$(zen::i18n::translate "success.common.download_file" "$repo_url" "$local_path")"
     else
-        mflibs::status::error "$(zen::i18n::translate "errors.common.file_download" "$repo_url")"
+        mflibs::status::error "$(zen::i18n::translate "errors.common.download_file" "$repo_url")"
     fi
 }
 
@@ -161,7 +160,7 @@ zen::git::tree() {
 
     # Check if curl and jq are installed
     if ! command -v curl &>/dev/null || ! command -v jq &>/dev/null; then
-        mflibs::status::error "$(zen::i18n::translate "errors.common.required_tools_missing")"
+        mflibs::status::error "$(zen::i18n::translate "errors.common.missing_required_tools")"
     fi
 
     # Fetch and list the files
@@ -170,7 +169,7 @@ zen::git::tree() {
 
     # Check if response is empty or not a valid array
     if [ -z "$response" ] || ! echo "$response" | jq -e . >/dev/null 2>&1; then
-        mflibs::status::error "$(zen::i18n::translate "common.invalid_api_response" "$response")"
+        mflibs::status::error "$(zen::i18n::translate "errors.network.invalid_api_response" "$response")"
     fi
 
     echo "$response" | jq -r '.[] | "\(.type)\t\(.name)"' | while IFS=$'\t' read -r type name; do
