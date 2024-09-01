@@ -314,6 +314,11 @@ zen::validate::input() {
     ;;
   password | username)
     [[ ! $input =~ ['!@#$%^&*()_+=<>?[]|`"'] ]] && return 0
+    if [[ "$filter" == "username" && ${#input} -ge 3 ]]; then
+      return 0
+    elif [[ "$filter" == "password" && ${#input} -ge 6 ]]; then
+      return 0
+    fi
     ;;
   *)
     return 1
