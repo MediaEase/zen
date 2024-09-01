@@ -45,7 +45,7 @@ zen::software::sonarr4k::add() {
 zen::software::sonarr4k::config() {
 	local is_prerelease="$1"
 	declare -g url_base
-	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configuring_app" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
 	zen::software::autogen
 	url_base="/${user[username]}/${app_name}"
 	[[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
@@ -76,7 +76,7 @@ RCON
 	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
 	zen::permission::user_exec "/opt/${user[username]}/$app_name/Sonarr" "${user[username]}"
 	zen::proxy::generate "$app_name" "$default_port" "$url_base"
-	mflibs::shell::text::green "$(zen::i18n::translate "messages.software.configuring_app" "$app_name")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
 }
 
 # @function zen::software::sonarr4k::update
