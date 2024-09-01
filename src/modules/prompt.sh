@@ -25,22 +25,24 @@ zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
     prompt=$(
-      mflibs::shell::text::green::sl "[Y]"
-      mflibs::shell::text::white::sl " $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') "
-      mflibs::shell::text::red::sl "[N] "
-      mflibs::shell::text::white::sl "(default : "
+      mflibs::shell::text::cyan::sl " ➜ ["
       mflibs::shell::text::green::sl "Y"
-      mflibs::shell::text::white::sl " ): "
+      mflibs::shell::text::white::sl "] $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') ["
+      mflibs::shell::text::red::sl "N"
+      mflibs::shell::text::white::sl "] ($(zen::i18n::translate "prompts.common.default") : ["
+      mflibs::shell::text::green::sl "Y"
+      mflibs::shell::text::white::sl "]): "
     )
     default=Y
   elif [[ "${2:-}" = "N" ]]; then
     prompt=$(
-      mflibs::shell::text::green::sl "[Y]"
-      mflibs::shell::text::white::sl " $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') "
-      mflibs::shell::text::red::sl "[N] "
-      mflibs::shell::text::white::sl "(default : "
+      mflibs::shell::text::cyan::sl " ➜ ["
+      mflibs::shell::text::green::sl "Y"
+      mflibs::shell::text::white::sl "] $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') ["
       mflibs::shell::text::red::sl "N"
-      mflibs::shell::text::white::sl " ): "
+      mflibs::shell::text::white::sl "] ($(zen::i18n::translate "prompts.common.default") : ["
+      mflibs::shell::text::red::sl "N"
+      mflibs::shell::text::white::sl "]): "
     )
     default=N
   else
@@ -191,7 +193,7 @@ zen::prompt::input() {
         export "$output_var_name"="$reply"
         return 0
       else
-        mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
+        mflibs::shell::text::red "✗ $(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
       fi
     else
       export "$output_var_name"="$reply"
