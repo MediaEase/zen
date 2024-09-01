@@ -24,7 +24,7 @@ zen::common::environment::get::variable() {
 	if [[ -n "${!var_name}" ]]; then
 		echo "${!var_name}"
 	else
-		mflibs::status::error "$(zen::i18n::translate "errors.common.env_variable_missing" "$var_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.environment.env_variable_missing" "$var_name")"
 	fi
 }
 
@@ -74,7 +74,7 @@ zen::common::bashrc::append() {
 			fi
 		done
 	else
-		mflibs::status::error "$(zen::i18n::translate "errors.common.bashrc_missing" "$bashrc_file")"
+		mflibs::status::error "$(zen::i18n::translate "errors.filesystem.bashrc_missing" "$bashrc_file")"
 		return 1
 	fi
 }
@@ -175,16 +175,16 @@ zen::common::make::install() {
 	local make_install_args="$4"
 	local nproc_args
 	nproc_args="-j$(nproc)"
-	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$source_dir")"
+	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$source_dir")"
 	if mflibs::log "make $nproc_args $make_args"; then
 		[ -n "$install_dir" ] && make_install_args="DESTDIR=$install_dir $make_install_args"
 		if mflibs::log "make install $make_install_args"; then
-			mflibs::status::success "$(zen::i18n::translate "success..common.make_install" "$source_dir")"
+			mflibs::status::success "$(zen::i18n::translate "success.build.make_install" "$source_dir")"
 		else
-			mflibs::status::error "$(zen::i18n::translate "errors.common.make_install" "$source_dir")"
+			mflibs::status::error "$(zen::i18n::translate "errors.build.make_install" "$source_dir")"
 		fi
 	else
-		mflibs::status::error "$(zen::i18n::translate "errors.common.make" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.build.make" "$source_dir")"
 	fi
 }
 
@@ -210,17 +210,17 @@ zen::common::scons::install() {
 	local scons_install_args
 	local debug_flag
 	debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
-	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$source_dir")"
+	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$source_dir")"
 	if ! mflibs::log "scons config"; then
-		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_config" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.build.scons_config" "$source_dir")"
 	fi
 	if ! mflibs::log "scons DEBUG=$debug_flag"; then
-		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_build" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.build.scons_build" "$source_dir")"
 	fi
 
 	[ -n "$install_dir" ] && scons_install_args="--prefix=$install_dir"
 	if ! mflibs::log "scons $scons_install_args DEBUG=$debug_flag install"; then
-		mflibs::status::error "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
+		mflibs::status::error "$(zen::i18n::translate "errors.build.scons_install" "$source_dir")"
 	fi
-	mflibs::status::success "$(zen::i18n::translate "errors.common.scons_install" "$source_dir")"
+	mflibs::status::success "$(zen::i18n::translate "success.build.scons_install" "$source_dir")"
 }
