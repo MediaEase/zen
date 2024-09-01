@@ -26,13 +26,13 @@ zen::python::venv::create() {
 	local username="${user[username]}"
 
 	if [[ -z "$path" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_create_no_path")"
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.venv_create_no_path")"
 	fi
-	mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_required_dependencies" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
 
-	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$path")"
-	mflibs::log "uv venv" || mflibs::status::error "$(zen::i18n::translate "errors.python.venv_create")"
-	mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install" "$app_name")"
+	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$path")"
+	mflibs::log "uv venv" || mflibs::status::error "$(zen::i18n::translate "errors.virtualization.venv_create")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv" "$app_name")"
 }
 
 # @function zen::python::venv::build
@@ -55,49 +55,49 @@ zen::python::venv::build() {
 	local requirements_path="$path/requirements.txt"
 
 	if [[ -z "$path" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_remove")"
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.remove_venv")"
 	fi
 
 	# Activate the virtual environment
 	# shellcheck disable=SC1091
 	source "$path/venv/bin/activate"
-	mflibs::shell::text::green "$(zen::i18n::translate "messages.python.venv_install_activated")"
+	mflibs::shell::text::green "$(zen::i18n::translate "messages.virtualization.activate_venv")"
 	# Install Python dependencies from dependencies.yaml file
 	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
 	if [[ -z "$python_dependencies" ]]; then
 		deactivate
-		mflibs::status::error "$(zen::i18n::translate "errors.python.no_dependencies_found" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.virtualization.no_dependencies_found" "$app_name")"
 	fi
-	mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_required_dependencies" "$app_name")"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
 	local exit_status=0
 	IFS=' ' read -ra DEPS <<<"$python_dependencies"
 	for dependency in "${DEPS[@]}"; do
 		mflibs::log "uv pip install --quiet ${dependency}"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
-			mflibs::status::error "$(zen::i18n::translate "errors.python.dependency_install" "$dependency")"
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.dependency_install" "$dependency")"
 			exit_status=1
 		fi
 	done
-	mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install_requirements" "$app_name")"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv_requirements" "$app_name")"
 
 	# Install requirements from requirements.txt file
 	if [[ $exit_status -eq 0 && -f "$requirements_path" ]]; then
-		mflibs::shell::text::white "$(zen::i18n::translate "messages.python.venv_install_requirements" "$app_name")"
+		mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
 		mflibs::log "uv pip install --quiet --requirement $requirements_path"
 		local result=$?
 		if [[ "$result" -ne 0 ]]; then
-			mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove_requirements" "$software_name")"
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.remove_venv_requirements" "$software_name")"
 			exit_status=1
 		fi
-		mflibs::shell::text::green "$(zen::i18n::translate "success.python.venv_install_requirements" "$software_name")"
+		mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv_requirements" "$software_name")"
 	fi
 
 	# Deactivate the virtual environment
 	deactivate
 
 	if [[ $exit_status -eq 0 ]]; then
-		mflibs::status::success "$(zen::i18n::translate "success.python.venv_install" "$software_name")"
+		mflibs::status::success "$(zen::i18n::translate "success.virtualization.install_venv" "$software_name")"
 	fi
 
 	return $exit_status
@@ -117,17 +117,17 @@ zen::python::venv::build() {
 zen::python::venv::remove() {
 	local path="$1"
 	if [[ -z "$path" ]]; then
-		mflibs::shell::text::red "$(zen::i18n::translate "errors.python.venv_create_no_path")"
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.venv_create_no_path")"
 	fi
 
-	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "$path")"
+	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$path")"
 	# shellcheck disable=SC1091
 	source venv/bin/activate
 	if ! uv pip uninstall --requirement requirements.txt; then
-		mflibs::status::error "$(zen::i18n::translate "errors.python.venv_remove" "$app_name")"
+		mflibs::status::error "$(zen::i18n::translate "errors.virtualization.remove_venv" "$app_name")"
 	fi
-	cd .. >/dev/null || mflibs::status::error "$(zen::i18n::translate "errors.common.directory_change" "..")"
+	cd .. >/dev/null || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "..")"
 	rm -rf "$path"
 
-	mflibs::status::success "$(zen::i18n::translate "success.python.venv_remove" "$app_name")"
+	mflibs::status::success "$(zen::i18n::translate "success.virtualization.remove_venv" "$app_name")"
 }
