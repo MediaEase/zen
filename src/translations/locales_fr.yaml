@@ -58,7 +58,7 @@ errors:
     create_partitions: "Les partitions n'ont pas été créées. Aucune modification n'a été effectuée."
     create_subvolume: "Erreur lors de la création du sous-volume."
     create_symlink: "Échec de la création du lien symbolique."
-    directory_change: "Échec du changement de répertoire {arg0}."
+    change_directory: "Échec du changement de répertoire {arg0}."
     disk_already_mounted: "Le disque {arg0} est déjà monté sur {arg1}... Passage à l'étape suivante..."
     disk_creation: "Une erreur s'est produite lors de la création du disque avec mdadm... Arrêt..."
     disk_created_but_not_mounted: "Le disque {arg0} a été créé mais n'a pas été monté."
@@ -92,7 +92,7 @@ errors:
     key_not_decodable: "Impossible de décoder la clé."
     key_not_revealable: "Impossible de révéler la clé."
     no_string_to_encode: "Aucune chaîne fournie pour le codage."
-    ssh_configure: "Échec de la sécurisation de SSH."
+    configure_ssh: "Échec de la sécurisation de SSH."
   service:
     already_running: "Le service {arg0} est déjà en cours d'exécution."
     disable: "Échec de la désactivation du service {arg0}."
@@ -200,10 +200,10 @@ success:
     metapackage_generate: "Méta-paquet généré."
     metapackage_install: "Méta-paquet installé."
     configure_sendmail: "Sendmail configuré."
-    unnecessary_packages_removed: "Paquets inutiles supprimés."
+    remove_unnecessary_packages: "Paquets inutiles supprimés."
     unpack_deb_file: "Fichier DEB décompressé."
   environment:
-    bashrc_configured: "Bashrc configuré."
+    configure_bashrc: "Bashrc configuré."
     install_composer_dependencies: "HarmonyUI prêt."
   filesystem:
     disk_mount: "Disque {arg0} monté sur {arg1}."
@@ -221,7 +221,7 @@ success:
   security:
     create_vault: "Coffre créé."
     init_vault: "Coffre initialisé."
-    ssh_configure: "SSH sécurisé."
+    configure_ssh: "SSH sécurisé."
     store_password: "Mot de passe stocké avec succès."
     store_salt: "Sel utilisateur stocké."
   service:
@@ -272,7 +272,7 @@ headers:
   git:
     clone_repo: "Clonage du dépôt..."
   security:
-    ssh_configure: "Sécurisation de SSH..."
+    configure_ssh: "Sécurisation de SSH..."
   software:
     add: "Détendez-vous, nous nous occupons de l'installation et de la configuration de {arg0}."
     backup: "Pas de soucis, nous créons une sauvegarde de {arg0} pour vous."

@@ -58,7 +58,7 @@ errors:
     create_partitions: "Partitions not created. No changes have been made."
     create_subvolume: "Error creating subvolume."
     create_symlink: "Failed to create symlink."
-    directory_change: "Failed to change directory {arg0}."
+    change_directory: "Failed to change directory {arg0}."
     disk_already_mounted: "Disk {arg0} is already mounted to {arg1}... Skipping..."
     disk_creation: "mdadm has encountered an error while creating the disk... Exiting..."
     disk_created_but_not_mounted: "Disk {arg0} created but not mounted."
@@ -69,6 +69,7 @@ errors:
     filesystem_type_invalid: "Invalid filesystem type: {arg0}."
     insufficient_disks_for_raid: "Not enough disks provided for RAID{arg0}. Disks provided: {arg1} - Disks required: {arg2}."
     move: "Failed to move {arg0} to {arg1}."
+    sed: "Failed to replace {arg0} with {arg1} in {arg2}."
     raid_aborted: "RAID creation aborted."
     raid_level_invalid: "Invalid RAID level: {arg0}."
     raid_not_possible: "No RAID configuration is possible with {arg1} disks."
@@ -92,7 +93,7 @@ errors:
     key_not_decodable: "Unable to decode key."
     key_not_revealable: "Unable to reveal key."
     no_string_to_encode: "No string provided for encoding."
-    ssh_configure: "Failed to secure SSH."
+    configure_ssh: "Failed to secure SSH."
   service:
     already_running: "Service {arg0} is already running."
     disable: "Failed to disable {arg0} service."
@@ -200,10 +201,10 @@ success:
     metapackage_generate: "Metapackage generated."
     metapackage_install: "Metapackage installed."
     configure_sendmail: "Sendmail configured."
-    unnecessary_packages_removed: "Unnecessary packages removed."
+    remove_unnecessary_packages: "Unnecessary packages removed."
     unpack_deb_file: "DEB file unpacked."
   environment:
-    bashrc_configured: "Bashrc configured."
+    configure_bashrc: "Bashrc configured."
     install_composer_dependencies: "HarmonyUI ready."
   filesystem:
     disk_mount: "Disk {arg0} mounted to {arg1}."
@@ -221,7 +222,7 @@ success:
   security:
     create_vault: "Vault created."
     init_vault: "Vault initialized."
-    ssh_configure: "SSH secured."
+    configure_ssh: "SSH secured."
     store_password: "Password stored successfully."
     store_salt: "User salt stored."
   service:
@@ -272,7 +273,7 @@ headers:
   git:
     clone_repo: "Cloning repository..."
   security:
-    ssh_configure: "Securing SSH..."
+    configure_ssh: "Securing SSH..."
   software:
     add: "Just relax, let us handle the installation and setup of {arg0}."
     backup: "No worries, we're creating a backup of {arg0} for you."

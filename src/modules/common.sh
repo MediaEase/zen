@@ -175,7 +175,7 @@ zen::common::make::install() {
 	local make_install_args="$4"
 	local nproc_args
 	nproc_args="-j$(nproc)"
-	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$source_dir")"
+	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$source_dir")"
 	if mflibs::log "make $nproc_args $make_args"; then
 		[ -n "$install_dir" ] && make_install_args="DESTDIR=$install_dir $make_install_args"
 		if mflibs::log "make install $make_install_args"; then
@@ -210,7 +210,7 @@ zen::common::scons::install() {
 	local scons_install_args
 	local debug_flag
 	debug_flag=$([[ "$debug_build" == "true" ]] && echo "1" || echo "0")
-	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$source_dir")"
+	cd "$source_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$source_dir")"
 	if ! mflibs::log "scons config"; then
 		mflibs::status::error "$(zen::i18n::translate "errors.build.scons_config" "$source_dir")"
 	fi
