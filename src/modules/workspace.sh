@@ -8,7 +8,7 @@
 # @copyright Copyright (C) 2024, Thomas Chauveau
 # All rights reserved.
 
-# @function zen::python::venv::create
+# @function zen::workspace::venv::create
 # Creates a Python virtual environment at the specified path.
 # @description This function creates a Python virtual environment in a given filesystem path.
 # It ensures that the path is valid and then proceeds to create the virtual environment under the context of a specified user.
@@ -21,7 +21,7 @@
 # @important The virtual environment is created under the specified user context.
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable is defined in the main script
-zen::python::venv::create() {
+zen::workspace::venv::create() {
 	local path="$1"
 	local username="${user[username]}"
 
@@ -30,12 +30,12 @@ zen::python::venv::create() {
 	fi
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
 
-	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$path")"
+	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$path")"
 	mflibs::log "uv venv" || mflibs::status::error "$(zen::i18n::translate "errors.virtualization.venv_create")"
 	mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv" "$app_name")"
 }
 
-# @function zen::python::venv::build
+# @function zen::workspace::venv::build
 # Installs Python packages in a virtual environment from a requirements file.
 # @description This function activates a specified Python virtual environment and installs packages.
 # It reads a requirements file and optional pre-installed packages, installing them as required.
@@ -48,7 +48,7 @@ zen::python::venv::create() {
 # @exitcode 0 Success in installing packages.
 # @exitcode 1 Failure due to missing path or installation error.
 # @note Ensure that the path and requirements file are correct to avoid installation errors.
-zen::python::venv::build() {
+zen::workspace::venv::build() {
 	local path="$1"
 	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
 	local python_dependencies
@@ -103,7 +103,7 @@ zen::python::venv::build() {
 	return $exit_status
 }
 
-# @function zen::python::venv::remove
+# @function zen::workspace::venv::remove
 # Removes a Python virtual environment.
 # @description This function removes an existing Python virtual environment from the specified filesystem path.
 # It ensures that the path is valid and performs the removal under the context of a specified user.
@@ -114,19 +114,19 @@ zen::python::venv::build() {
 # @exitcode 0 Success in removing the virtual environment.
 # @exitcode 1 Failure due to missing path or directory change failure.
 # @note Make sure to backup any important data before removing the virtual environment.
-zen::python::venv::remove() {
+zen::workspace::venv::remove() {
 	local path="$1"
 	if [[ -z "$path" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.venv_create_no_path")"
 	fi
 
-	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "$path")"
+	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$path")"
 	# shellcheck disable=SC1091
 	source venv/bin/activate
 	if ! uv pip uninstall --requirement requirements.txt; then
 		mflibs::status::error "$(zen::i18n::translate "errors.virtualization.remove_venv" "$app_name")"
 	fi
-	cd .. >/dev/null || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.directory_change" "..")"
+	cd .. >/dev/null || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "..")"
 	rm -rf "$path"
 
 	mflibs::status::success "$(zen::i18n::translate "success.virtualization.remove_venv" "$app_name")"
