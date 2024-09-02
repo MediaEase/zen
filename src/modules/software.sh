@@ -446,7 +446,7 @@ arguments:
     - ${selected_autogen_keys_yaml[@]}
 EOL
 	convert -background none -resize 128x128 "/opt/MediaEase/MediaEase/zen/src/extras/templates/app_logo.png" "$software_dir/$software_name_lowered.png"
-	cp -pR /opt/MediaEase/MediaEase/zen/src/extras/templates/app_script.tpl "$software_dir/$software_name_lowered"
+	mflibs::file::copy /opt/MediaEase/MediaEase/zen/src/extras/templates/app_script.tpl "$software_dir/$software_name_lowered"
 	sed -i "s/{{ SOFTWARE_NAME }}/$software_name_sanitized/g; s/{{ SOFTWARE_NAME_LOWERED }}/$software_name_lowered/g" "$software_dir/$software_name_lowered"
 	declare -A translation_files
 	for file in /opt/MediaEase/MediaEase/HarmonyUI/translations/messages.*.yaml; do

@@ -74,8 +74,8 @@ zen::software::rutorrent::plugins::resolve() {
             zen::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name" "main"
         done
         # configure rutorrent plugins
-        cp -pR "/srv/rutorrent/plugins/diskspace/action.php" "/srv/rutorrent/plugins/diskspace/action.php.bak"
-        cp -pR "/opt/MediaEase/zen/src/software/official/rutorrent/diskspace-plugin/action.tpl" "/srv/rutorrent/plugins/diskspace/action.php"
+        mflibs::file::copy "/srv/rutorrent/plugins/diskspace/action.php" "/srv/rutorrent/plugins/diskspace/action.php.bak"
+        mflibs::file::copy "/opt/MediaEase/zen/src/software/official/rutorrent/diskspace-plugin/action.tpl" "/srv/rutorrent/plugins/diskspace/action.php"
         # configure ratio color plugin
         sed -i "s/changeWhat = \"cell-background\";/changeWhat = \"font\";/g" /srv/rutorrent/plugins/ratiocolor/init.js
         # configure create plugin
@@ -102,7 +102,7 @@ zen::software::rutorrent::fix::quota() {
     for user in $all_users; do
         if [[ ! -f /srv/rutorrent/conf/users/${user}/config.php ]]; then
             mkdir -p "/srv/rutorrent/conf/users/${user}/"
-            cp -pR "/opt/MediaEase/zen/src/software/official/rutorrent/multi-user-fix/config.php" "/srv/rutorrent/conf/users/${user}/config.php"
+            mflibs::file::copy "/opt/MediaEase/zen/src/software/official/rutorrent/multi-user-fix/config.php" "/srv/rutorrent/conf/users/${user}/config.php"
             sed -i "s|{{USERNAME}}|${user}|g" "/srv/rutorrent/conf/users/${user}/config.php"
         fi
     done

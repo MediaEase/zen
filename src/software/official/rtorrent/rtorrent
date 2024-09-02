@@ -61,8 +61,8 @@ zen::software::rtorrent::config() {
     mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
     zen::software::autogen
     mkdir -p "/home/${user[username]}/.config/${app_name}"
-    cp -pR "/opt/MediaEase/zen/src/software/official/rtorrent/.rtorrent.rc.tpl" "/home/${user[username]}/.config/${app_name}/.rtorrent.rc"
-    cp -pR "/opt/MediaEase/zen/src/software/official/rtorrent/.rtorrent.rc.tpl" "/home/${user[username]}/.rtorrent.rc"
+    mflibs::file::copy "/opt/MediaEase/zen/src/software/official/rtorrent/.rtorrent.rc.tpl" "/home/${user[username]}/.config/${app_name}/.rtorrent.rc"
+    mflibs::file::copy "/opt/MediaEase/zen/src/software/official/rtorrent/.rtorrent.rc.tpl" "/home/${user[username]}/.rtorrent.rc"
     # configure the rtorrent.rc file
     sed -i -e "s|{{USERNAME}}|${user[username]}|g" \
         -e "s|{{PORT_RANGE}}|${port_range}|g" \

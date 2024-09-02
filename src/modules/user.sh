@@ -45,8 +45,8 @@ zen::user::create() {
 	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}" /home/"${username}"/bin
 	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
 	cd /home/"${username}" && {
-		cp -pR "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.copy" "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "/home/${username}/bin/dirsize")"
-		cp -pR "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.copy" "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}")"
+		mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize"
+		mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}"
 		zen::permission::fix "/home/${username}" "644" "755" "${username}" "${username}"
 		zen::permission::fix "/opt/${username}" "644" "755" "${username}" "${username}"
 		[[ ! -x "/home/${username}/bin/dirsize" ]] && chmod +x "/home/${username}/bin/dirsize"
