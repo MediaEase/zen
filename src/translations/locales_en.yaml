@@ -53,7 +53,6 @@ errors:
     bashrc_missing: "Bashrc file not found."
     chmod: "Failed to change permissions of {arg0}."
     chown: "Failed to change ownership of {arg0}."
-    copy: "Failed to copy {arg0} to {arg1}."
     create_mount_point: "Failed to create mount point."
     create_partitions: "Partitions not created. No changes have been made."
     create_subvolume: "Error creating subvolume."

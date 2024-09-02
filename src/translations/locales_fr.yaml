@@ -53,7 +53,6 @@ errors:
     bashrc_missing: "Fichier Bashrc introuvable."
     chmod: "Échec du changement de permissions de {arg0} vers {arg1}."
     chown: "Échec du changement de propriétaire de {arg0} vers {arg1}."
-    copy: "Échec de la copie de {arg0} vers {arg1}."
     create_mount_point: "Échec de la création du point de montage."
     create_partitions: "Les partitions n'ont pas été créées. Aucune modification n'a été effectuée."
     create_subvolume: "Erreur lors de la création du sous-volume."
