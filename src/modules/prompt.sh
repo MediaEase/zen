@@ -12,12 +12,12 @@
 # @function zen::prompt::yn
 # @description: prompt for yes or no
 # @example:
-#   zen::prompt::yn "hi" "Y"
+#   zen::prompt::yn "➜ Are you okay?" "Y"
 # @example:
-#   zen::prompt::yn "hi" "N"
+#   zen::prompt::yn "➜ Are you okay?" "N"
 # @arg $1: string
 # @arg $2: string
-# @stdout: "hi ➜ [Y] or [N] (default : Y):" or "hi ➜ [Y] or [N] (default : N):"
+# @stdout: "➜ hi [Y] or [N] (default : Y):" or "➜ hi [Y] or [N] (default : N):"
 # @exitcode 0: if yes
 # @exitcode 1: if no
 # @tip Use this function to prompt the user for confirmation before performing an action.
@@ -25,24 +25,22 @@ zen::prompt::yn() {
   declare prompt default reply
   if [[ "${2:-}" = "Y" ]]; then
     prompt=$(
-      mflibs::shell::text::cyan::sl " ➜ ["
-      mflibs::shell::text::green::sl "Y"
-      mflibs::shell::text::white::sl "] $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') ["
-      mflibs::shell::text::red::sl "N"
-      mflibs::shell::text::white::sl "] ($(zen::i18n::translate "prompts.common.default") : ["
-      mflibs::shell::text::green::sl "Y"
-      mflibs::shell::text::white::sl "]): "
+      mflibs::shell::text::green::sl " [Y] "
+      mflibs::shell::text::cyan::sl "$(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]')"
+      mflibs::shell::text::red::sl "[N]"
+      mflibs::shell::text::cyan::sl "($(zen::i18n::translate "prompts.common.default") : "
+      mflibs::shell::text::green::sl "[Y]"
+      mflibs::shell::text::cyan::sl "): \n"
     )
     default=Y
   elif [[ "${2:-}" = "N" ]]; then
     prompt=$(
-      mflibs::shell::text::cyan::sl " ➜ ["
-      mflibs::shell::text::green::sl "Y"
-      mflibs::shell::text::white::sl "] $(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]') ["
-      mflibs::shell::text::red::sl "N"
-      mflibs::shell::text::white::sl "] ($(zen::i18n::translate "prompts.common.default") : ["
-      mflibs::shell::text::red::sl "N"
-      mflibs::shell::text::white::sl "]): "
+      mflibs::shell::text::green::sl " [Y] "
+      mflibs::shell::text::cyan::sl "$(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]')"
+      mflibs::shell::text::red::sl "[N]"
+      mflibs::shell::text::cyan::sl "($(zen::i18n::translate "prompts.common.default") : "
+      mflibs::shell::text::red::sl "[N]"
+      mflibs::shell::text::cyan::sl "): \n"
     )
     default=N
   else
