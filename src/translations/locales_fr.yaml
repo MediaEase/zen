@@ -194,6 +194,7 @@ success:
     apt_source_remove: "Source APT pour {arg0} supprimée."
     apt_update: "Système mis à jour."
     dependencies_install: "Dépendances installées."
+    dependency_install: "{arg0} installé."
     external_dependencies_install: "{arg0} installé."
     metapackage_build: "Méta-paquet construit."
     metapackage_generate: "Méta-paquet généré."
@@ -251,15 +252,16 @@ headers:
     create: "Création de la sauvegarde..."
   dependency:
     apt_add_sources: "Ajout des sources..."
+    apt_update: "Mise à jour du système..."
     external_dependencies_install: "Installation de {arg0} à partir d'une source personnalisée..."
     dependencies_install: "Installation des dépendances..."
+    dependency_install: "Installation de {arg0}..."
     dpkg_locked_info: "Résolution du problème dpkg en cours..."
     metapackage_build: "Construction du méta-paquet..."
     metapackage_generate: "Génération du méta-paquet..."
     metapackage_install: "Installation du méta-paquet..."
     remove_unnecessary_packages: "Suppression des paquets inutiles..."
     configure_sendmail: "Configuration de sendmail... Cela peut prendre un certain temps."
-    apt_update: "Mise à jour du système..."
   environment:
     install_composer_dependencies: "Installation des dépendances Composer pour HarmonyUI..."
   filesystem:

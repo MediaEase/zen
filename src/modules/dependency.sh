@@ -116,7 +116,7 @@ zen::dependency::apt::install::inline() {
 	if [[ ${#failed_deps[@]} -gt 0 ]]; then
 		mflibs::status::warn "$(zen::i18n::translate "errors.dependency.dependencies_install" "${failed_deps[*]}")"
 	fi
-	mflibs::status::success "$(zen::i18n::translate "success.dependency.dependencies_installed")"
+	mflibs::status::success "$(zen::i18n::translate "success.dependency.dependencies_install")"
 }
 
 # @function zen::dependency::apt::get_string
