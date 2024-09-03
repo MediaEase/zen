@@ -149,7 +149,7 @@ messages:
   security:
     create_vault: "Creating vault..."
     last_time: "This is the last time you will see the user salt. Please save it somewhere secure."
-    store_password: "Storing password..."
+    store_password: "Storing password in the vault..."
     user_salt: "User salt."
   service:
     disable: "Disabling {arg0} service..."
@@ -223,12 +223,14 @@ success:
     create_vault: "Vault created."
     init_vault: "Vault initialized."
     configure_ssh: "SSH secured."
-    store_password: "Password stored successfully."
+    store_password: "Password stored successfully in the vault."
     store_salt: "User salt stored."
   service:
     disable: "Service {arg0} disabled."
     enable: "Service {arg0} enabled."
     generate_systemd: "Service file created."
+    reload: "Service {arg0} reloaded."
+    restart: "Service {arg0} restarted."
     run: "Service {arg0} is running."
     start: "Service {arg0} started."
     stop: "Service {arg0} stopped."
@@ -255,7 +257,7 @@ headers:
     apt_add_sources: "Adding sources..."
     external_dependencies_install: "Installing {arg0} from custom source..."
     dependencies_install: "Installing dependencies..."
-    dependency_install: "Installing dependency {arg0}..."
+    dependency_install: "Installing {arg0}..."
     dpkg_locked_info: "Resolving the issue..."
     metapackage_build: "Building metapackage..."
     metapackage_generate: "Generating metapackage..."
@@ -295,6 +297,8 @@ footers:
     remove: "{arg0} has been removed from your system."
     reset: "Reset complete. {arg0} has been reset to its default settings."
     update: "Update complete. {arg0} is now up to date."
+  common:
+    thank_you: "Thank you for using MediaEase. I hope you will enjoy using it."
 
 links:
   software:
@@ -309,9 +313,9 @@ prompts:
     choice_prompt: "Your choice."
     continue_label: "Continue."
     invalid_input: "Invalid input. Please try again."
-    or_label: "or."
+    or_label: "or"
     reboot_countdown: "Rebooting in {arg0} seconds..."
-    reboot_prompt: "System reboot required. Reboot now?."
+    reboot_prompt: "System reboot required. Reboot now?"
     default: "Default"
   filesystem:
     select_raid_level: "Choose from possible RAID levels: {arg0}."

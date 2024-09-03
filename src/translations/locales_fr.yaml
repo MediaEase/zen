@@ -146,9 +146,9 @@ messages:
   network:
     generate: "Génération du proxy..."
   security:
-    create_vault: "Création du coffre..."
+    create_vault: "Création du coffre fort..."
     last_time: "C'est la dernière fois que vous verrez le sel utilisateur. Veuillez le sauvegarder quelque part en sécurité."
-    store_password: "Stockage du mot de passe..."
+    store_password: "Stockage du mot de passe dans le coffre fort..."
     user_salt: "Sel utilisateur."
   service:
     disable: "Désactivation du service {arg0}..."
@@ -219,15 +219,17 @@ success:
     dashboard_reachable: "Tableau de bord accessible."
     generate: "Proxy généré."
   security:
-    create_vault: "Coffre créé."
-    init_vault: "Coffre initialisé."
+    create_vault: "Coffre fort créé."
+    init_vault: "Coffre fort initialisé."
     configure_ssh: "SSH sécurisé."
-    store_password: "Mot de passe stocké avec succès."
+    store_password: "Mot de passe stocké dans le coffre fort avec succès."
     store_salt: "Sel utilisateur stocké."
   service:
     disable: "Service {arg0} désactivé."
     enable: "Service {arg0} activé."
     generate_systemd: "Fichier de service créé."
+    reload: "Service {arg0} rechargé."
+    restart: "Service {arg0} redémarré."
     run: "Service {arg0} en cours d'exécution."
     start: "Service {arg0} démarré."
     stop: "Service {arg0} arrêté."
@@ -301,6 +303,8 @@ links:
     documentation: "Documentation : {arg0}."
     homepage: "Page d'accueil : {arg0}."
     mediaease_docs: "Documentation MediaEase : {arg0}"
+  common:
+    thank_you: "Merci d'utiliser MediaEase. J'espére que vous apprécierez votre expérience."
 
 prompts:
   common:
@@ -308,10 +312,10 @@ prompts:
     choice_prompt: "Votre choix."
     continue_label: "Continuer."
     invalid_input: "Entrée invalide. Veuillez réessayer."
-    or_label: "ou."
+    or_label: "ou"
     reboot_countdown: "Redémarrage dans {arg0} secondes..."
-    reboot_prompt: "Redémarrage du système requis. Redémarrer maintenant ?."
-    default: "Par défaut."
+    reboot_prompt: "Redémarrage du système requis. Redémarrer maintenant ?"
+    default: "Par défaut"
   filesystem:
     select_raid_level: "Choisissez parmi les niveaux de RAID possibles : {arg0}."
   software:
