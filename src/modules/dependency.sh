@@ -91,7 +91,7 @@ zen::dependency::apt::install::inline() {
 			if [[ $verbose -eq 1 ]]; then
 				mflibs::shell::text::white "Installing ${dep}..."
 				if apt-get install "${cmd_options[@]}" "${dep}"; then
-					mflibs::shell::text::green "$(zen::i18n::translate "messages.dependency.dependency_install" "${dep}")"
+					mflibs::shell::text::green "$(zen::i18n::translate "headers.dependency.dependency_install" "${dep}")"
 					((installed_count++))
 				else
 					mflibs::shell::text::red "Failed to install ${dep}."

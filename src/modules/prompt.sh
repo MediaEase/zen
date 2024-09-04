@@ -27,20 +27,20 @@ zen::prompt::yn() {
     prompt=$(
       mflibs::shell::text::green::sl " [Y] "
       mflibs::shell::text::cyan::sl "$(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]')"
-      mflibs::shell::text::red::sl "[N]"
+      mflibs::shell::text::red::sl " [N] "
       mflibs::shell::text::cyan::sl "($(zen::i18n::translate "prompts.common.default") : "
       mflibs::shell::text::green::sl "[Y]"
-      mflibs::shell::text::cyan::sl "): \n"
+      mflibs::shell::text::cyan::sl "): "
     )
     default=Y
   elif [[ "${2:-}" = "N" ]]; then
     prompt=$(
       mflibs::shell::text::green::sl " [Y] "
       mflibs::shell::text::cyan::sl "$(zen::i18n::translate "prompts.common.or_label" | tr '[:upper:]' '[:lower:]')"
-      mflibs::shell::text::red::sl "[N]"
+      mflibs::shell::text::red::sl " [N]"
       mflibs::shell::text::cyan::sl "($(zen::i18n::translate "prompts.common.default") : "
       mflibs::shell::text::red::sl "[N]"
-      mflibs::shell::text::cyan::sl "): \n"
+      mflibs::shell::text::cyan::sl "): "
     )
     default=N
   else
