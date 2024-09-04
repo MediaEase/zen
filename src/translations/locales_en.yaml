@@ -132,6 +132,7 @@ messages:
     add_source_count: "{arg0}/{arg1} sources added."
     install_count: "Number of dependencies installed: {arg0}."
     unpack_deb_file: "Unpacking DEB file..."
+    skip_fake_deb: "Skipping locking dependencies."
   environment:
     configure_bashrc: "Configuring bashrc..."
     configure_mediaease_environment: "Configuring MediaEase environment..."
@@ -156,6 +157,8 @@ messages:
     enable: "Enabling {arg0} service..."
     entry_exists: "Service entry {arg0} already exists."
     generate: "Generating service..."
+    reload: "Reloading {arg0} service..."
+    restart: "Restarting {arg0} service..."
     start: "Starting {arg0} service..."
     stop: "Stopping {arg0} service..."
     validate: "Validating {arg0} service..."
