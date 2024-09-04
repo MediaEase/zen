@@ -89,12 +89,12 @@ zen::dependency::apt::install::inline() {
 		if [[ $(dpkg-query -W -f='${Status}' "${dep}" 2>/dev/null | grep -c "ok installed") -ne 1 ]]; then
 			# shellcheck disable=SC2154
 			if [[ $verbose -eq 1 ]]; then
-				mflibs::shell::text::white "Installing ${dep}..."
+				mflibs::shell::text::white "$(zen::i18n::translate "headers.dependency.dependency_install" "${dep}")"
 				if apt-get install "${cmd_options[@]}" "${dep}"; then
-					mflibs::shell::text::green "$(zen::i18n::translate "headers.dependency.dependency_install" "${dep}")"
+					mflibs::shell::text::green "$(zen::i18n::translate "success.dependency.dependency_install" "${dep}")"
 					((installed_count++))
 				else
-					mflibs::shell::text::red "Failed to install ${dep}."
+					mflibs::shell::text::red "$(zen::i18n::translate "errors.dependency.dependency_install" "${dep}")"
 					failed_deps+=("${dep}")
 				fi
 			else
