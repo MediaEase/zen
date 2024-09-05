@@ -132,7 +132,7 @@ messages:
     add_source_count: "{arg0}/{arg1} sources added."
     install_count: "Number of dependencies installed: {arg0}."
     unpack_deb_file: "Unpacking DEB file..."
-    skip_fake_deb: "Skipping locking dependencies."
+    skip_fake_deb: "Dependency locking is disabled. The metapackage will not be created."
   environment:
     configure_bashrc: "Configuring bashrc..."
     configure_mediaease_environment: "Configuring MediaEase environment..."
@@ -207,8 +207,11 @@ success:
     remove_unnecessary_packages: "Unnecessary packages removed."
     unpack_deb_file: "DEB file unpacked."
   environment:
+    add_apps: "Apps added."
+    build_harmonyui: "HarmonyUI ready."
     configure_bashrc: "Bashrc configured."
-    install_composer_dependencies: "HarmonyUI ready."
+    generate_env_file: "Environment file generated."
+    populate_database: "Database ready."
   filesystem:
     disk_mount: "Disk {arg0} mounted to {arg1}."
     disk_partition: "Disk {arg0} was partitioned into {arg1} filesystem."
@@ -269,7 +272,11 @@ headers:
     configure_sendmail: "Configuring sendmail... This may take a while."
     apt_update: "Updating system..."
   environment:
-    install_composer_dependencies: "Installing Composer dependencies for HarmonyUI..."
+    add_apps: "Adding apps..."
+    build_harmonyui: "Configuring HarmonyUI..."
+    generate_env_file: "Generating environment file..."
+    install_harmonyui_dependencies: "Installing HarmonyUI dependencies..."
+    populate_database: "Populating database..."
   filesystem:
     create_disk: "Creating RAID{arg0} ({arg1}) disk..."
     format_disk: "Partitioning {arg0} to {arg1} filesystem..."

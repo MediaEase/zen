@@ -132,7 +132,7 @@ messages:
     add_source_count: "{arg0}/{arg1} sources ajoutées."
     install_count: "Nombre de dépendances installées : {arg0}."
     unpack_deb_file: "Décompression du fichier DEB..."
-    skip_fake_deb: "Le verrouillage de dépendances est désactivé."
+    skip_fake_deb: "Le verrouillage de dépendances est désactivé. Le méta-packet ne sera pas créé."
   environment:
     configure_bashrc: "Configuration de bashrc..."
     configure_mediaease_environment: "Configuration de l'environnement MediaEase..."
@@ -207,8 +207,12 @@ success:
     remove_unnecessary_packages: "Paquets inutiles supprimés."
     unpack_deb_file: "Fichier DEB décompressé."
   environment:
+    add_apps: "Applications ajoutées."
+    build_harmonyui: "HarmonyUI prêt."
     configure_bashrc: "Bashrc configuré."
-    install_composer_dependencies: "HarmonyUI prêt."
+    generate_env_file: "Fichier d'environnement généré."
+    install_harmonyui_dependencies: "Dépendances HarmonyUI installées."
+    populate_database: "Base de données prête."
   filesystem:
     disk_mount: "Disque {arg0} monté sur {arg1}."
     disk_partition: "Le disque {arg0} a été partitionné en système de fichiers {arg1}."
@@ -269,7 +273,11 @@ headers:
     remove_unnecessary_packages: "Suppression des paquets inutiles..."
     configure_sendmail: "Configuration de sendmail... Cela peut prendre un certain temps."
   environment:
-    install_composer_dependencies: "Installation des dépendances Composer pour HarmonyUI..."
+    add_apps: "Ajout des applications..."
+    build_harmonyui: "Configuration d'HarmonyUI..."
+    generate_env_file: "Génération du fichier d'environnement..."
+    install_harmonyui_dependencies: "Installation des dépendances HarmonyUI..."
+    populate_database: "Remplissage de la base de données..."
   filesystem:
     create_disk: "Création du disque RAID{arg0} ({arg1})..."
     format_disk: "Partitionnement de {arg0} au système de fichiers {arg1}..."
