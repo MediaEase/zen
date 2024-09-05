@@ -34,16 +34,18 @@ zen::proxy::generate() {
 		caddy_file="/etc/caddy/softwares/$app_name.caddy"
 	fi
 	[[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
-	# Write configuration to the file
 	cat <<EOF >"${caddy_file}"
-	route ${url_base}* {
-		reverse_proxy 127.0.0.1:$port {
+	route {
+		reverse_proxy ${url_base}* 127.0.0.1:$port {
 			header_up -Accept-Encoding
 			header_down -x-webkit-csp
 			header_down -content-security-policy
 		}
 	}
 EOF
+	mflibs::log "/usr/bin/caddy fmt --overwrite $caddy_file"
+	mflibs::log "/usr/bin/caddy validate -c /etc/caddy/Caddyfile"
+	mflibs::log "/usr/bin/caddy reload -c /etc/caddy/Caddyfile"
 }
 
 # @function zen::proxy::add_directive
