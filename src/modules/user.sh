@@ -170,7 +170,6 @@ zen::user::load() {
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.not_found" "${username}")"
 		exit 1
 	fi
-	mflibs::shell::text::green "$(zen::i18n::translate "messages.user.found" "${username}")"
 	return 0
 }
 

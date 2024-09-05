@@ -175,7 +175,6 @@ messages:
     add_to_group: "Adding user {arg0} to group {arg1}..."
     ban: "Banning user {arg0}..."
     create_base_groups: "Creating base groups..."
-    found: "User found: {arg0}."
     is_admin: "The user is an administrator."
     is_not_admin: "The user is not an administrator."
     password: "Password."
