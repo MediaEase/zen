@@ -103,10 +103,10 @@ zen::dependency::apt::install::inline() {
 					failed_deps+=("${dep}")
 				else
 					((installed_count++))
-					printf "%s %s %s" "$(tput setaf 6)" "${dep}" "$(tput sgr0)"
+					printf "%s %s %s" "$(tput setaf 4)" "${dep}" "$(tput sgr0)"
 				fi
 				if [[ $i -ne $last_index ]]; then
-					printf "%s | %s" "$(tput setaf 7)" "$(tput sgr0)"
+					printf "%s|%s" "$(tput setaf 7)" "$(tput sgr0)"
 				fi
 			fi
 		fi
