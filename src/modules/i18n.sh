@@ -44,7 +44,6 @@ zen::i18n::load_locale_file() {
 #      zen::i18n::generate::system_locale "fr"
 zen::i18n::generate::system_locale() {
 	local lang="$1"
-	lang="fr"
 	declare -A system_lang=(
 		["en"]="en_US.UTF-8"
 		["fr"]="fr_FR.UTF-8"
