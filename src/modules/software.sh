@@ -183,7 +183,7 @@ zen::software::infobox() {
 			homepage_link=$(zen::i18n::translate "links.software.homepage" "$hlink")
 			github_link=$(zen::i18n::translate "links.software.github" "$glink")
 			# shellcheck disable=SC2154
-			access_link="$root_url/$url_base"
+			access_link=$(zen::i18n::translate "links.software.github" "$root_url/$url_base")
 			;;
 		*) translated_string="Action completed: $action" ;;
 		esac
@@ -192,10 +192,11 @@ zen::software::infobox() {
 		$shell "# $(date)"
 		$shell "# $outro"
 		[[ "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
-		[[ -n "$docs_link" && "$action" != "remove" ]] && $shell "# $docs_link"
-		[[ -n "$mediaease_link" ]] && $shell "# $mediaease_link"
 		[[ -n "$homepage_link" && "$action" != "remove" ]] && $shell "# $homepage_link"
 		[[ -n "$github_link" && "$action" != "remove" ]] && $shell "# $github_link"
+		[[ -n "$docs_link" && "$action" != "remove" ]] && $shell "# $docs_link"
+		[[ -n "$mediaease_link" ]] && $shell "# $mediaease_link"
+		[[ "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
 		[[ -n "$access_link" && "$action" != "remove" ]] && $shell "# $access_link"
 		[[ -n "$username" ]] && $shell "# Username: $username"
 		[[ -n "$password" ]] && $shell "# Password: $password"
