@@ -116,24 +116,22 @@ zen::service::manage() {
 	case $action in
 	start)
 		mflibs::status::info "$(zen::i18n::translate "messages.service.start" "$service_name")"
-		if zen::service::manage "status" "$service_name"; then
-			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.already_running" "$service_name")"
-		fi
-		if systemctl start "$service_name"; then
-			mflibs::status::success "$(zen::i18n::translate "success.service.start" "$service_name")"
-		else
-			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.start" "$service_name")"
+		if ! zen::service::manage "status" "$service_name"; then
+			if systemctl start "$service_name"; then
+				mflibs::status::success "$(zen::i18n::translate "success.service.start" "$service_name")"
+			else
+				mflibs::shell::text::red "$(zen::i18n::translate "errors.service.start" "$service_name")"
+			fi
 		fi
 		;;
 	stop)
 		mflibs::status::info "$(zen::i18n::translate "messages.service.stop" "$service_name")"
-		if ! zen::service::manage "status" "$service_name"; then
-			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.not_running" "$service_name")"
-		fi
-		if systemctl stop "$service_name"; then
-			mflibs::status::success "$(zen::i18n::translate "success.service.stop" "$service_name")"
-		else
-			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.stop" "$service_name")"
+		if zen::service::manage "status" "$service_name"; then
+			if systemctl stop "$service_name"; then
+				mflibs::status::success "$(zen::i18n::translate "success.service.stop" "$service_name")"
+			else
+				mflibs::shell::text::red "$(zen::i18n::translate "errors.service.stop" "$service_name")"
+			fi
 		fi
 		;;
 	restart | reload)
