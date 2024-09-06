@@ -9,9 +9,9 @@ arguments:
     docs: https://wiki.servarr.com/Radarr
     github: https://github.com/Radarr/Radarr
     homepage: https://radarr.video/
-    mediaease_docs: https://mediaease.github.io/docs/software/official/radarr
+    mediaease_docs: https://mediaease.github.io/docs/software/official/radarr4k
   multi_user: true
-  ports: 
+  ports:
     - default: [12001-13999]
     - ssl: [35001-35999]
   service_directives:
@@ -22,7 +22,7 @@ arguments:
     - TimeoutStopSec=20
   files:
     - service: /etc/systemd/system/$app_name@.service
-    - config : /home/%i/.config/$app_name/config.xml
+    - config: /home/%i/.config/$app_name/config.xml
     - proxy: /etc/caddy/softwares/%i.$app_name.caddy
   paths:
     - backup: /home/%i/.mediaease/backups/$app_name

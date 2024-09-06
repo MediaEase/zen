@@ -11,18 +11,18 @@ arguments:
     homepage: https://readarr.com/
     mediaease_docs: https://mediaease.github.io/docs/software/official/readarr
   multi_user: true
-  ports: 
+  ports:
     - default: [12001-13999]
     - ssl: [35001-35999]
   service_directives:
     - Type=simple
     - Environment=TMPDIR=/home/%i/tmp/$app_name
     - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name
-    - ExecStart=/opt/%i/$app_name/Readarr4k -nobrowser -data=/home/%i/.config/$app_name -config=/home/%i/.config/$app_name/config.xml
+    - ExecStart=/opt/%i/$app_name/Readarr -nobrowser -data=/home/%i/.config/$app_name -config=/home/%i/.config/$app_name/config.xml
     - TimeoutStopSec=20
   files:
     - service: /etc/systemd/system/$app_name@.service
-    - config : /home/%i/.config/$app_name/config.xml
+    - config: /home/%i/.config/$app_name/config.xml
     - proxy: /etc/caddy/softwares/%i.$app_name.caddy
   paths:
     - backup: /home/%i/.mediaease/backups/$app_name
