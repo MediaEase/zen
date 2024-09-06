@@ -155,7 +155,7 @@ zen::git::download_file() {
 zen::git::tree() {
     local remote_path="$1"
     local repo_name="$2"
-    local branch="$3"
+    local branch="${3:-main}"
     local api_url="https://api.github.com/repos/$repo_name/contents/$remote_path?ref=$branch"
 
     # Check if curl and jq are installed
