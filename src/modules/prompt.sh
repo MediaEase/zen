@@ -264,6 +264,24 @@ zen::prompt::input() {
 #   zen::validate::input "numeric" "12345a" # returns 1
 # @example
 #   zen::validate::input "password" "password1234" # returns 0
+# @example
+#   zen::validate::input "password" "passw'~ord" # returns 1
+# @example
+#   zen::validate::input "username" "user123" # returns 0
+# @example
+#   zen::validate::input "username" "us" # returns 1
+# @example
+#   zen::validate::input "version" "1.0.0" # returns 0
+# @example
+#   zen::validate::input "version" "1.0.0-alpha.1" # returns 0
+# @example
+#   zen::validate::input "version" "1.0.0-beta" # returns 0
+# @example
+#   zen::validate::input "version" "1.0.0-rc.1" # returns 0
+# @example
+#   zen::validate::input "version" "1.0.0-rc.1.1" # returns 1
+# @example
+#   zen::validate::input "version" "Best Version Ever" # returns 1
 zen::validate::input() {
   local filter="$1"
   local input="$2"
@@ -317,6 +335,9 @@ zen::validate::input() {
     elif [[ "$filter" == "password" && ${#input} -ge 6 ]]; then
       return 0
     fi
+    ;;
+  version)
+    [[ "$input" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-alpha(\.[0-9]+)?|-beta(\.[0-9]+)?|-rc(\.[0-9]+)?)?$ ]] && return 0
     ;;
   *)
     return 1
