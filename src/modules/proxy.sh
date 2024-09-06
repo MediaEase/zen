@@ -43,9 +43,9 @@ zen::proxy::generate() {
 		}
 	}
 EOF
-	mflibs::log "/usr/bin/caddy fmt --overwrite $caddy_file"
-	mflibs::log "/usr/bin/caddy validate -c /etc/caddy/Caddyfile"
-	mflibs::log "/usr/bin/caddy reload -c /etc/caddy/Caddyfile"
+	mflibs::log "/usr/bin/caddy fmt --overwrite $caddy_file >/dev/null 2>&1"
+	mflibs::log "/usr/bin/caddy validate -c /etc/caddy/Caddyfile >/dev/null 2>&1"
+	mflibs::log "/usr/bin/caddy reload -c /etc/caddy/Caddyfile >/dev/null 2>&1"
 }
 
 # @function zen::proxy::add_directive
