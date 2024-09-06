@@ -134,15 +134,9 @@ zen::software::infobox() {
 	local app_name_sanitized
 	app_name_sanitized=$(zen::common::capitalize::first "$app_name")
 	case "$shell_color" in
-	yellow)
-		shell="mflibs::shell::text::yellow"
-		;;
-	magenta)
-		shell="mflibs::shell::text::magenta"
-		;;
-	cyan)
-		shell="mflibs::shell::text::cyan"
-		;;
+	yellow) shell="mflibs::shell::text::yellow" ;;
+	magenta) shell="mflibs::shell::text::magenta" ;;
+	cyan) shell="mflibs::shell::text::cyan" ;;
 	*)
 		local colors=("mflibs::shell::text::cyan" "mflibs::shell::text::magenta" "mflibs::shell::text::yellow")
 		local random_index=$((RANDOM % ${#colors[@]}))
@@ -156,9 +150,7 @@ zen::software::infobox() {
 		add | update | backup | reset | remove | reinstall)
 			translated_string=$(zen::i18n::translate "headers.software.$action" "$app_name_sanitized")
 			;;
-		*)
-			translated_string="Action: $action"
-			;;
+		*) translated_string="Action: $action" ;;
 		esac
 		$shell "################################################################################"
 		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
@@ -176,46 +168,35 @@ zen::software::infobox() {
 				local key="${entry%%=*}"
 				local value="${entry#*=}"
 				case "$key" in
-				docs)
-					dlink="$value"
-					;;
-				github)
-					glink="$value"
-					;;
-				homepage)
-					hlink="$value"
-					;;
-				mediaease_docs)
-					mlink="$value"
-					;;
-				*)
-					continue
-					;;
+				docs) dlink="$value" ;;
+				github) glink="$value" ;;
+				homepage) hlink="$value" ;;
+				mediaease_docs) mlink="$value" ;;
+				*) continue ;;
 				esac
 			done
-			root_url=${settings[root_url]}
+			root_url=${settings[root_url]%/}
+			url_base="${url_base#/}"
 			outro=$(zen::i18n::translate "footers.software.$action" "$app_name_sanitized")
+			docs_link=$(zen::i18n::translate "links.software.documentation" "$dlink")
+			mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$mlink")
+			homepage_link=$(zen::i18n::translate "links.software.homepage" "$hlink")
+			github_link=$(zen::i18n::translate "links.software.github" "$glink")
 			# shellcheck disable=SC2154
-			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "links.software.access_url" "$app_name_sanitized" "$root_url/$url_base")
-			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "links.software.documentation" "$app_name_sanitized" "$dlink")
-			[ "$action" != "remove" ] && mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$app_name_sanitized" "$mlink")
-			[ "$action" != "remove" ] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$app_name_sanitized" "$hlink")
-			[ "$action" != "remove" ] && github_link=$(zen::i18n::translate "links.software.github" "$app_name_sanitized" "$glink")
+			access_link="$root_url/$url_base"
 			;;
-		*)
-			translated_string="Action completed: $action"
-			;;
+		*) translated_string="Action completed: $action" ;;
 		esac
 		$shell "################################################################################"
 		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
 		$shell "# $(date)"
 		$shell "# $outro"
-		[ "$action" != "remove" ] && $shell "# ------------------------------------------------------------------------------"
-		[[ -n "$docs_link" && "$action" == "add" ]] && $shell "# $root_url/$docs_link"
-		[[ -n "$mediaease_link" && "$action" == "add" ]] && $shell "# $mediaease_link"
-		[[ -n "$homepage_link" && "$action" == "add" ]] && $shell "# $homepage_link"
-		[[ -n "$github_link" && "$action" == "add" ]] && $shell "# $github_link"
-		[[ -n "$access_link" ]] && $shell "# $access_link"
+		[[ "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
+		[[ -n "$docs_link" && "$action" != "remove" ]] && $shell "# $docs_link"
+		[[ -n "$mediaease_link" ]] && $shell "# $mediaease_link"
+		[[ -n "$homepage_link" && "$action" != "remove" ]] && $shell "# $homepage_link"
+		[[ -n "$github_link" && "$action" != "remove" ]] && $shell "# $github_link"
+		[[ -n "$access_link" && "$action" != "remove" ]] && $shell "# $access_link"
 		[[ -n "$username" ]] && $shell "# Username: $username"
 		[[ -n "$password" ]] && $shell "# Password: $password"
 		$shell "################################################################################"
