@@ -241,6 +241,9 @@ zen::software::options::process() {
 		key)
 			software_key="$option_value"
 			;;
+		version)
+			software_version="$option_value"
+			;;
 		*)
 			mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_option" "$option_name")"
 			;;
