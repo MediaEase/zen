@@ -169,19 +169,43 @@ zen::software::infobox() {
 	outro)
 		case "$action" in
 		add | update | backup | reset | remove | reinstall)
+			settings=$(zen::common::setting::load)
+			local details_map
+			readarray -t details_map < <(yq e '.arguments.details | to_entries | .[] | .key + "=" + .value' "$software_config_file")
+			for entry in "${details_map[@]}"; do
+				local key="${entry%%=*}"
+				local value="${entry#*=}"
+				case "$key" in
+				docs)
+					dlink="$value"
+					;;
+				github)
+					glink="$value"
+					;;
+				homepage)
+					hlink="$value"
+					;;
+				mediaease_docs)
+					mlink="$value"
+					;;
+				*)
+					continue
+					;;
+				esac
+			done
+			root_url=${settings[root_url]}
 			outro=$(zen::i18n::translate "footers.software.$action" "$app_name_sanitized")
 			# shellcheck disable=SC2154
-			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "links.software.access_url" "$app_name_sanitized" "$url_base")
-			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "links.software.documentation" "$app_name_sanitized" "$url_base")
-			[ "$action" != "remove" ] && mediaease_link=$(zen::i18n::translate "links.software.mediaease" "$app_name_sanitized" "$url_base")
-			[ "$action" != "remove" ] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$app_name_sanitized" "$url_base")
+			[ "$action" != "remove" ] && access_link=$(zen::i18n::translate "links.software.access_url" "$app_name_sanitized" "$root_url/$url_base")
+			[ "$action" != "remove" ] && docs_link=$(zen::i18n::translate "links.software.documentation" "$app_name_sanitized" "$dlink")
+			[ "$action" != "remove" ] && mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$app_name_sanitized" "$mlink")
+			[ "$action" != "remove" ] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$app_name_sanitized" "$hlink")
+			[ "$action" != "remove" ] && github_link=$(zen::i18n::translate "links.software.github" "$app_name_sanitized" "$glink")
 			;;
 		*)
 			translated_string="Action completed: $action"
 			;;
 		esac
-		settings=$(zen::common::setting::load)
-		root_url=${settings[root_url]}
 		$shell "################################################################################"
 		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
 		$shell "# $(date)"
@@ -190,6 +214,7 @@ zen::software::infobox() {
 		[[ -n "$docs_link" && "$action" == "add" ]] && $shell "# $root_url/$docs_link"
 		[[ -n "$mediaease_link" && "$action" == "add" ]] && $shell "# $mediaease_link"
 		[[ -n "$homepage_link" && "$action" == "add" ]] && $shell "# $homepage_link"
+		[[ -n "$github_link" && "$action" == "add" ]] && $shell "# $github_link"
 		[[ -n "$access_link" ]] && $shell "# $access_link"
 		[[ -n "$username" ]] && $shell "# Username: $username"
 		[[ -n "$password" ]] && $shell "# Password: $password"
