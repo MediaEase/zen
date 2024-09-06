@@ -310,9 +310,10 @@ footers:
 
 links:
   software:
-    access_url: "Accédez à {arg0} à {arg1}."
-    documentation: "Documentation : {arg0}."
-    homepage: "Page d'accueil : {arg0}."
+    access_url: "Accédez à {arg0} à {arg1}"
+    documentation: "Documentation : {arg0}"
+    github: "GitHub : {arg0}"
+    homepage: "Page d'accueil : {arg0}"
     mediaease_docs: "Documentation MediaEase : {arg0}"
   common:
     thank_you: "Merci d'utiliser MediaEase. J'espére que vous apprécierez votre expérience."
