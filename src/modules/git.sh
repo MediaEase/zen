@@ -112,33 +112,38 @@ zen::git::get_release() {
     mflibs::shell::text::green "$(zen::i18n::translate "success.git.download_release" "$repo_name")"
 }
 
-# @function zen::git::download_file
-# Downloads a specific file from a GitHub repository.
-# @description This function downloads a specified file from a given GitHub repository and saves it to a local path.
+# @function zen::git::download_folder
+# Downloads a specific folder from a GitHub repository.
+# @description This function downloads a specified folder from a given GitHub repository and saves it to a local path.
 # @arg $1 string Local path where the file should be saved.
 # @arg $2 string Name of the repository (e.g., "git/core").
-# @arg $3 string Branch of the repository to download from.
-# @arg $4 string Path to the remote file in the repository.
+# @arg $3 string Branch of the repository to download from (default: "main").
+# @arg $4 string Path to the remote folder in the repository.
 # @exitcode 0 on successful download.
 # @exitcode 1 on failure.
 # @stdout Informs about the downloading process and results.
-zen::git::download_file() {
+zen::git::download_folder() {
     local local_path="$1"
     local repo_name="$2"
-    local branch="$3"
-    local remote_file="$4"
-    local repo_url="https://raw.githubusercontent.com/$repo_name/$branch/$remote_file"
+    local branch="${3:-main}"
+    local remote_folder="$4"
+    local destination_folder="${repo_name##*/}"
 
-    # Check if curl is installed
-    if ! command -v curl &>/dev/null; then
-        mflibs::status::error "$(zen::i18n::translate "errors.dependency.dependency_missing" "cUrl")"
+    if ! command -v git &>/dev/null; then
+        mflibs::status::error "$(zen::i18n::translate "errors.common.missing_required_tools")"
     fi
-
-    # Download the file
-    if curl -o "$local_path" "$repo_url"; then
-        mflibs::status::success "$(zen::i18n::translate "success.common.download_file" "$repo_url" "$local_path")"
+    cd "$local_path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "/tmp")"
+    mflibs::log "git init $destination_folder --initial-branch=$branch"
+    cd "$destination_folder" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "/tmp/binaries")"
+    mflibs::log "git remote remove origin"
+    mflibs::log "git remote add origin https://github.com/$repo_name.git"
+    mflibs::log "git config core.sparseCheckout true"
+    echo "$remote_folder/*" >>.git/info/sparse-checkout
+    mflibs::log "git pull --depth=1 origin $branch"
+    if [[ -d "$remote_folder" && -n $(ls -A "$remote_folder") ]]; then
+        mflibs::shell::text::green "$(zen::i18n::translate "success.git.download_folder" "$remote_folder" "$local_path")"
     else
-        mflibs::status::error "$(zen::i18n::translate "errors.common.download_file" "$repo_url")"
+        mflibs::status::error "$(zen::i18n::translate "errors.git.download_folder" "$remote_folder" "$local_path")"
     fi
 }
 

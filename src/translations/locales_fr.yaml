@@ -11,7 +11,7 @@ errors:
     action_not_specified: "Aucune action spécifiée."
     already_installed_by_others: "{arg0} est déjà installé pour d'autres utilisateurs."
     already_installed_by_user: "{arg0} est déjà installé pour {arg1}."
-    download_file: "Échec du téléchargement du fichier."
+    download_folder: "Échec du téléchargement du dossier."
     insufficient_args: "Arguments insuffisants."
     invalid_action: "Action invalide : {arg0}."
     invalid_command: "Commande invalide : {arg0}."
@@ -191,7 +191,7 @@ success:
     make_install: "Installation avec Make terminée."
     scons_install: "Installation avec SCons terminée."
   common:
-    download_file: "Fichier téléchargé."
+    download_folder: "Dossier téléchargé."
     installation_complete: "Installation de {arg0} terminée."
   dependency:
     apt_source_remove: "Source APT pour {arg0} supprimée."

@@ -11,7 +11,7 @@ errors:
     action_not_specified: "No action specified."
     already_installed_by_others: "{arg0} is already installed for other users."
     already_installed_by_user: "{arg0} is already installed for {arg1}."
-    download_file: "Failed to download file."
+    download_folder: "Failed to download the folder."
     insufficient_args: "Insufficient arguments."
     invalid_action: "Invalid action: {arg0}."
     invalid_command: "Invalid command: {arg0}."
@@ -191,7 +191,7 @@ success:
     make_install: "Make install done."
     scons_install: "SCons install done."
   common:
-    download_file: "File downloaded."
+    download_folder: "Folder downloaded."
     installation_complete: "{arg0} Installation complete."
   dependency:
     apt_source_remove: "APT source for {arg0} removed."
