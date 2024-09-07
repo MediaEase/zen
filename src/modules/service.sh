@@ -55,7 +55,7 @@ zen::service::generate() {
 		service_content+=("$directive")
 	done
 
-	if [ "$is_multi" == "true" ]; then
+	if [[ "$is_multi" == "true" || "$app_name" == "rtorrent" ]]; then
 		service_content+=(
 			""
 			"[Install]"
