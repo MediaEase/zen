@@ -201,11 +201,12 @@ zen::service::validate() {
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.validate" "$app_name_sanitized")"
 	local json_ports json_configuration application_id parent_service_id json_result
 
+	[[ -z "${api_service[ssl_port]}" ]] && api_service[ssl_port]=0
 	# Assuming api_service[default_port] and api_service[ssl_port] contain simple strings or numbers
 	json_ports=$(jq -n \
 		--arg default_port "${api_service[default_port]}" \
 		--arg ssl_port "${api_service[ssl_port]}" \
-		'[{"default": ($default_port | tonumber) } + (if $ssl_port != "" then { "ssl": ($ssl_port | tonumber) } else {} end)]')
+		'[{"default": ($default_port | tonumber) } + (if $ssl_port != "0" then { "ssl": ($ssl_port | tonumber) } else {} end)]')
 
 	# Configuration JSON
 	json_configuration=$(jq -n \
