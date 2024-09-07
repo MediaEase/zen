@@ -27,7 +27,7 @@ zen::i18n::load_locale_file() {
 		export MEDIAEASE_LOCALE_FILE="$locale_file"
 		zen::i18n::generate::system_locale "$lang"
 		zen::i18n::set::timezone "$lang"
-		mflibs::status::success "$(zen::i18n::translate "messages.common.language_loaded" "${lang}")"
+		[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && mflibs::status::success "$(zen::i18n::translate "messages.common.language_loaded" "${lang}")"
 	else
 		mflibs::status::error "Locale file not found: $locale_file"
 	fi
