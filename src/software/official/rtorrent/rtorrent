@@ -142,7 +142,7 @@ zen::software::rtorrent::proxy::generate() {
         @phpDownloads {
             path /{{USERNAME}}.rtorrent.downloads/*.php
         }
-        php_fastcgi @phpDownloads unix//run/php/php8.1-fpm.sock
+        php_fastcgi @phpDownloads unix//run/php/php8.3-fpm.sock
     }
 EOF
     sed -i -e "s|{{USERNAME}}|${user[username]}|g" "${caddy_file}"
