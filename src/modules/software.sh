@@ -182,8 +182,20 @@ zen::software::infobox() {
 			[[ -n "$mlink" ]] && mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$mlink")
 			[[ -n "$hlink" ]] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$hlink")
 			[[ -n "$glink" ]] && github_link=$(zen::i18n::translate "links.software.github" "$glink")
-			# shellcheck disable=SC2154
-			access_link=$(zen::i18n::translate "links.software.github" "$root_url/$url_base")
+			local no_access_url_apps=("Rtorrent")
+			found_in_array=false
+			for app in "${no_access_url_apps[@]}"; do
+				if [[ "$app" == "$app_name_sanitized" ]]; then
+					found_in_array=true
+					break
+				fi
+			done
+			if [[ "$found_in_array" == false ]]; then
+				# shellcheck disable=SC2154
+				access_link=$(zen::i18n::translate "links.software.access_url" "$app_name_sanitized" "$root_url/$url_base")
+			else
+				access_link=""
+			fi
 			;;
 		*) translated_string="Action completed: $action" ;;
 		esac
