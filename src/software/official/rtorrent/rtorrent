@@ -77,11 +77,11 @@ zen::software::rtorrent::config() {
         "/home/${user[username]}/.config/${app_name}/.rtorrent.rc"
     mkdir -p "/home/${user[username]}/download-clients/rtorrent/{downloads,log,.session,.watch}"
     # generate the proxy configuration
-    zen::common::fix::permissions "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}"
     # we can't use the zen::proxy::generate function because rtorrent is a bit different
     zen::software::rtorrent::proxy::generate "/etc/caddy/softwares/${user[username]}.scgi.caddy"
 
-    mflibs::shell::text::green "$(zen::i18n::translate "messages.softwared.configured" "$app_name")"
+    mflibs::shell::text::green "$(zen::i18n::translate "messages.software.configured" "$app_name")"
 }
 
 # @function zen::software::rtorrent::update
