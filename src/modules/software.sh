@@ -178,10 +178,10 @@ zen::software::infobox() {
 			root_url=${settings[root_url]%/}
 			url_base="${url_base#/}"
 			outro=$(zen::i18n::translate "footers.software.$action" "$app_name_sanitized")
-			docs_link=$(zen::i18n::translate "links.software.documentation" "$dlink")
-			mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$mlink")
-			homepage_link=$(zen::i18n::translate "links.software.homepage" "$hlink")
-			github_link=$(zen::i18n::translate "links.software.github" "$glink")
+			[[ -n "$dlink" ]] && docs_link=$(zen::i18n::translate "links.software.documentation" "$dlink")
+			[[ -n "$mlink" ]] && mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$mlink")
+			[[ -n "$hlink" ]] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$hlink")
+			[[ -n "$glink" ]] && github_link=$(zen::i18n::translate "links.software.github" "$glink")
 			# shellcheck disable=SC2154
 			access_link=$(zen::i18n::translate "links.software.github" "$root_url/$url_base")
 			;;
