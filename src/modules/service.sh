@@ -202,6 +202,7 @@ zen::service::validate() {
 	local json_ports json_configuration application_id parent_service_id json_result
 
 	[[ -z "${api_service[ssl_port]}" ]] && api_service[ssl_port]=0
+	[[ -z "${api_service[root_url]}" ]] && api_service[root_url]="/"
 	# Assuming api_service[default_port] and api_service[ssl_port] contain simple strings or numbers
 	json_ports=$(jq -n \
 		--arg default_port "${api_service[default_port]}" \
