@@ -40,7 +40,7 @@ errors:
     external_dependencies_missing: "Dépendances externes non trouvées."
     source_name_missing: "Veuillez fournir un nom de source valide."
     source_url_missing: "URL de la source introuvable."
-    unpack_deb_file: "Échec de l'extraction du fichier DEB."
+    unpack_deb_file: "Échec de l'extraction de {arg0}."
   environment:
     composer_install: "Échec de l'installation de Composer."
     configure_sendmail: "Échec de la configuration de sendmail."
@@ -131,7 +131,7 @@ messages:
   dependency:
     add_source_count: "{arg0}/{arg1} sources ajoutées."
     install_count: "Nombre de dépendances installées : {arg0}."
-    unpack_deb_file: "Décompression du fichier DEB..."
+    unpack_deb_file: "Décompression de {arg0}..."
     skip_fake_deb: "Le verrouillage de dépendances est désactivé. Le méta-packet ne sera pas créé."
   environment:
     configure_bashrc: "Configuration de bashrc..."
@@ -204,7 +204,7 @@ success:
     metapackage_install: "Méta-paquet installé."
     configure_sendmail: "Sendmail configuré."
     remove_unnecessary_packages: "Paquets inutiles supprimés."
-    unpack_deb_file: "Fichier DEB décompressé."
+    unpack_deb_file: "{arg0} décompressé."
   environment:
     add_apps: "Applications ajoutées."
     build_harmonyui: "HarmonyUI prêt."

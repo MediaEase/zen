@@ -40,7 +40,7 @@ errors:
     external_dependencies_missing: "External dependencies not found."
     source_name_missing: "Please provide a valid source name."
     source_url_missing: "Source URL not found."
-    unpack_deb_file: "Failed to unpack DEB file."
+    unpack_deb_file: "Failed to unpack {arg0}."
   environment:
     composer_install: "Failed to install Composer."
     configure_sendmail: "Failed to configure sendmail."
@@ -131,7 +131,7 @@ messages:
   dependency:
     add_source_count: "{arg0}/{arg1} sources added."
     install_count: "Number of dependencies installed: {arg0}."
-    unpack_deb_file: "Unpacking DEB file..."
+    unpack_deb_file: "Unpacking {arg0}..."
     skip_fake_deb: "Dependency locking is disabled. The metapackage will not be created."
   environment:
     configure_bashrc: "Configuring bashrc..."
@@ -204,7 +204,7 @@ success:
     metapackage_install: "Metapackage installed."
     configure_sendmail: "Sendmail configured."
     remove_unnecessary_packages: "Unnecessary packages removed."
-    unpack_deb_file: "DEB file unpacked."
+    unpack_deb_file: "{arg0} unpacked."
   environment:
     add_apps: "Apps added."
     build_harmonyui: "HarmonyUI ready."

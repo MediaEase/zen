@@ -44,7 +44,7 @@ zen::software::rtorrent::add() {
             for deb_file in "${deb_files[@]}"; do
                 if [[ "$deb_file" == *"$binary"* && "$deb_file" == *"$software_version"* ]]; then
                     mflibs::shell::text::yellow "$(zen::i18n::translate "messages.dependency.unpack_deb_file" "$deb_file")"
-                    if sudo dpkg -i "$deb_file"; then
+                    if mflibs::log "dpkg -i $deb_file"; then
                         mflibs::shell::text::green "$(zen::i18n::translate "success.dependency.unpack_deb_file" "$deb_file")"
                     else
                         mflibs::shell::text::error "$(zen::i18n::translate "errors.dependency.unpack_deb_file" "$deb_file")"
@@ -81,7 +81,7 @@ zen::software::rtorrent::config() {
     # we can't use the zen::proxy::generate function because rtorrent is a bit different
     zen::software::rtorrent::proxy::generate "/etc/caddy/softwares/${user[username]}.scgi.caddy"
 
-    mflibs::shell::text::green "$(zen::i18n::translate "messages.software.configured" "$app_name")"
+    mflibs::shell::text::green "$(zen::i18n::translate "messages.software.configure" "$app_name")"
 }
 
 # @function zen::software::rtorrent::update
