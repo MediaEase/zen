@@ -106,7 +106,7 @@ zen::software::rtorrent::update() {
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
 zen::software::rtorrent::proxy::generate() {
-    local caddy_file
+    local caddy_file="$1"
     # Write configuration to the file
     cat <<EOF >"${caddy_file}"
 	route {
@@ -131,7 +131,7 @@ zen::software::rtorrent::proxy::generate() {
         @downloads {
             path /{{USERNAME}}.rtorrent.downloads*
         }
-        root @downloads /home/{{USERNAME}}/torrents/rtorrent
+        root @downloads /home/{{USERNAME}}/download-clients/rtorrent
         file_server @downloads browse
         basicauth {
             /{{USERNAME}}.rtorrent.downloads* {
