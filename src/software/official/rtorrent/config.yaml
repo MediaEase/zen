@@ -7,7 +7,7 @@ arguments:
   logo_path: rtorrent.png
   precompiled: true
   precompiled_description: rtorrent_precompiled_description
-  multi_user: false
+  multi_user: true
   group: automation
   details:
     github: https://github.com/rakshasa/rtorrent
