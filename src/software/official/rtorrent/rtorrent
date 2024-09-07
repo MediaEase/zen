@@ -28,9 +28,9 @@ zen::software::rtorrent::add() {
             fi
         done
         [[ ! "$valid_version_found" ]] && mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_version" "$app_name" "$software_version")"
-        zen::git::download_folder "/tmp/binaries" "MediaEase/binaries" "main" "dist/current"
+        zen::git::download_folder "/tmp" "MediaEase/binaries" "main" "dist/current"
         for binary in "${rtorrent_binaries[@]}"; do
-            deb_files=(/tmp/binaries/dist/current/*)
+            deb_files=(/tmp/binaries/dist/current/*.deb)
             if [[ "$binary" == "xmlrpc-c" ]]; then
                 xmlrpc_latest_version=$(find /tmp/binaries/dist/current -name "xmlrpc-c*.deb" -print0 | xargs -0 ls -1 | sort -V | tail -n 1)
                 mflibs::shell::text::yellow "$(zen::i18n::translate "messages.dependency.unpack_deb_file" "$xmlrpc_latest_version")"
