@@ -18,15 +18,17 @@ arguments:
   service_directives:
     - Type=forking
     - KillMode=none
-    - ExecStartPre=-/bin/rm -f /home/%i/.sessions/$app_name.lock
+    - ExecStartPre=-/bin/rm -f /home/%i/download-clients/.sessions/$app_name.lock
     - ExecStart=/usr/bin/screen -d -m -fa -S $app_name /usr/bin/$app_name
     - ExecStop=/usr/bin/screen -X -S $app_name quit
     - WorkingDirectory=/home/%i/
   files:
     - service: /etc/systemd/system/$app_name@.service
     - config: /home/%i/.$app_name.rc
+    - proxy: /etc/caddy/softwares/%i.scgi.caddy
   paths:
     - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/download-clients/$app_name
   autogen:
     - port_range
   versions:
