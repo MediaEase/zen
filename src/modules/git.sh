@@ -141,9 +141,9 @@ zen::git::download_folder() {
     echo "$remote_folder/*" >>.git/info/sparse-checkout
     mflibs::log "git pull --depth=1 origin $branch"
     if [[ -d "$remote_folder" && -n $(ls -A "$remote_folder") ]]; then
-        mflibs::shell::text::green "$(zen::i18n::translate "success.git.download_folder" "$remote_folder" "$local_path")"
+        mflibs::shell::text::green "$(zen::i18n::translate "success.common.download_folder" "$remote_folder" "$local_path")"
     else
-        mflibs::status::error "$(zen::i18n::translate "errors.git.download_folder" "$remote_folder" "$local_path")"
+        mflibs::status::error "$(zen::i18n::translate "errors.common.download_folder" "$remote_folder" "$local_path")"
     fi
 }
 
