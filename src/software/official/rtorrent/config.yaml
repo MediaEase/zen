@@ -10,8 +10,8 @@ arguments:
   multi_user: false
   group: automation
   details:
-    github: https://github.com/rTorrent/rTorrent
-    homepage: https://rtorrent.video/
+    github: https://github.com/rakshasa/rtorrent
+    homepage: http://rakshasa.github.io/rtorrent/
     mediaease_docs: https://mediaease.github.io/docs/software/official/rtorrent
   ports:
     - default: [20000-61000]
