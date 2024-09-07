@@ -205,7 +205,7 @@ zen::service::validate() {
 	json_ports=$(jq -n \
 		--arg default_port "${api_service[default_port]}" \
 		--arg ssl_port "${api_service[ssl_port]}" \
-		'[{"default": ($default_port | tonumber), "ssl": ($ssl_port | tonumber)}]')
+		'[{"default": ($default_port | tonumber) } + (if $ssl_port != "" then { "ssl": ($ssl_port | tonumber) } else {} end)]')
 
 	# Configuration JSON
 	json_configuration=$(jq -n \
