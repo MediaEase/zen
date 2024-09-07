@@ -18,9 +18,8 @@
 zen::software::rtorrent::add() {
     if [[ ! -d "/srv/rutorrent" ]]; then
         rtorrent_binaries=("xmlrpc-c" "libtorrent-rakshasa" "rtorrent")
-        repo_files=$(zen::git::tree "MediaEase/binaries" "main" "dist/current")
         zen::validate::input "version" "$software_version"
-        valid_versions=$(zen::software::get_config_key_value "$software_config_file" '.arguments.versions')
+        valid_versions=$(zen::software::get_config_key_value "$software_config_file" '.arguments.versions[]')
         valid_version_found=false
         for version in "${valid_versions[@]}"; do
             if [[ "$version" == "$software_version" ]]; then
@@ -29,18 +28,21 @@ zen::software::rtorrent::add() {
             fi
         done
         [[ ! "$valid_version_found" ]] && mflibs::status::error "$(zen::i18n::translate "errors.software.invalid_version" "$app_name" "$software_version")"
-        while IFS= read -r file; do
-            for binary in "${rtorrent_binaries[@]}"; do
-                if [[ $file == *"$binary"* ]]; then
-                    if [[ $file == *"$software_version"* || $file == *"xmlrpc-c"* ]]; then
-                        zen::git::download_file "/tmp/$file" "$repo_name" "main" "$remote_path/$file"
-                    fi
+        zen::git::download_folder "/tmp/binaries" "MediaEase/binaries" "main" "dist/current"
+        for binary in "${rtorrent_binaries[@]}"; do
+            deb_files=(/tmp/binaries/dist/current/*)
+            if [[ "$binary" == "xmlrpc-c" ]]; then
+                xmlrpc_latest_version=$(find /tmp/binaries/dist/current -name "xmlrpc-c*.deb" -print0 | xargs -0 ls -1 | sort -V | tail -n 1)
+                mflibs::shell::text::yellow "$(zen::i18n::translate "messages.dependency.unpack_deb_file" "$xmlrpc_latest_version")"
+                if sudo dpkg -i "$xmlrpc_latest_version"; then
+                    mflibs::shell::text::green "$(zen::i18n::translate "success.dependency.unpack_deb_file" "$xmlrpc_latest_version")"
+                else
+                    mflibs::shell::text::error "$(zen::i18n::translate "errors.dependency.unpack_deb_file" "$xmlrpc_latest_version")"
                 fi
-            done
-        done <<<"$repo_files"
-        for binary in "xmlrpc-c" "libtorrent-rakshasa" "rtorrent"; do
-            for deb_file in /tmp/*; do
-                if [[ $deb_file == *"$binary"* ]]; then
+                continue
+            fi
+            for deb_file in "${deb_files[@]}"; do
+                if [[ "$deb_file" == *"$binary"* && "$deb_file" == *"$software_version"* ]]; then
                     mflibs::shell::text::yellow "$(zen::i18n::translate "messages.dependency.unpack_deb_file" "$deb_file")"
                     if sudo dpkg -i "$deb_file"; then
                         mflibs::shell::text::green "$(zen::i18n::translate "success.dependency.unpack_deb_file" "$deb_file")"
