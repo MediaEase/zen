@@ -26,19 +26,13 @@
 zen::git::clone() {
     local repo_name="$1"
     local target_dir="$2"
-    local branch="${3}"
+    local branch="$3"
     local recurse_submodules="${4:-false}"
     local repo_url
     repo_url="https://github.com/$repo_name"
-    if [ -d "$target_dir" ]; then
-        mflibs::status::warn "$(zen::i18n::translate "errors.environment.env_variable_missing" "$repo_url")"
-        return 0
-    fi
-
     if [ -z "$branch" ]; then
         branch=$(git ls-remote --symref "$repo_url" HEAD | awk '/^ref:/ {sub(/refs\/heads\//, "", $2); print $2}')
     fi
-
     if [ "$recurse_submodules" == "true" ]; then
         recurse_submodules="--recurse-submodules"
     else
@@ -48,8 +42,7 @@ zen::git::clone() {
     if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules >/dev/null 2>&1"; then
         local username
         local group
-
-        if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/pyenv* && "$target_dir" != /opt/MediaEase* ]]; then
+        if [[ "$target_dir" == /opt/* && "$target_dir" != /opt/MediaEase* ]]; then
             username=$(echo "$target_dir" | cut -d'/' -f3)
             group=$(getent group | grep "^$username:" | cut -d: -f1)
         elif [[ "$target_dir" == /root/* ]]; then
@@ -60,8 +53,8 @@ zen::git::clone() {
             group="www-data"
         fi
         mflibs::log "$(git config --global --add safe.directory "$target_dir")"
-        [[ $username != "root" && $target_dir != /root/* ]] && zen::permission::fix "$target_dir" "755" "644" "$username" "$group"
-        [[ "$target_dir" == /opt/MediaEase* ]] && zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
+        [[ $username != "root" && $target_dir != /root/* ]] && zen::permission::read_exec "$target_dir" "$username" "$group"
+        [[ "$target_dir" == /opt/MediaEase* ]] && zen::permission::read_exec "$target_dir" "www-data" "www-data"
     else
         mflibs::status::error "$(zen::i18n::translate "errors.git.clone_repo" "$repo_name")"
     fi
