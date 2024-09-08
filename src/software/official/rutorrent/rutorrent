@@ -27,13 +27,12 @@ zen::software::rutorrent::add() {
             -e "s|\$scgi_host = \"127.0.0.1\";|\$scgi_host = \"unix:///tmp/${user[username]}.rtorrent.socket\";|g" \
             -e "s|\$scgi_port = 5000;|\$scgi_port = 0;|g" \
             -e "s|\$localHostedMode = false;|\$localHostedMode = true;|g" \
+            -e "s|\/tmp/errors.log';|/tmp/rutorrent_errors.log';|g" \
             "/srv/rutorrent/conf/config.php"
         mflibs::status::success "$(zen::i18n::translate "success.software.configure" "ruTorrent")"
         zen::software::rutorrent::plugins::resolve
-        zen::software::rutorrent::fix::quota
     else
         mflibs::status::info "$(zen::i18n::translate "errors.common.already_installed_by_others" "ruTorrent")"
-        zen::software::rutorrent::fix::quota
     fi
 }
 
@@ -72,9 +71,12 @@ zen::software::rutorrent::plugins::resolve() {
             fi
             zen::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name"
         done
+        mflibs::log "wget -c https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/rutorrent-logoff/logoff-1.3.tar.gz -O - | tar -xz -C /srv/rutorrent/plugins/"
         # configure rutorrent plugins
         mflibs::file::copy "/srv/rutorrent/plugins/diskspace/action.php" "/srv/rutorrent/plugins/diskspace/action.php.bak"
+        mflibs::file::copy "/srv/rutorrent/plugins/filemanager/conf.php" "/srv/rutorrent/plugins/filemanager/conf.php.bak"
         mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/software/official/rutorrent/diskspace-plugin/action.tpl" "/srv/rutorrent/plugins/diskspace/action.php"
+        mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/software/official/rutorrent/filemanager/config.tpl" "/srv/rutorrent/plugins/filemanager/conf.php"
         # configure ratio color plugin
         sed -i "s/changeWhat = \"cell-background\";/changeWhat = \"font\";/g" /srv/rutorrent/plugins/ratiocolor/init.js
         # configure create plugin
@@ -83,6 +85,7 @@ zen::software::rutorrent::plugins::resolve() {
             "/srv/rutorrent/plugins/create/conf.php"
         # configure spectrogram plugin
         sed -i "s/\$pathToExternals\['sox'\] = ''/\$pathToExternals\['sox'\] = '\/usr\/bin\/sox'/g" /srv/rutorrent/plugins/spectrogram/conf.php
+        zen::software::rutorrent::fix::quota
         zen::permission::read_exec "/srv/rutorrent" "www-data" "www-data"
     fi
     mflibs::status::success "$(zen::i18n::translate "success.software.configure" "plugins")"
@@ -102,7 +105,7 @@ zen::software::rutorrent::fix::quota() {
     for user in $all_users; do
         if [[ ! -f /srv/rutorrent/conf/users/${user}/config.php ]]; then
             mkdir -p "/srv/rutorrent/conf/users/${user}/"
-            mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/software/official/rutorrent/multi-user-fix/config.php" "/srv/rutorrent/conf/users/${user}/config.php"
+            mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/software/official/rutorrent/multi-user-fix/config.tpl" "/srv/rutorrent/conf/users/${user}/config.php"
             sed -i "s|{{USERNAME}}|${user}|g" "/srv/rutorrent/conf/users/${user}/config.php"
         fi
     done
