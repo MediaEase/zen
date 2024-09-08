@@ -19,8 +19,8 @@ zen::software::rutorrent::add() {
     local plugins
     local all_users
     # build rutorrent only if the software is not installed by other users
-    if [[ $is_installed_by_others -eq 0 ]]; then
-        zen::git::clone "Novik/ruTorrent.git" "/srv/rutorrent" "main" "true"
+    if [[ ! -d /srv/rutorrent ]]; then
+        zen::git::clone "Novik/ruTorrent" "/srv/rutorrent" "master" "true"
         # configure rutorrent main settings
         mflibs::status::info "$(zen::i18n::translate "messages.software.configure" "ruTorrent")"
         sed -i -e "s|//\$topDirectory = '/';|\$topDirectory = '/home/${user[username]}';|g" \
@@ -47,9 +47,9 @@ zen::software::rutorrent::add() {
 # @exitcode 0 Success.
 # @exitcode 1 Failure due to plugin download or configuration errors.
 zen::software::rutorrent::plugins::resolve() {
-    if ! $is_installed_by_others; then
+    if [[ -d /srv/rutorrent ]]; then
         mflibs::status::info "$(zen::i18n::translate "messages.software.configure" "ruTorrent plugins")"
-        rm -rf "/srv/rutorrent/plugins/{filemanager, ratiocolor, geoip2, fileshare, pausewebui, filemanager, mobile, rutorrent-discord}"
+        rm -rf "/srv/rutorrent/plugins/{filemanager, ratiocolor, geoip2, pausewebui, filemanager, mobile, rutorrent-discord, discord}"
         local plugins
         plugins=(
             "Ardakilic/rutorrent-pausewebui"
@@ -66,7 +66,7 @@ zen::software::rutorrent::plugins::resolve() {
         )
         for plugin in "${plugins[@]}"; do
             local plugin_name
-            plugin_name=$(echo "$plugin" | cut -d'/' -f2 | sed 's/^rutorrent-//')
+            plugin_name=$(echo "$plugin" | cut -d'/' -f2 | sed -e 's/rutorrent//g' -e 's/-//g' | tr '[:upper:]' '[:lower:]')
             if [[ -d "/srv/rutorrent/plugins/$plugin_name" ]]; then
                 rm -rf "/srv/rutorrent/plugins/$plugin_name"
             fi
@@ -103,11 +103,11 @@ zen::software::rutorrent::plugins::resolve() {
 zen::software::rutorrent::fix::quota() {
     mflibs::status::info "$(zen::i18n::translate "messages.software.configure" "quota")"
     # fix the quota issue
-    all_users=$(zen::database::query "SELECT username FROM users;")
+    all_users=$(zen::database::query "SELECT username FROM user;")
     for user in $all_users; do
         if [[ ! -f /srv/rutorrent/conf/users/${user}/config.php ]]; then
             mkdir -p "/srv/rutorrent/conf/users/${user}/"
-            mflibs::file::copy "/opt/MediaEase/zen/src/software/official/rutorrent/multi-user-fix/config.php" "/srv/rutorrent/conf/users/${user}/config.php"
+            mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/software/official/rutorrent/multi-user-fix/config.php" "/srv/rutorrent/conf/users/${user}/config.php"
             sed -i "s|{{USERNAME}}|${user}|g" "/srv/rutorrent/conf/users/${user}/config.php"
         fi
     done
