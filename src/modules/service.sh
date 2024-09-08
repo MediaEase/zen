@@ -201,22 +201,18 @@ zen::service::validate() {
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.validate" "$app_name_sanitized")"
 	local json_ports json_configuration application_id parent_service_id json_result
 
-	[[ -z "${api_service[ssl_port]}" ]] && api_service[ssl_port]=0
-	[[ -z "${api_service[root_url]}" ]] && api_service[root_url]="/"
 	# Assuming api_service[default_port] and api_service[ssl_port] contain simple strings or numbers
 	json_ports=$(jq -n \
-		--arg default_port "${api_service[default_port]}" \
-		--arg ssl_port "${api_service[ssl_port]}" \
-		'[{"default": ($default_port | tonumber) } + (if $ssl_port != "0" then { "ssl": ($ssl_port | tonumber) } else {} end)]')
-
+		--arg default_port "${api_service[default_port]:-0}" \
+		--arg ssl_port "${api_service[ssl_port]:-0}" \
+		'[{"default": ($default_port | tonumber), "ssl": ($ssl_port | tonumber)}]')
 	# Configuration JSON
 	json_configuration=$(jq -n \
-		--arg data_path "${api_service[data_path]}" \
-		--arg backup_path "${api_service[backup_path]}" \
-		--arg caddyfile_path "${api_service[caddyfile_path]}" \
-		--arg root_url "${api_service[root_url]}" \
+		--arg data_path "${api_service[data_path]:-"none"}" \
+		--arg backup_path "${api_service[backup_path]:-"none"}" \
+		--arg caddyfile_path "${api_service[caddyfile_path]:-"none"}" \
+		--arg root_url "${api_service[root_url]:-"none"}" \
 		'[{"data_path": $data_path, "backup_path": $backup_path, "caddyfile_path": $caddyfile_path, "root_url": $root_url}]')
-
 	# Application JSON
 	application_id=$(zen::database::select "id" "application" "altname = '$app_name_sanitized'")
 	application_id=$(echo "$application_id" | head -n 1)
@@ -239,17 +235,16 @@ zen::service::validate() {
 		--arg application_id "$application_id" \
 		--arg parent_service_id "$parent_service_id" \
 		'{
-            "name": $name,
-            "version": $version,
-            "status": $status,
-            "apikey": $apikey,
-            "ports": $ports,
-            "configuration": $configuration,
-            "application_id": $application_id,
-            "parent_service_id": $parent_service_id,
-            "user_id": $user_id
-        }')
-
+			"name": $name,
+			"version": $version,
+			"status": $status,
+			"apikey": $apikey,
+			"ports": $ports,
+			"configuration": $configuration,
+			"application_id": $application_id,
+			"parent_service_id": $parent_service_id,
+			"user_id": $user_id
+		}')
 	# Extract the individual fields from JSON except for JSON objects (ports and configuration)
 	local name version status apikey application_id parent_service_id user_id
 
