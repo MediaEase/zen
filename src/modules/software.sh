@@ -182,10 +182,12 @@ zen::software::infobox() {
 			[[ -n "$mlink" ]] && mediaease_link=$(zen::i18n::translate "links.software.mediaease_docs" "$mlink")
 			[[ -n "$hlink" ]] && homepage_link=$(zen::i18n::translate "links.software.homepage" "$hlink")
 			[[ -n "$glink" ]] && github_link=$(zen::i18n::translate "links.software.github" "$glink")
-			local no_access_url_apps=("Rtorrent")
+			app_name_lower=$(echo "$app_name_sanitized" | tr '[:upper:]' '[:lower:]')
+			local no_access_url_apps=("rtorrent" "rclone")
 			found_in_array=false
 			for app in "${no_access_url_apps[@]}"; do
-				if [[ "$app" == "$app_name_sanitized" ]]; then
+				app_lower=$(echo "$app" | tr '[:upper:]' '[:lower:]')
+				if [[ "$app_lower" == "$app_name_lower" ]]; then
 					found_in_array=true
 					break
 				fi
