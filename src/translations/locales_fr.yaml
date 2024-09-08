@@ -77,7 +77,7 @@ errors:
     branch_switch: "Échec du passage à la branche bêta. Incompatibilité entre la branche et le fichier d'environnement."
     branches_not_found: "Aucune branche 'main' ni 'master' n'a été trouvée pour {arg0}."
     cancel_branch_switch: "Passage à la branche bêta annulé."
-    clone_repo: "Échec du clonage du dépôt."
+    clone_repo: "Échec du clonage du dépôt {arg0}."
     invalid_pull_action: "Action de pull invalide : {arg0}."
   network:
     api_unreachable: "API HarmonyUI injoignable."
@@ -220,7 +220,7 @@ success:
     partitions_create: "Partitions créées."
     select_raid_level: "Niveau RAID sélectionné : {arg0}"
   git:
-    clone_repo: "Dépôt cloné."
+    clone_repo: "Dépôt {arg0} cloné."
     download_release: "Code source téléchargé."
   network:
     api_reachable: "API accessible."
@@ -285,7 +285,7 @@ headers:
     mount: "Montage de {arg0} sur {arg1}..."
     partition_empty_disks: "Création des partitions sur les disques vides..."
   git:
-    clone_repo: "Clonage du dépôt..."
+    clone_repo: "Clonage du dépôt {arg0}..."
   security:
     configure_ssh: "Sécurisation de SSH..."
   software:

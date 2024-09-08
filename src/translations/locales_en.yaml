@@ -77,7 +77,7 @@ errors:
     branch_switch: "Failed to switch to beta branch. Branch and environment file mismatch."
     branches_not_found: "Neither 'main' nor 'master' branch found for {arg0}."
     cancel_branch_switch: "Switch to beta branch cancelled."
-    clone_repo: "Failed to clone repository."
+    clone_repo: "Failed to clone {arg0} repository."
     invalid_pull_action: "Invalid pull action: {arg0}."
   network:
     api_unreachable: "HarmonyUI API unreachable."
@@ -219,7 +219,7 @@ success:
     partitions_create: "Partitions created."
     select_raid_level: "Selected RAID level: {arg0}."
   git:
-    clone_repo: "Repository cloned."
+    clone_repo: "Repository {arg0} cloned."
     download_release: "Release downloaded."
   network:
     api_reachable: "API reachable."
@@ -284,7 +284,7 @@ headers:
     mount: "Mounting {arg0} to {arg1}..."
     partition_empty_disks: "Creating partitions on empty disks..."
   git:
-    clone_repo: "Cloning repository..."
+    clone_repo: "Cloning {arg0} repository..."
   security:
     configure_ssh: "Securing SSH..."
   software:

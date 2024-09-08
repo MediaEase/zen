@@ -44,7 +44,7 @@ zen::git::clone() {
     else
         recurse_submodules=""
     fi
-    mflibs::shell::text::white "$(zen::i18n::translate "headers.git.clone_repo" "$repo_url")"
+    mflibs::shell::text::white "$(zen::i18n::translate "headers.git.clone_repo" "$repo_name")"
     if mflibs::log "git clone --branch $branch $repo_url $target_dir $recurse_submodules >/dev/null 2>&1"; then
         local username
         local group
@@ -63,9 +63,9 @@ zen::git::clone() {
         [[ $username != "root" && $target_dir != /root/* ]] && zen::permission::fix "$target_dir" "755" "644" "$username" "$group"
         [[ "$target_dir" == /opt/MediaEase* ]] && zen::permission::fix "$target_dir" "755" "644" "www-data" "www-data"
     else
-        mflibs::status::error "$(zen::i18n::translate "errors.git.clone_repo" "$repo_url")"
+        mflibs::status::error "$(zen::i18n::translate "errors.git.clone_repo" "$repo_name")"
     fi
-    mflibs::shell::text::green "$(zen::i18n::translate "success.git.clone_repo" "$repo_url")"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.git.clone_repo" "$repo_name")"
 }
 
 # @function zen::git::get_release
