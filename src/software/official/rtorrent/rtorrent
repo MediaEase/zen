@@ -110,45 +110,50 @@ zen::software::rtorrent::update() {
 # @global software_config_file Path to the software's configuration file.
 zen::software::rtorrent::proxy::generate() {
     local caddy_file="$1"
+    # get the hashed password in the .htpasswd file
+    local hashed_password
+    hashed_password=$(grep "${user[username]}" "/etc/htpasswd.d/htpasswd.${user[username]}" | cut -d ":" -f 2)
     # Write configuration to the file
     cat <<EOF >"${caddy_file}"
-	route {
-        # SCGI Configuration for rTorrent
-        @scgi {
-            path /{{USERNAME}}/*
-        }
-        reverse_proxy @scgi unix//var/run/{{USERNAME}}/.rtorrent.sock {
-            transport http {
-                dial_timeout 10s
-                read_timeout 30s
-                write_timeout 30s
-            }
-        }
-        basicauth {
-            /{{USERNAME}}/* {
-                file /etc/htpasswd.d/htpasswd.{{USERNAME}}
-            }
-        }
-
-        # Download Index Configuration
-        @downloads {
-            path /{{USERNAME}}.rtorrent.downloads*
-        }
-        root @downloads /home/{{USERNAME}}/download-clients/rtorrent
-        file_server @downloads browse
-        basicauth {
-            /{{USERNAME}}.rtorrent.downloads* {
-                file /etc/htpasswd.d/htpasswd.{{USERNAME}}
-            }
-        }
-
-        @phpDownloads {
-            path /{{USERNAME}}.rtorrent.downloads/*.php
-        }
-        php_fastcgi @phpDownloads unix//run/php/php8.3-fpm.sock
+route {
+    # SCGI Configuration for rTorrent
+    @scgi {
+        path /{{USERNAME}}/*
     }
+    reverse_proxy @scgi unix//var/run/{{USERNAME}}/.rtorrent.sock {
+        transport http {
+            dial_timeout 10s
+            read_timeout 30s
+            write_timeout 30s
+        }
+    }
+
+    # Basic Authentication for /{{USERNAME}}/*
+    basic_auth /{{USERNAME}}/* {
+        {{USERNAME}} {{HASHED_PASSWORD}}
+    }
+
+    # Download Index Configuration
+    @downloads {
+        path /{{USERNAME}}.rtorrent.downloads*
+    }
+    root @downloads /home/{{USERNAME}}/download-clients/rtorrent
+    file_server @downloads browse
+
+    # Basic Authentication for Download Index
+    basic_auth /{{USERNAME}}.rtorrent.downloads* {
+        {{USERNAME}} {{HASHED_PASSWORD}}
+    }
+
+    # PHP FastCGI for Download Index
+    @phpDownloads {
+        path /{{USERNAME}}.rtorrent.downloads/*.php
+    }
+    php_fastcgi @phpDownloads unix//run/php/php8.3-fpm.sock
+}
 EOF
     sed -i -e "s|{{USERNAME}}|${user[username]}|g" "${caddy_file}"
+    sed -i -e "s|{{HASHED_PASSWORD}}|${hashed_password}|g" "${caddy_file}"
 }
 
 # @function zen::software::rtorrent::remove
