@@ -75,6 +75,7 @@ errors:
   git:
     branch_mismatch: "Impossible de passer à la branche principale lorsque la branche bêta est définie."
     branch_switch: "Échec du passage à la branche bêta. Incompatibilité entre la branche et le fichier d'environnement."
+    branches_not_found: "Aucune branche 'main' ni 'master' n'a été trouvée pour {arg0}."
     cancel_branch_switch: "Passage à la branche bêta annulé."
     clone_repo: "Échec du clonage du dépôt."
     invalid_pull_action: "Action de pull invalide : {arg0}."

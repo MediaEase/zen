@@ -75,6 +75,7 @@ errors:
   git:
     branch_mismatch: "Cannot switch to main when beta branch is set."
     branch_switch: "Failed to switch to beta branch. Branch and environment file mismatch."
+    branches_not_found: "Neither 'main' nor 'master' branch found for {arg0}."
     cancel_branch_switch: "Switch to beta branch cancelled."
     clone_repo: "Failed to clone repository."
     invalid_pull_action: "Invalid pull action: {arg0}."

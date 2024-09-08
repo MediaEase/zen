@@ -210,7 +210,7 @@ zen::software::infobox() {
 		[[ -n "$github_link" && "$action" != "remove" ]] && $shell "# $github_link"
 		[[ -n "$docs_link" && "$action" != "remove" ]] && $shell "# $docs_link"
 		[[ -n "$mediaease_link" ]] && $shell "# $mediaease_link"
-		[[ "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
+		[[ -n "$access_link" && "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
 		[[ -n "$access_link" && "$action" != "remove" ]] && $shell "# $access_link"
 		[[ -n "$username" ]] && $shell "# Username: $username"
 		[[ -n "$password" ]] && $shell "# Password: $password"

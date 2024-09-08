@@ -58,7 +58,6 @@ zen::software::rutorrent::plugins::resolve() {
             "katlogic/rutorrent-login"
             "Micdu70/geoip2-rutorrent"
             "Micdu70/rutorrent-trackerstatus"
-            "nelu/rutorrent-fileshare"
             "nelu/rutorrent-filemanager"
             "nelu/rutorrent-filemanager-share"
             "radonthetyrant/rutorrent-discord"
@@ -71,7 +70,13 @@ zen::software::rutorrent::plugins::resolve() {
             if [[ -d "/srv/rutorrent/plugins/$plugin_name" ]]; then
                 rm -rf "/srv/rutorrent/plugins/$plugin_name"
             fi
-            zen::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name" "main"
+            if git ls-remote --heads "https://github.com/$plugin" main &>/dev/null; then
+                zen::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name" "main"
+            elif git ls-remote --heads "https://github.com/$plugin" master &>/dev/null; then
+                zen::git::clone "$plugin" "/srv/rutorrent/plugins/$plugin_name" "master"
+            else
+                mflibs::status::error "$(zen::i18n::translate "errors.git.branches_not_found" "$plugin_name")"
+            fi
         done
         # configure rutorrent plugins
         mflibs::file::copy "/srv/rutorrent/plugins/diskspace/action.php" "/srv/rutorrent/plugins/diskspace/action.php.bak"
