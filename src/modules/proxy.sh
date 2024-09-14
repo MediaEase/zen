@@ -59,6 +59,8 @@ EOF
 # @arg $1 string The name of the application.
 # @arg $2 string The username associated with the application (used in multi-user mode).
 # @arg $3 string The directive to be added to the proxy configuration.
+# @arg $4 string The position at which to add the directive ('in', 'before', 'after') - Default 'in' (the reverse_proxy block).
+# @arg $5 boolean Whether to reload Caddy after adding the directive - Default false.
 # @global software_config_file string The path to the software's configuration file, used to determine the file location.
 # @stdout Appends the specified directive to the application's Caddy configuration file.
 # @exitcode 0 Success.
@@ -68,11 +70,41 @@ zen::proxy::add_directive() {
 	local app_name="$1"
 	local username="$2"
 	local directive="$3"
+	local position="${4:-in}"
+	local reload="${5:-false}"
 	local caddy_file
 	caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
+	case "$position" in
+	in)
+		awk -v dir="$directive" '
+                /reverse_proxy.*{/ {
+                    print; getline; print "    " dir; print; next
+                }
+                1' "$caddy_file" >"${caddy_file}.tmp"
+		;;
+	before)
+		awk -v dir="$directive" '
+                !inserted && /reverse_proxy/ {
+                    print dir; inserted=1
+                }
+                {print}' "$caddy_file" >"${caddy_file}.tmp"
+		;;
+	after)
+		awk -v dir="$directive" '
+                /reverse_proxy.*{/ {print; in_block=1; next}
+                in_block && /}/ {print; print dir; in_block=0; next}
+                {print}' "$caddy_file" >"${caddy_file}.tmp"
+		;;
+	*)
+		mflibs::status::error "$(zen::i18n::translate "errors.network.invalid_position" "$position" "'in', 'before', 'after'")"
+		;;
+	esac
 
-	# Append the directive to the file
-	echo "$directive" >>"${caddy_file}"
+	mv "${caddy_file}.tmp" "$caddy_file"
+
+	if [ "$reload" == "true" ]; then
+		mflibs::log "/usr/bin/caddy reload -c /etc/caddy/Caddyfile >/dev/null 2>&1"
+	fi
 }
 
 # @function zen::proxy::remove
