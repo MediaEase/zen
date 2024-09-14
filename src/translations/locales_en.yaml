@@ -85,6 +85,7 @@ errors:
     get_ipv4: "Failed to get IPv4 address."
     invalid_api_response: "Invalid API response: {arg0}."
     invalid_configuration: "Invalid network configuration: {arg0}."
+    invalid_position: "Invalid position: {arg0}. Must be {arg1}."
     port_in_use: "Port {arg0} is unavailable."
     port_range_missing: "No port range found for {arg0}."
   security:
