@@ -11,6 +11,7 @@ errors:
     action_not_specified: "Aucune action spécifiée."
     already_installed_by_others: "{arg0} est déjà installé pour d'autres utilisateurs."
     already_installed_by_user: "{arg0} est déjà installé pour {arg1}."
+    already_installed: "{arg0} est déjà installé."
     download_folder: "Échec du téléchargement du dossier."
     insufficient_args: "Arguments insuffisants."
     invalid_action: "Action invalide : {arg0}."

@@ -11,6 +11,7 @@ errors:
     action_not_specified: "No action specified."
     already_installed_by_others: "{arg0} is already installed for other users."
     already_installed_by_user: "{arg0} is already installed for {arg1}."
+    already_installed: "{arg0} is already installed."
     download_folder: "Failed to download the folder."
     insufficient_args: "Insufficient arguments."
     invalid_action: "Invalid action: {arg0}."
@@ -77,7 +78,7 @@ errors:
     branch_switch: "Failed to switch to beta branch. Branch and environment file mismatch."
     branches_not_found: "Neither 'main' nor 'master' branch found for {arg0}."
     cancel_branch_switch: "Switch to beta branch cancelled."
-    clone_repo: "Failed to clone {arg0} repository."
+    clone_repo: "Failed to clone {arg0} repository."
     invalid_pull_action: "Invalid pull action: {arg0}."
   network:
     api_unreachable: "HarmonyUI API unreachable."
