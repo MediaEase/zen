@@ -45,7 +45,7 @@ FLOOD_OPTION_rtsocket=/var/run/${user[username]}/.rtorrent.sock
 EOF
     zen::service::generate "$app_name" "$software_config_file" "true"
     zen::proxy::generate "$app_name" "${default_port}" "$software_config_file"
-    local beforeDirectives=("import ../snippets/basic_auth.${user[username]}.caddy" "@stripPrefix path_regexp strip ^/${user[username]}/$app_name/(.*)$" "rewrite @stripPrefix /{http.regexp.strip.1}")
+    local beforeDirectives=("import ../fragments/basic_auth.${user[username]}.conf" "@stripPrefix path_regexp strip ^/${user[username]}/$app_name/(.*)$" "rewrite @stripPrefix /{http.regexp.strip.1}")
     for directive in "${beforeDirectives[@]}"; do
         zen::proxy::add_directive "$app_name" "${user[username]}" "$directive" "before"
     done
