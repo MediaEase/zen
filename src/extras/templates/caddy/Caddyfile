@@ -1,0 +1,19 @@
+{
+    persist_config off
+    import fragments/logger.caddy
+    debug
+}
+{{SERVER_NAME}} {
+    import fragments/compression.conf
+    import fragments/security_headers.conf
+    import fragments/static_cache.conf
+    import fragments/tls.conf
+
+    # import softwares routes
+    import /etc/caddy/softwares/*.caddy
+    
+    # HarmonyUI main route
+    root * /srv/harmonyui/public
+    file_server
+    import fragments/php_socket.conf
+}
