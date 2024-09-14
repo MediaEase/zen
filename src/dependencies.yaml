@@ -72,7 +72,10 @@ flaresolverr:
 flexget:
   apt: python3-pip python3-venv
 flood:
-  apt: nodejs
+  external:
+    - pnpm:
+        install: |
+          pnpm add -g npm node-gyp npm-check-updates
 headphones:
   apt: nodejs python3-pip python3-venv
 jellyfin:

@@ -1,0 +1,33 @@
+arguments:
+  app_name: Flood
+  altname: flood
+  description: flood_description
+  pro_only: false
+  logo_path: flood.png
+  group: download
+  details:
+    docs: https://github.com/jesec/flood/wiki
+    github: https://github.com/jesec/flood
+    homepage: https://flood.js.org/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/flood
+  multi_user: true
+  ports:
+    - default: [19000-20999]
+    - ssl: [36001-36999]
+  service_directives:
+    - Type=simple
+    - EnvironmentFile=/home/%i/.config/flood/env
+    - Environment=TMPDIR=/home/%i/tmp/${app_name}
+    - KillMode=process
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/${app_name}
+    - ExecStart=/usr/bin/env flood -d /home/%i/.config/flood --allowedpath=/home/%i
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - default_port
