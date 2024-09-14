@@ -86,6 +86,7 @@ zen::software::rutorrent::plugins::resolve() {
         # configure spectrogram plugin
         sed -i "s/\$pathToExternals\['sox'\] = ''/\$pathToExternals\['sox'\] = '\/usr\/bin\/sox'/g" /srv/rutorrent/plugins/spectrogram/conf.php
         zen::software::rutorrent::fix::quota
+        zen::proxy::generate "rutorrent" "80" "/rutorrent"
         zen::permission::read_exec "/srv/rutorrent" "www-data" "www-data"
     fi
     mflibs::status::success "$(zen::i18n::translate "success.software.configure" "plugins")"

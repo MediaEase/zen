@@ -14,6 +14,10 @@ arguments:
     mediaease_docs: https://mediaease.github.io/docs/software/official/rutorrent
   files:
     - config: /srv/$app_name/config.php
+    - proxy: /etc/caddy/softwares/$app_name.caddy
+  ports:
+    - default: [80-80]
+    - ssl: [443-443]
   paths:
     - backup: /home/%i/.mediaease/backups/$app_name
     - data: /srv/$app_name
