@@ -13,6 +13,7 @@
 # @arg $1 string The name of the application.
 # @arg $2 number The port on which the application is running.
 # @arg $3 string The base URL for routing to the application.
+# @arg $4 boolean Whether to reload Caddy after generating the configuration.
 # @global software_config_file string The path to the software's configuration file, used to determine multi-user mode.
 # @stdout Creates or overwrites a Caddy configuration file.
 # @exitcode 0 Success.
@@ -25,6 +26,7 @@ zen::proxy::generate() {
 	local app_name="$1"
 	local port="$2"
 	local url_base="$3"
+	local reload="${4:-true}"
 	local caddy_file
 	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
 	[[ ! -d "$(dirname "$caddy_file")" ]] && mkdir -p "$(dirname "$caddy_file")"
@@ -45,7 +47,9 @@ zen::proxy::generate() {
 EOF
 	mflibs::log "/usr/bin/caddy fmt --overwrite $caddy_file >/dev/null 2>&1"
 	mflibs::log "/usr/bin/caddy validate -c /etc/caddy/Caddyfile >/dev/null 2>&1"
-	mflibs::log "/usr/bin/caddy reload -c /etc/caddy/Caddyfile >/dev/null 2>&1"
+	if [ "$reload" == "true" ]; then
+		mflibs::log "/usr/bin/caddy reload -c /etc/caddy/Caddyfile >/dev/null 2>&1"
+	fi
 }
 
 # @function zen::proxy::add_directive
