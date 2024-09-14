@@ -76,11 +76,17 @@ zen::software::rtorrent::config() {
         -e "s|{{PORT_RANGE}}|${port_range}|g" \
         "/home/${user[username]}/.rtorrent.rc"
     mflibs::file::copy "/home/${user[username]}/.rtorrent.rc" "/home/${user[username]}/.config/${app_name}/.rtorrent.rc.orig"
-    mkdir -p "/home/${user[username]}/download-clients/rtorrent/{downloads,log,.session,.watch}"
+    for dir in "downloads" "log" ".session" ".watch"; do
+        mkdir -p "/home/${user[username]}/download-clients/rtorrent/$dir"
+        zen::permission::read_exec "/home/${user[username]}/download-clients/rtorrent/$dir" "${user[username]}" "${user[username]}"
+    done
     # generate the proxy configuration
     zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}"
     zen::permission::read_exec "/home/${user[username]}/download-clients/rtorrent" "${user[username]}" "${user[username]}"
     zen::permission::read_exec "/home/${user[username]}/.rtorrent.rc" "${user[username]}" "${user[username]}"
+    mkdir -p "/var/run/${user[username]}/"
+    chown -R "${user[username]}:${user[username]}" "/var/run/${user[username]}/"
+    chmod -R 770 "/var/run/${user[username]}/"
     # we can't use the zen::proxy::generate function because rtorrent is a bit different
     zen::software::rtorrent::proxy::generate "/etc/caddy/softwares/${user[username]}.scgi.caddy"
 
