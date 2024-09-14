@@ -84,9 +84,10 @@ zen::software::rtorrent::config() {
     zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}" "${user[username]}"
     zen::permission::read_exec "/home/${user[username]}/download-clients/rtorrent" "${user[username]}" "${user[username]}"
     zen::permission::read_exec "/home/${user[username]}/.rtorrent.rc" "${user[username]}" "${user[username]}"
-    mkdir -p "/var/run/${user[username]}/"
-    chown -R "${user[username]}:${user[username]}" "/var/run/${user[username]}/"
-    chmod -R 770 "/var/run/${user[username]}/"
+    [[ ! -d "/var/run/${user[username]}" ]] && {
+        mkdir -p "/var/run/${user[username]}/"
+        zen::permission::private "/var/run/${user[username]}" "${user[username]}" "${user[username]}"
+    }
     # we can't use the zen::proxy::generate function because rtorrent is a bit different
     zen::software::rtorrent::proxy::generate "/etc/caddy/softwares/${user[username]}.scgi.caddy"
 
