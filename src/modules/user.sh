@@ -170,6 +170,8 @@ zen::user::load() {
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.not_found" "${username}")"
 		exit 1
 	fi
+	user_password=$(zen::vault::pass::reveal "$username.main")
+	user["password"]="${user_password}"
 	return 0
 }
 
