@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/readarr/readarr.sh
+# @file software/official/readarr/readarr.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Readarr handler

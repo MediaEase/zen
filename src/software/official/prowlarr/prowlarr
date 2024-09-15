@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/prowlarr/prowlarr.sh
+# @file software/official/prowlarr/prowlarr.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Prowlarr handler

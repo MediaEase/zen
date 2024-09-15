@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/sonarr/sonarr.sh
+# @file software/official/sonarr/sonarr.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Sonarr handler

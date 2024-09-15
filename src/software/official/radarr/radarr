@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/radarr/radarr.sh
+# @file software/official/radarr/radarr.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Radarr handler

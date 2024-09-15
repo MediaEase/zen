@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/sonarr4k/sonarr4k.sh
+# @file software/official/sonarr4k/sonarr4k.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Sonarr4k handler

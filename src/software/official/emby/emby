@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/emby/emby.sh
+# @file software/official/emby/emby.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Emby handler

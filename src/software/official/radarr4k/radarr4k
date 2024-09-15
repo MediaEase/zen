@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/radarr4k/radarr4k.sh
+# @file software/official/radarr4k/radarr4k.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Radarr4k handler

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/rtorrent/rtorrent.sh
+# @file software/official/rtorrent/rtorrent.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description rTorrent handler

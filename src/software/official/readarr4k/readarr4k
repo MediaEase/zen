@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/readarr4k/readarr4k.sh
+# @file software/official/readarr4k/readarr4k.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Readarr4k handler

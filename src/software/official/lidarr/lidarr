@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @file software/lidarr/lidarr.sh
+# @file software/official/lidarr/lidarr.sh
 # @version: 1.0.0
 # @project MediaEase
 # @description Lidarr handler
