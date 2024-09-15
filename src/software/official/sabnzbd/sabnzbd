@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# @file software/sabnzbd/sabnzbd.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Sabnzbd handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::sabnzbd::add
+# @description Adds a Sabnzbd for a user, including downloading, configuring, and starting the service.
+# @arg $1 string The name of the application (Sabnzbd).
+# @arg $2 string A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+zen::software::sabnzbd::add() {
+    local venv_path="/opt/${user[username]}/$app_name/venv"
+    local sabnzbd_source_path="/opt/${user[username]}/$app_name"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "sabnzbd/sabnzbd" "$is_prerelease" "-src.tar.gz"
+    # configure the app. This will also generate the proxy file
+    zen::software::sabnzbd::config "$is_prerelease"
+    zen::workspace::venv::create "$venv_path"
+    # Build the virtual environment and install dependencies from requirements.txt
+    zen::workspace::venv::build "$sabnzbd_source_path"
+    # Compile translations if needed
+    if [[ -f "$sabnzbd_source_path/tools/make_mo.py" ]]; then
+        # shellcheck disable=SC1091
+        mflibs::log "source $venv_path/bin/activate && python3 $sabnzbd_source_path/tools/make_mo.py"
+    fi
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::manage "stop" "$app_name"
+    local user_password
+    user_password=$(zen::vault::pass::reveal "thomas.main")
+    declare -g sab_config_file url_base
+    sab_config_file=$(zen::software::get_config_key_value "$software_config_file" '.files[] | select(has("config")) | .config')
+    url_base="/${user[username]}/${app_name}"
+    sed -i -e "s/url_base = \/sabnzbd/url_base = \/${user[username]}\/sabnzbd/g" \
+        -e "s/username = \"\"/username = \"${user[username]}\"/g" \
+        -e "s/port = \"\"/port = \"${default_port}\"/g" \
+        -e "s/https_port = \"\"/https_port = \"${ssl_port}\"/g" \
+        -e "s/download_dir = \"\"/download_dir = \"\/home\/${user[username]}\/download-clients\/$app_name/incomplete\"/g" \
+        -e "s/complete_dir = \"\"/complete_dir = \"\/home\/${user[username]}\/download-clients\/$app_name/complete\"/g" \
+        -e "s/admin_dir = \"\"/admin_dir = \"\/home\/${user[username]}\/.config\/$app_name/admin\"/g" \
+        -e "s/backup_dir = \"\"/backup_dir = \"\/home\/${user[username]}\/.config\/$app_name/backup\"/g" \
+        -e "s/log_dir = \"\"/log_dir = \"\/home\/${user[username]}\/download-clients\/$app_name/logs\"/g" \
+        -e "s/password = \"\"/password = \"${user_password}\"/g" "$sab_config_file"
+    zen::service::manage "start" "$app_name"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::sabnzbd::config
+# @description Configures Sabnzbd for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Sabnzbd.
+# @global user An associative array containing user-specific information.
+# @example
+#   # the following disables pre-release (develop):
+#   zen::software::sabnzbd::config "false"
+#   # the following enables pre-release (nightly):
+#   zen::software::sabnzbd::config "true"
+zen::software::sabnzbd::config() {
+    local is_prerelease="$1"
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::software::autogen
+    mkdir -p "/home/${user[username]}/.config/${app_name}/{admin,backup}"
+    mkdir -p "/home/${user[username]}/download-clients/${app_name}/{incomplete,complete,logs}"
+    # Set permissions for config and installation directories
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+    # Generate the proxy configuration
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::sabnzbd::update
+# @description Updates Sabnzbd for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+zen::software::sabnzbd::update() {
+    zen::service::manage "stop" "$app_name"
+    local venv_path="/opt/${user[username]}/$app_name/venv"
+    local sabnzbd_source_path="/opt/${user[username]}/$app_name"
+    local temp_dir
+    temp_dir=$(mktemp -d)
+    local is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    zen::git::get_release "$temp_dir" "sabnzbd/sabnzbd" "$is_prerelease" "-src.tar.gz"
+    find "$sabnzbd_source_path" -mindepth 1 -not -path "$venv_path" -not -path "$venv_path/*" -delete
+    mv "$temp_dir"/* "$sabnzbd_source_path"
+    rm -rf "$temp_dir"
+    if [[ -f "$sabnzbd_source_path/requirements.txt" ]]; then
+        zen::workspace::venv::update "$sabnzbd_source_path"
+    fi
+    # Compile translations if needed
+    if [[ -f "$sabnzbd_source_path/tools/make_mo.py" ]]; then
+        # shellcheck disable=SC1091
+        mflibs::log "source $venv_path/bin/activate && python3 $sabnzbd_source_path/tools/make_mo.py"
+    fi
+    zen::service::manage "start" "$app_name"
+}
+
+# @function zen::software::sabnzbd::remove
+# @description Removes Sabnzbd for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+zen::software::sabnzbd::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::sabnzbd::backup
+# @description Creates a backup for Sabnzbd settings for a user.
+zen::software::sabnzbd::backup() {
+    local app_name="$2"
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+# @function zen::software::sabnzbd::reset
+# @description Resets Sabnzbd settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::sabnzbd::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::sabnzbd::reinstall
+# @description Reinstalls Sabnzbd for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::sabnzbd::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

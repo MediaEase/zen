@@ -1,0 +1,36 @@
+arguments:
+  app_name: Sabnzbd
+  altname: sabnzbd
+  description: sabnzbd_description
+  note: sabnzbd_note
+  pro_only: false
+  logo_path: sabnzbd.png
+  multi_user: true
+  group: download
+  details:
+    github: https://github.com/sabnzbd/sabnzbd/
+    homepage: https://sabnzbd.org/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/sabnzbd
+  ports:
+    - default: [20000-61000]
+  service_directives:
+    - Type=simple
+    - KillMode=none
+    - Environment="PYTHONIOENCODING=utf-8"
+    - Environment="SABNZBD_PIDFILE=/var/run/${user[username]}/$app_name.pid"
+    - PIDFile=${SABNZBD_PIDFILE}
+    - ExecStart=/usr/bin/python3 /usr/bin/sabnzbdplus -f /home/%i/.config/$app_name/$app_name.ini -b 0 -s 0.0.0.0:{{APP_WEB_PORT}} --https {{APP_SECURE_WEB_PORT}} --pidfile ${SABNZBD_PIDFILE} -d
+    - ExecStop=/bin/kill -s TERM $MAINPID
+    - ExecReload=/bin/kill -s HUP $MAINPID
+    - SyslogIdentifier=SABnzbd Usenet Client for %i
+  files:
+    - service: /etc/systemd/system/$app_name@%i.service
+    - config: /home/%i/.config/$app_name/$app_name.ini
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/download-clients/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - ssl_port
+    - default_port
