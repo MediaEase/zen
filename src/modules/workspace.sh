@@ -131,3 +131,56 @@ zen::workspace::venv::remove() {
 
 	mflibs::status::success "$(zen::i18n::translate "success.virtualization.remove_venv" "$app_name")"
 }
+
+# @function zen::workspace::venv::update
+# @description Updates an existing Python virtual environment, installing or upgrading dependencies from the dependencies.yaml file and requirements.txt.
+# @arg $1 string The path to the project directory where the virtual environment is located.
+# @global user An associative array containing user-specific information.
+# @return 1 if no path is specified, or if an error occurs during installation.
+# @exitcode 0 Success in updating the virtual environment.
+zen::workspace::venv::update() {
+	local path="$1"
+	local dependencies_file="${MEDIAEASE_HOME}/zen/src/dependencies.yaml"
+	local python_dependencies
+	local requirements_path="$path/requirements.txt"
+	if [[ -z "$path" ]]; then
+		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.remove_venv")"
+		return 1
+	fi
+	# shellcheck disable=SC1091
+	source "$path/venv/bin/activate"
+	mflibs::shell::text::green "$(zen::i18n::translate "messages.virtualization.activate_venv")"
+	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
+	if [[ -z "$python_dependencies" ]]; then
+		deactivate
+		mflibs::status::error "$(zen::i18n::translate "errors.virtualization.no_dependencies_found" "$app_name")"
+		return 1
+	fi
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
+	local exit_status=0
+	IFS=' ' read -ra DEPS <<<"$python_dependencies"
+	for dependency in "${DEPS[@]}"; do
+		mflibs::log "uv pip install --quiet --upgrade ${dependency}"
+		local result=$?
+		if [[ "$result" -ne 0 ]]; then
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.dependency_install" "$dependency")"
+			exit_status=1
+		fi
+	done
+	mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv_requirements" "$app_name")"
+	if [[ $exit_status -eq 0 && -f "$requirements_path" ]]; then
+		mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
+		mflibs::log "uv pip install --quiet --upgrade --requirement $requirements_path"
+		local result=$?
+		if [[ "$result" -ne 0 ]]; then
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.remove_venv_requirements" "$software_name")"
+			exit_status=1
+		fi
+		mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv_requirements" "$software_name")"
+	fi
+	deactivate
+	if [[ $exit_status -eq 0 ]]; then
+		mflibs::status::success "$(zen::i18n::translate "success.virtualization.install_venv" "$software_name")"
+	fi
+	return $exit_status
+}
