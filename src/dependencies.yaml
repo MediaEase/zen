@@ -50,7 +50,7 @@ mediaease:
 airsonic:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default ffmpeg
 autodl:
-  apt: irssi screen unzip libarchive-zip-perl libnet-ssleay-perl libhtml-parser-perl libxml-libxml-perl libjson-perl libjson-xs-perl libxml-libxslt-perl
+  apt: irssi screen libarchive-zip-perl libnet-ssleay-perl libhtml-parser-perl libxml-libxml-perl libjson-perl libjson-xs-perl libxml-libxslt-perl
 autoscan:
   apt: snapd
 bazarr:
@@ -58,15 +58,13 @@ bazarr:
 calibre:
   apt: python3-pip python3-venv qtbase5-dev qttools5-dev-tools libqt5svg5-dev libopengl0
 deluge:
-  apt: build-essential checkinstall intltool libtool libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libboost-python-dev git intltool closure-compiler python3-pip python3-libtorrent python3-geoip python3-dbus  python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3 python3-pygame libnotify4 librsvg2-common xdg-utils
+  apt: checkinstall intltool libtool libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libboost-python-dev git intltool closure-compiler python3-pip python3-libtorrent python3-geoip python3-dbus  python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3 python3-pygame libnotify4 librsvg2-common xdg-utils
 duplicati:
-  apt: unzip mono-devel
+  apt: mono-devel
 fail2ban:
   apt: sendmail-bin sendmail
 filebot:
   apt: openjdk-11-jdk mediainfo libchromaprint-tools
-filebrowser:
-  apt: curl
 flaresolverr:
   apt: libdbus-glib-1-2 libxtst6 libx11-xcb1 libgtk-3-0 libasound2 default-jre-headless xvfb chromium
 flexget:
@@ -87,23 +85,21 @@ lazylibrarian:
 lidarr:
   apt: mediainfo
 medusa:
-  apt: git openssl
+  apt: openssl
 mylar3:
   apt: python3-dev python3-pip python3-openssl python3-setuptools rsync
 netdata:
-  apt: build-essential libsqlite3-dev libgd-dev git
+  apt: libsqlite3-dev libgd-dev
 nextcloud:
-  apt: unzip libxml2-dev php8.3 php8.3-cli php8.3-curl php8.3-fpm php8.3-gd php-geoip php-json php8.3-mbstring php8.3-msgpack php8.3-mysql php8.3-opcache php8.3-xml php8.3-xmlrpc php8.3-zip php-gd php8.3-intl php-intl php8.3-bcmath php8.3-gmp php8.3-imagick php8.3-sqlite3
-notifiarr:
-  apt: gzip
+  apt: libxml2-dev php8.3 php8.3-cli php8.3-curl php8.3-fpm php8.3-gd php-geoip php-json php8.3-mbstring php8.3-msgpack php8.3-mysql php8.3-opcache php8.3-xml php8.3-xmlrpc php8.3-zip php-gd php8.3-intl php-intl php8.3-bcmath php8.3-gmp php8.3-imagick php8.3-sqlite3
 novnc:
   apt: expect xfce4 xfce4-goodies xfonts-base dbus-x11 xinit xserver-xorg xserver-xorg-legacy x11-xserver-utils tightvncserver fonts-noto firefox-esr autocutsel
 nzbget:
-  apt: rar par2
+  apt: rar par2 libncurses-dev libxml2-dev libboost-json1.81-dev
 nzbhydra2:
   apt: oracle-java17-installer openjdk-17-jre oracle-java17-set-default
 ombi:
-  apt: libunwind8 libicu-dev libcurl4-openssl-dev unzip screen sqlite3
+  apt: libunwind8 libicu-dev libcurl4-openssl-dev screen sqlite3
 overseerr:
   apt: nodejs libsqlite3-dev sqlite3
 plex_debrid:
@@ -114,7 +110,7 @@ plex_debrid:
           wget https://github.com/itsToggle/rclone_RD/releases/download/v1.58.1-rd.2.2/rclone-linux -O /usr/local/bin/rclone_rd
           chmod +x /usr/local/bin/rclone_rd
 qbittorrent:
-  apt: build-essential libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libboost-python-dev qtbase5-dev qttools5-dev-tools libqt5svg5-dev libgeoip-dev zlib1g-dev
+  apt: libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libboost-python-dev qtbase5-dev qttools5-dev-tools libqt5svg5-dev libgeoip-dev
 radarr:
   apt: curl sqlite3 mediainfo
 radarr4k:
@@ -124,9 +120,9 @@ rclone:
 readarr:
   apt: sqlite3
 requestrr:
-  apt: unzip sqlite3 gawk
+  apt: sqlite3 gawk
 rtorrent:
-  apt: subversion screen zip unzip sysstat build-essential comerr-dev dstat automake libtool libcppunit-dev pkg-config libsigc++-2.0-dev curl libncurses5-dev libncursesw5-dev yasm fontconfig libfontconfig1 libfontconfig1-dev mediainfo rar zlib1g-dev libcurl4-openssl-dev checkinstall autoconf-archive
+  apt: subversion screen sysstat comerr-dev dstat automake libtool libcppunit-dev pkg-config libsigc++-2.0-dev curl libncurses5-dev libncursesw5-dev yasm fontconfig libfontconfig1 libfontconfig1-dev mediainfo rar libcurl4-openssl-dev checkinstall autoconf-archive
 rutorrent:
   apt: sox geoip-database ffmpeg p7zip-full
 sabnzbd:
@@ -137,7 +133,7 @@ seedcross:
 sickchill:
   apt: git openssl rar python3-venv
 sickgear:
-  apt: curl git build-essential libsqlite3-dev libbz2-dev libreadline-dev zlib1g-dev python3-venv
+  apt: curl git libsqlite3-dev libbz2-dev libreadline-dev python3-venv
 sonarr:
   apt: referenceassemblies-pcl ca-certificates-mono mono-devel mediainfo sqlite3
 sonarr4k:
@@ -149,14 +145,12 @@ tautulli:
 thelounge:
   apt: nodejs
 transmission:
-  apt: nodejs qttools5-dev libgtkmm-3.0-dev gettext build-essential automake autoconf libtool pkg-config intltool libicu-dev libcurl4-openssl-dev libglib2.0-dev libevent-dev libminiupnpc-dev libgtk-3-dev libayatana-appindicator3-dev libminiupnpc-dev libqt5svg5-dev
+  apt: nodejs qttools5-dev libgtkmm-3.0-dev gettext automake autoconf libtool pkg-config intltool libicu-dev libcurl4-openssl-dev libglib2.0-dev libevent-dev libminiupnpc-dev libgtk-3-dev libayatana-appindicator3-dev libminiupnpc-dev libqt5svg5-dev
 vpn:
-  apt: expect iptables openssl ca-certificates zip libcap-ng-dev libpam0g-dev libudev-dev libsystemd-dev libnl-genl-3-dev liblz4-dev python3-docutils
+  apt: expect iptables openssl ca-certificates libcap-ng-dev libpam0g-dev libudev-dev libsystemd-dev libnl-genl-3-dev liblz4-dev python3-docutils
 webconsole:
   apt: jq
 x2go:
   apt: xfce4 xfce4-terminal mate-desktop-environment x2gomatebindings firefox-esr
-xteve:
-  apt: unzip
 znc:
   apt: bc automake make cmake checkinstall
