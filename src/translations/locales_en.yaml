@@ -80,6 +80,8 @@ errors:
     cancel_branch_switch: "Switch to beta branch cancelled."
     clone_repo: "Failed to clone {arg0} repository."
     invalid_pull_action: "Invalid pull action: {arg0}."
+    no_release_found: "No release found."
+    no_tag_found: "No tag found."
   network:
     api_unreachable: "HarmonyUI API unreachable."
     dashboard_unreachable: "HarmonyUI dashboard unreachable."

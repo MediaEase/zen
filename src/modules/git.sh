@@ -78,12 +78,27 @@ zen::git::get_release() {
     local repo_name="$2"
     local is_prerelease="$3"
     local release_name="$4"
-    local repo_url
+    local repo_url="https://api.github.com/repos/$repo_name/releases"
+    local release_url
     mflibs::shell::text::white "$(zen::i18n::translate "messages.git.download_release" "$repo_name")"
-    repo_url="https://api.github.com/repos/$repo_name/releases"
-    release_url="$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")"
-    declare -g release_version
-    release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
+    if [[ "$release_name" == "source" ]]; then
+        local tag_name
+        tag_name=$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .tag_name")
+        if [[ -z "$tag_name" ]]; then
+            mflibs::shell::text::red "$(zen::i18n::translate "errors.git.no_tag_found" "$repo_name")"
+            return 1
+        fi
+        release_url="https://github.com/$repo_name/archive/refs/tags/$tag_name.tar.gz"
+        release_version="$tag_name"
+
+    else
+        release_url=$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")
+        release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
+    fi
+    if [[ -z "$release_url" ]]; then
+        mflibs::shell::text::red "$(zen::i18n::translate "errors.git.no_release_found" "$repo_name")"
+        return 1
+    fi
     mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.git.found_release" "$repo_name"): $release_version")"
     [[ -d $target_dir ]] && rm -rf "$target_dir"
     mflibs::dir::mkcd "$target_dir"
@@ -97,7 +112,6 @@ zen::git::get_release() {
         username=$(echo "$target_dir" | cut -d'/' -f3)
         local group
         group=$(getent group | grep "^$username:" | cut -d: -f1)
-
         zen::permission::read_exec "$target_dir" "$username" "$group"
     else
         zen::permission::read_exec "$target_dir" "www-data" "www-data"
