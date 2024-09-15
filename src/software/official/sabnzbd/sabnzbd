@@ -36,8 +36,6 @@ zen::software::sabnzbd::add() {
     # generate the service file, this will also start it
     zen::service::generate "$app_name" "$software_config_file"
     zen::service::manage "stop" "$app_name"
-    local user_password
-    user_password=$(zen::vault::pass::reveal "thomas.main")
     declare -g sab_config_file url_base
     sab_config_file=$(zen::software::get_config_key_value "$software_config_file" '.files[] | select(has("config")) | .config')
     url_base="/${user[username]}/${app_name}"
@@ -50,7 +48,7 @@ zen::software::sabnzbd::add() {
         -e "s/admin_dir = \"\"/admin_dir = \"\/home\/${user[username]}\/.config\/$app_name/admin\"/g" \
         -e "s/backup_dir = \"\"/backup_dir = \"\/home\/${user[username]}\/.config\/$app_name/backup\"/g" \
         -e "s/log_dir = \"\"/log_dir = \"\/home\/${user[username]}\/download-clients\/$app_name/logs\"/g" \
-        -e "s/password = \"\"/password = \"${user_password}\"/g" "$sab_config_file"
+        -e "s/password = \"\"/password = \"${user[password]}\"/g" "$sab_config_file"
     zen::service::manage "start" "$app_name"
     # create a backup file
     zen::software::backup::create "$app_name" "$software_config_file"
