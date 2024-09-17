@@ -19,7 +19,7 @@ arguments:
     - Environment="PYTHONIOENCODING=utf-8"
     - Environment="SABNZBD_PIDFILE=/var/run/${user[username]}/$app_name.pid"
     - PIDFile=${SABNZBD_PIDFILE}
-    - ExecStart=/usr/bin/python3 /usr/bin/sabnzbdplus -f /home/%i/.config/$app_name/$app_name.ini -b 0 -s 0.0.0.0:{{APP_WEB_PORT}} --https {{APP_SECURE_WEB_PORT}} --pidfile ${SABNZBD_PIDFILE} -d
+    - ExecStart=/usr/bin/python3 /usr/bin/sabnzbdplus -f /home/%i/.config/$app_name/$app_name.ini -b 0 -s 0.0.0.0:{{default_port}} --https {{ssl_port}} --pidfile ${SABNZBD_PIDFILE} -d
     - ExecStop=/bin/kill -s TERM $MAINPID
     - ExecReload=/bin/kill -s HUP $MAINPID
     - SyslogIdentifier=SABnzbd Usenet Client for %i
