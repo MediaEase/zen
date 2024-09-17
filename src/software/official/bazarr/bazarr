@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# @file software/official/bazarr/bazarr.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Bazarr handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::bazarr::add
+# @alias Install Bazarr
+# @description Adds Bazarr for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (Bazarr).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add bazarr -u <username>
+# @example
+#   zen software add bazarr -u <username> -o branch=beta # installs the beta (nightly) version
+zen::software::bazarr::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "morpheus65535/bazarr" "$is_prerelease" "bazarr.zip"
+    # configure the app. This will also generate the proxy file
+    zen::software::bazarr::config "$is_prerelease"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::bazarr::config
+# @internal
+# @description Configures Bazarr for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Bazarr.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::bazarr::config "false"  # disables pre-release (develop)
+# @example
+#   zen::software::bazarr::config "true" # enables pre-release (nightly)
+zen::software::bazarr::config() {
+    local is_prerelease="$1"
+    declare -g url_base
+    zen::software::autogen
+    zen::workspace::venv::create "/opt/${user[username]}/$app_name" "${user[username]}" "true"
+    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::manage "stop" "$app_name@${user[username]}.service"
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    url_base="/${user[username]}/${app_name}"
+    [[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
+    sed -i "/^auth:/,/^[^ ]/s/password: .*/password: ${user[password]}/; \
+        /^auth:/,/^[^ ]/s/username: .*/username: ${user[username]}/; \
+        /^general:/,/^[^ ]/s|url_base: .*|url_base: $url_base|; \
+        /^general:/,/^[^ ]/s/branch: .*/branch: $branch/; \
+        /^general:/,/^[^ ]/s/port: .*/port: ${default_port}/" /home/"${user[username]}"/.config/"$app_name"/config.yaml
+    # generate the proxy configuration
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+    zen::permission::user_exec "/opt/${user[username]}/$app_name/Bazarr" "${user[username]}"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    zen::service::manage "start" "$app_name@${user[username]}.service"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::bazarr::update
+# @alias Update Bazarr
+# @description Updates Bazarr for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update bazarr -u <username>
+# @example
+#   zen software update bazarr -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::bazarr::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "Bazarr/Bazarr" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::bazarr::remove
+# @alias Remove Bazarr
+# @description Removes Bazarr for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove bazarr -u <username>
+zen::software::bazarr::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::bazarr::backup
+# @alias Backup Bazarr
+# @description Creates a backup for Bazarr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup bazarr -u <username>
+zen::software::bazarr::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::bazarr::reset
+# @alias Reset Bazarr
+# @description Resets Bazarr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset bazarr -u <username>
+zen::software::bazarr::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::bazarr::reinstall
+# @alias Reinstall Bazarr
+# @description Reinstalls Bazarr for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall bazarr -u <username>
+zen::software::bazarr::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}
