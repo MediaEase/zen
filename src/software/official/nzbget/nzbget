@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+# @file software/official/nzbget/nzbget.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description NZBGet handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::nzbget::add
+# @alias Install NZBGet
+# @description Adds NZBGet for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (NZBGet).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add nzbget -u <username>
+# @example
+#   zen software add nzbget -u <username> -o branch=beta # installs the beta (nightly) version
+zen::software::nzbget::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "nzbgetcom/nzbget" "$is_prerelease" "source"
+    # configure the app. This will also generate the proxy file
+    zen::software::nzbget::config "$is_prerelease"
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    local config_file
+    config_file="/home/${user[username]}/.config/${app_name}/${app_name}.conf"
+    zen::service::manage "stop" "$app_name@${user[username]}.service"
+    sed -i -e "s|^ConfigFile=.*|ConfigFile=/home/${user[username]}/.config/${app_name}/${app_name}.conf|" \
+        -e "s|^ControlPort=.*|ControlPort=${default_port}|" \
+        -e "s|^ControlPassword=.*|ControlPassword=${user[password]}|" \
+        -e "s|^ControlUsername=.*|ControlUsername=${user[username]}|" \
+        -e "s|^SecurePort=.*|SecurePort=${ssl_port}|" \
+        -e "s|^ControlIP=.*|ControlIP=127.0.0.1|" \
+        -e "s|^AppBin=.*|AppBin=/opt/${user[username]}/$app_name|" \
+        -e "s|^AppDir=.*|AppDir=/opt/${user[username]}|" \
+        -e "s|^TempDir=.*|TempDir=/home/${user[username]}/download-clients/${app_name}/tmp|" \
+        -e "s|^DestDir=.*|DestDir=/home/${user[username]}/download-clients/${app_name}/complete|" \
+        -e "s|^InterDir=.*|InterDir=/home/${user[username]}/download-clients/${app_name}/pool|" \
+        -e "s|^QueueDir=.*|QueueDir=/home/${user[username]}/download-clients/${app_name}/incomplete|" \
+        -e "s|^NzbDir=.*|NzbDir=/home/${user[username]}/download-clients/${app_name}/nzb|" \
+        -e "s|^LogFile=.*|LogFile=/home/${user[username]}/download-clients/${app_name}/logs/nzbget.log|" \
+        -e "s|^LockFile=.*|LockFile=/home/${user[username]}/.config/${app_name}/nzbget.lock|" \
+        -e "s|^ScriptDir=.*|ScriptDir=/home/${user[username]}/.config/${app_name}/scripts|" \
+        -e "s|^WebDir=.*|WebDir=\${AppDir}/webui|" \
+        -e "s|^ConfigTemplate=.*|ConfigTemplate=\${AppDir}/webui/nzbget.conf.template|" \
+        -e "s|^CreateLog=.*|CreateLog=yes|" \
+        -e "s|^AppendCategoryDir=.*|AppendCategoryDir=yes|" \
+        -e "s|^OutputMode=.*|OutputMode=curses|" \
+        -e "s|^DaemonUsername=.*|DaemonUsername=${user[username]}|" \
+        -e "s|^UMask=.*|UMask=1000|" \
+        "$config_file"
+    zen::service::manage "start" "$app_name@${user[username]}.service"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::nzbget::config
+# @internal
+# @description Configures NZBGet for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of NZBGet.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::nzbget::config "false"  # disables pre-release (develop)
+# @example
+#   zen::software::nzbget::config "true" # enables pre-release (nightly)
+zen::software::nzbget::config() {
+    local is_prerelease="$1"
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::software::autogen
+    url_base="/${user[username]}/${app_name}"
+    mkdir -p "/home/${user[username]}/.config/${app_name}"
+    mkdir -p "/home/${user[username]}/download-clients/${app_name}/{tmp,complete,pool,incomplete,nzb,logs}"
+    # generate the proxy configuration
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+    zen::permission::user_exec "/opt/${user[username]}/$app_name/NZBGet" "${user[username]}"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    local beforeDirectives=("import ../fragments/basic_auth.${user[username]}.conf" "@stripPrefix path_regexp strip ^/${user[username]}/$app_name/(.*)$" "rewrite @stripPrefix /{http.regexp.strip.1}")
+    for directive in "${beforeDirectives[@]}"; do
+        zen::proxy::add_directive "$app_name" "${user[username]}" "$directive" "before"
+    done
+    local inDirectives=("header_up Host {upstream_hostport}" "header_up X-Real-IP {remote_host}" "header_up X-Forwarded-Prefix /${user[username]}/$app_name" "header_up X-Forwarded-Proto {scheme}")
+    for directive in "${inDirectives[@]}"; do
+        zen::proxy::add_directive "$app_name" "${user[username]}" "$directive" "in"
+    done
+    append_route_block="route /${user[username]}/$app_name {
+        redir /${user[username]}/$app_name/ 302
+    }"
+    caddyfile="/etc/caddy/softwares/${user[username]}.$app_name.caddy"
+    echo "$append_route_block" >>"$caddyfile"
+    mflibs::log "/usr/bin/caddy fmt --overwrite $caddyfile >/dev/null 2>&1"
+    mflibs::log "/usr/bin/caddy reload -c $caddyfile >/dev/null 2>&1"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::nzbget::update
+# @alias Update NZBGet
+# @description Updates NZBGet for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update nzbget -u <username>
+# @example
+#   zen software update nzbget -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::nzbget::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "nzbgetcom/nzbget" "$is_prerelease" "amd64.deb"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::nzbget::remove
+# @alias Remove NZBGet
+# @description Removes NZBGet for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove nzbget -u <username>
+zen::software::nzbget::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::nzbget::backup
+# @alias Backup NZBGet
+# @description Creates a backup for NZBGet settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup nzbget -u <username>
+zen::software::nzbget::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::nzbget::reset
+# @alias Reset NZBGet
+# @description Resets NZBGet settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset nzbget -u <username>
+zen::software::nzbget::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::nzbget::reinstall
+# @alias Reinstall NZBGet
+# @description Reinstalls NZBGet for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall nzbget -u <username>
+zen::software::nzbget::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

@@ -1,0 +1,34 @@
+arguments:
+  app_name: NZBGet
+  altname: nzbget
+  description: nzbget_description
+  pro_only: false
+  logo_path: nzbget.png
+  group: download
+  details:
+    docs: https://nzbget.com/documentation/
+    github: https://github.com/nzbgetcom/nzbget
+    homepage: https://nzbget.com/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/nzbget
+  multi_user: true
+  ports:
+    - default: [12001-13999]
+    - ssl: [35001-35999]
+  service_directives:
+    - Type=forking
+    - ExecStart=/bin/sh -c "/opt/%i/nzbget/nzbget -D -c /home/%i/.config/nzbget/nzbget.conf"
+    - ExecStop=/bin/sh -c "/opt/%i/nzbget/nzbget -Q"
+    - ExecReload=/bin/sh -c "/opt/%i/nzbget/nzbget -O"
+    - Restart=on-failure
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port
