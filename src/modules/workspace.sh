@@ -75,7 +75,7 @@ zen::workspace::venv::build() {
 		mflibs::status::warn "$(zen::i18n::translate "errors.virtualization.remove_venv")"
 	fi
 	local passthrough="sudo -u $username"
-	mflibs::log "$passthrough source $path/venv/bin/activate"
+	mflibs::log "$passthrough source $path/.venv/bin/activate"
 	mflibs::shell::text::green "$(zen::i18n::translate "messages.virtualization.activate_venv")"
 	# Install Python dependencies from dependencies.yaml file
 	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
@@ -163,7 +163,7 @@ zen::workspace::venv::update() {
 		mflibs::status::warn "$(zen::i18n::translate "errors.virtualization.remove_venv")"
 	fi
 	local passthrough="sudo -u $username"
-	mflibs::log "$passthrough source $path/venv/bin/activate"
+	mflibs::log "$passthrough source $path/.venv/bin/activate"
 	mflibs::shell::text::green "$(zen::i18n::translate "messages.virtualization.activate_venv")"
 	python_dependencies=$(yq e ".${app_name}.python" "$dependencies_file" 2>/dev/null)
 	if [[ -z "$python_dependencies" ]]; then
