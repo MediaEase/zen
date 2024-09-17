@@ -32,6 +32,7 @@
 zen::workspace::venv::create() {
 	local path="$1"
 	local username=${2:-root}
+	local instant_build=${3:-false}
 	if [[ -z "$path" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.venv_create_no_path")"
 		return 1
@@ -44,6 +45,9 @@ zen::workspace::venv::create() {
 		return 1
 	fi
 	mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.install_venv" "$app_name")"
+	if [[ "$instant_build" == "true" ]]; then
+		zen::workspace::venv::build "$path" "$path/requirements.txt" "$username"
+	fi
 	return 0
 }
 
