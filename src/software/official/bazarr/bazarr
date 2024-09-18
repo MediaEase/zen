@@ -47,7 +47,9 @@ zen::software::bazarr::config() {
     local is_prerelease="$1"
     declare -g url_base
     zen::software::autogen
+    echo "3.11" >"/opt/${user[username]}/$app_name/.python-version"
     zen::workspace::venv::create "/opt/${user[username]}/$app_name" "${user[username]}" "true"
+    rm -f "/opt/${user[username]}/$app_name/.python-version"
     zen::service::generate "$app_name" "$software_config_file"
     zen::service::manage "stop" "$app_name@${user[username]}.service"
     mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
