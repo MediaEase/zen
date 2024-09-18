@@ -52,6 +52,8 @@ zen::service::generate() {
 	)
 	for directive in "${service_directives[@]}"; do
 		directive=${directive//\$app_name/$app_name}
+		directive=${directive//\{\{default_port\}\}/$default_port}
+		directive=${directive//\{\{ssl_port\}\}/$ssl_port}
 		service_content+=("$directive")
 	done
 
