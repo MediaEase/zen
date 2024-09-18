@@ -37,6 +37,7 @@ zen::workspace::venv::create() {
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.venv_create_no_path")"
 		return 1
 	fi
+	zen::workspace::install_uv "$username"
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.virtualization.install_venv_requirements" "$app_name")"
 	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$path")" && return 1
 	local passthrough="sudo -u $username"
@@ -74,6 +75,7 @@ zen::workspace::venv::build() {
 	if [[ -z "$path" ]]; then
 		mflibs::status::warn "$(zen::i18n::translate "errors.virtualization.remove_venv")"
 	fi
+	zen::workspace::install_uv "$username"
 	local passthrough="sudo -u $username"
 	mflibs::log "$passthrough source $path/.venv/bin/activate"
 	mflibs::shell::text::green "$(zen::i18n::translate "messages.virtualization.activate_venv")"
@@ -133,7 +135,7 @@ zen::workspace::venv::remove() {
 	if [[ -z "$path" ]]; then
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.virtualization.venv_create_no_path")"
 	fi
-
+	zen::workspace::install_uv "$username"
 	cd "$path" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$path")"
 	# shellcheck disable=SC1091
 	source venv/bin/activate
@@ -162,6 +164,7 @@ zen::workspace::venv::update() {
 	if [[ -z "$path" ]]; then
 		mflibs::status::warn "$(zen::i18n::translate "errors.virtualization.remove_venv")"
 	fi
+	zen::workspace::install_uv "$username"
 	local passthrough="sudo -u $username"
 	mflibs::log "$passthrough source $path/.venv/bin/activate"
 	mflibs::shell::text::green "$(zen::i18n::translate "messages.virtualization.activate_venv")"
@@ -197,4 +200,29 @@ zen::workspace::venv::update() {
 		mflibs::status::success "$(zen::i18n::translate "success.virtualization.install_venv" "$software_name")"
 	fi
 	return $exit_status
+}
+
+# @function zen::workspace::install_uv
+# @description Installs the `uv` tool for the specified user if it is not already installed.
+# @arg $1 string (optional) The username under whose context to install `uv`. Defaults to 'root' if not specified.
+# @return 1 if `uv` installation fails.
+# @exitcode 0 Success in installing `uv` or if `uv` is already installed.
+# @note This function will ensure `uv` is available for the specified user, installing it if necessary.
+zen::workspace::install_uv() {
+	local username=${1:-root}
+	local passthrough="sudo -u $username"
+	local user_home
+	user_home=$(eval echo ~"$username")
+	if ! $passthrough command -v uv &>/dev/null; then
+		mflibs::shell::text::yellow "$(zen::i18n::translate "messages.virtualization.install_uv")"
+		mflibs::log "$passthrough curl -LsSf https://astral.sh/uv/install.sh | $passthrough env UV_INSTALL_DIR=$user_home/bin/uv sh"
+		if ! $passthrough command -v uv &>/dev/null; then
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.uv_install_failed")"
+			return 1
+		fi
+
+		mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.uv_installed")"
+	fi
+
+	return 0
 }
