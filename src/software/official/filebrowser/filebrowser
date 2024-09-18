@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+# @file software/official/filebrowser/filebrowser.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description FileBrowser handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::filebrowser::add
+# @alias Install FileBrowser
+# @description Adds FileBrowser for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (FileBrowser).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add filebrowser -u <username>
+# @example
+#   zen software add filebrowser -u <username> -o instance=<instance_name> # sets the instance name
+zen::software::filebrowser::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "filebrowser/filebrowser" "$is_prerelease" "linux-amd64-filebrowser.tar.gz"
+    # configure the app. This will also generate the proxy file
+    zen::software::filebrowser::config "$is_prerelease"
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::filebrowser::config
+# @internal
+# @description Configures FileBrowser for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of FileBrowser.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::filebrowser::config "false"  # disables pre-release (develop)
+# @example
+#   zen::software::filebrowser::config "true" # enables pre-release (nightly)
+zen::software::filebrowser::config() {
+    local is_prerelease="$1"
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::software::autogen
+    local current_locale
+    current_locale="$(grep MEDIAEASE_LANG /etc/environment | cut -d'=' -f2 | sed 's/"//g')"
+    if [ -z "$instance_name" ]; then
+        instance_name=$(hostname)
+    fi
+    url_base="/${user[username]}/${app_name}"
+    mkdir -p "/home/${user[username]}/.config/$app_name/logs"
+    mflibs log "/opt/${user[username]}/$app_name/$app_name -d /home/${user[username]}/.config/$app_name/$app_name.db config init"
+    mflibs log "/opt/${user[username]}/$app_name/$app_name -d /home/${user[username]}/.config/$app_name/$app_name.db config set \
+        --address 127.0.0.1 \
+        --port ${default_port} \
+        --locale ${current_locale} \
+        --log /home/${user[username]}/.config/$app_name/logs/$app_name.log \
+        --root=/home/${user[username]} \
+        --auth.method=json \
+        --baseurl=$url_base \
+        --branding_name=$instance_name Finder \
+        --branding.files=/opt/MediaEase/MediaEase/harmonyui/public/uploads/brand/mediaease.png"
+    mflibs::log "/opt/${user[username]}/$app_name/$app_name -d /home/${user[username]}/.config/$app_name/$app_name.db users add ${user[username]} ${user[password]} --perm.admin"
+    # generate the proxy configuration
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+    zen::permission::user_exec "/opt/${user[username]}/$app_name/flibrowser" "${user[username]}"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::filebrowser::update
+# @alias Update FileBrowser
+# @description Updates FileBrowser for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update filebrowser -u <username>
+# @example
+#   zen software update filebrowser -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::filebrowser::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "filebrowser/filebrowser" "$is_prerelease" "amd64.deb"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::filebrowser::remove
+# @alias Remove FileBrowser
+# @description Removes FileBrowser for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove filebrowser -u <username>
+zen::software::filebrowser::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::filebrowser::backup
+# @alias Backup FileBrowser
+# @description Creates a backup for FileBrowser settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup filebrowser -u <username>
+zen::software::filebrowser::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::filebrowser::reset
+# @alias Reset FileBrowser
+# @description Resets FileBrowser settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset filebrowser -u <username>
+zen::software::filebrowser::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::filebrowser::reinstall
+# @alias Reinstall FileBrowser
+# @description Reinstalls FileBrowser for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall filebrowser -u <username>
+zen::software::filebrowser::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}
