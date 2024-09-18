@@ -13,20 +13,14 @@
 # @description This function creates a Python virtual environment in a specified filesystem path,
 # running the process under the context of a given user. If no user is specified, it defaults to `root`.
 # The function ensures the path is valid, navigates to it, and creates the virtual environment using `uv venv`.
-#
 # @arg $1 string The filesystem path where the virtual environment should be created.
 # @arg $2 string (optional) The username under whose context the virtual environment should be created. Defaults to 'root' if not provided.
-#
 # @global user Associative array containing user-specific information (e.g., 'username').
-#
 # @return 1 If no path is specified or if the directory change fails.
-#
 # @exitcode 0 On successful creation of the virtual environment.
 # @exitcode 1 On failure due to missing path, directory change failure, or failure during virtual environment creation.
-#
 # @caution Ensure the specified path is correct and accessible to avoid failures.
 # @important The virtual environment is created under the specified user context, so make sure the user has necessary permissions.
-#
 # shellcheck disable=SC2154
 # Disabling SC2154 because the variable 'user' is defined in the main script
 zen::workspace::venv::create() {
@@ -220,7 +214,7 @@ zen::workspace::install_uv() {
 			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.uv_install_failed")"
 			return 1
 		fi
-
+		mflibs::log "$passthrough uv python install 3.9 3.10 3.11 3.12"
 		mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.uv_installed")"
 	fi
 
