@@ -145,7 +145,7 @@ tautulli:
 thelounge:
   apt: nodejs
 transmission:
-  apt: nodejs qttools5-dev libgtkmm-3.0-dev gettext automake autoconf libtool pkg-config intltool libicu-dev libcurl4-openssl-dev libglib2.0-dev libevent-dev libminiupnpc-dev libgtk-3-dev libayatana-appindicator3-dev libminiupnpc-dev libqt5svg5-dev
+  apt: nodejs qttools5-dev libnatpmp-dev libb64-dev libgtkmm-3.0-dev gettext automake autoconf libtool pkg-config intltool libicu-dev libcurl4-openssl-dev libglib2.0-dev libevent-dev libminiupnpc-dev libgtk-3-dev libayatana-appindicator3-dev libminiupnpc-dev libqt5svg5-dev
 vpn:
   apt: expect iptables openssl ca-certificates libcap-ng-dev libpam0g-dev libudev-dev libsystemd-dev libnl-genl-3-dev liblz4-dev python3-docutils
 webconsole:
