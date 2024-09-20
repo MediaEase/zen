@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# @file software/official/tautulli/tautulli.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description tautulli handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::tautulli::add
+# @description Adds a Tautulli for a user, including downloading, configuring, and starting the service.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+zen::software::tautulli::add() {
+    # grab the source code
+    zen::dependency::external::install "$app_name"
+    local branch="master"
+    [[ "$software_branch" == "beta" ]] && branch="nightly"
+    declare -g install_dir="/opt/single_user_apps/$app_name"
+    mkdir -p "$install_dir"
+    # if Tautulli user does not exist, create it
+    if ! id -u Tautulli &>/dev/null; then
+        zen::user::create "Tautulli" "" "false" "true" "false"
+    fi
+    zen::git::clone "Tautulli/Tautulli" "$install_dir" "$branch"
+    cd "$install_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$install_dir")"
+    zen::software::tautulli::configure
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+# shellcheck disable=SC2034
+zen::software::tautulli::configure() {
+    declare -g url_base
+    local secret
+    url_base="/$app_name"
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::workspace::venv::create "/opt/$app_name" "Tautulli" "true"
+    zen::permission::read_exec "$install_dir" "Tautulli" "nogroup"
+    zen::software::autogen
+    zen::service::generate "$app_name" "$software_config_file" "true"
+    sleep 10
+    mkdir -p "/home/${user[username]}/.config/$app_name/{backups,cache,exports,logs,newsletters}"
+    zen::service::manage "stop" "$app_name@${user[username]}.service"
+    rm -rf "$install_dir"/{backups,cache,exports,logs,newsletters}
+    sed -i -e "s|^backup_dir = .*|backup_dir = /home/${user[username]}/.config/$app_name/backups|" \
+        -e "s|^cache_dir = .*|cache_dir = /home/${user[username]}/.config/$app_name/cache|" \
+        -e "s|^export_dir = .*|export_dir = /home/${user[username]}/.config/$app_name/exports|" \
+        -e "s|^http_base_url = .*|http_base_url = $url_base" \
+        -e "s|^http_host = .*|http_host = 127.0.0.1|" \
+        -e "s[^http_port = .*[^http_port = ${default_port}|" \
+        -e "s|^log_dir = .*|log_dir = /home/${user[username]}/.config/$app_name/logs|" \
+        -e "s|^newsletter_dir = .*|newsletter_dir = /home/${user[username]}/.config/$app_name/newsletters|" \
+        "/home/${user[username]}/.config/$app_name/config.ini"
+    zen::permission::private "/home/${user[username]}/.config/$app_name" "${user[username]}" "${user[username]}"
+    zen::service::manage "start" "$app_name@${user[username]}.service"
+    zen::proxy::generate "$app_name" "${default_port}" "$software_config_file"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::tautulli::update
+# @description Updates Tautulli for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+zen::software::tautulli::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    declare -g install_dir="/opt/single_user_apps/$app_name"
+    mkdir -p "$install_dir"
+    zen::git::clone "Tautulli/Tautulli" "/tmp/$app_name" "$branch"
+    mv "/tmp/$app_name"/* "$install_dir"
+    zen::permission::read_exec "$install_dir" "tautulli"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::tautulli::remove
+# @description Removes Tautulli for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+zen::software::tautulli::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    zen::user::remove "Tautulli"
+}
+
+# @function zen::software::tautulli::backup
+# @description Creates a backup for Tautulli settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::tautulli::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::tautulli::reset
+# @description Resets Tautulli settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::tautulli::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::tautulli::reinstall
+# @description Reinstalls Tautulli for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::tautulli::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

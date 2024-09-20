@@ -1,0 +1,33 @@
+arguments:
+  app_name: Tautulli
+  altname: tautulli
+  description: tautulli_description
+  pro_only: false
+  logo_path: tautulli.png
+  group: automation
+  details:
+    docs: https://github.com/Tautulli/Tautulli/wiki
+    github: https://github.com/Tautulli/Tautulli
+    homepage: https://tautulli.com/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/tautulli
+  multi_user: false
+  ports:
+    - default: [12001-13999]
+    - ssl: [35001-35999]
+  service_directives:
+    - Type=forking
+    - Environment=TMPDIR=/home/%i/tmp/$app_name
+    - ExecStart=/usr/bin/python3 /opt/%i/$app_name/Tautulli.py --quiet --daemon --nolaunch --config /home/%i/.config/$app_name/config.ini --datadir /opt/%i/$app_name
+    - GuessMainPID=no
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.ini
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port
