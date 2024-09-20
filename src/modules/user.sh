@@ -35,9 +35,9 @@ zen::user::create() {
 
 	mflibs::status::header "$(zen::i18n::translate "headers.user.create" "$username")"
 	if [[ "$system" == "true" ]]; then
-		theshell="/usr/sbin/nologin"   # Disable login
-		create_home="--no-create-home" # System user
-		useradd_flags="-r"             # System user
+		theshell="/bin/false" # Disable login
+		create_home="-M"      # System user
+		useradd_flags="-r -U" # System user
 	fi
 	[ "$is_admin" == "false" ] && theshell="/bin/rbash"
 	if [[ "$add_www_data" == "true" ]]; then
