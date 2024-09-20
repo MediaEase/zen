@@ -54,6 +54,19 @@ zen::service::generate() {
 		directive=${directive//\$app_name/$app_name}
 		directive=${directive//\{\{default_port\}\}/$default_port}
 		directive=${directive//\{\{ssl_port\}\}/$ssl_port}
+		if [[ "$directive" == User=* ]]; then
+			for i in "${!service_content[@]}"; do
+				if [[ "${service_content[i]}" == "User=%i" ]]; then
+					service_content[i]="User=${directive#User=}"
+				fi
+			done
+		elif [[ "$directive" == Group=* ]]; then
+			for i in "${!service_content[@]}"; do
+				if [[ "${service_content[i]}" == "Group=%i" ]]; then
+					service_content[i]="Group=${directive#Group=}"
+				fi
+			done
+		fi
 		service_content+=("$directive")
 	done
 
