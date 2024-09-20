@@ -13,44 +13,62 @@
 # @description Functions related to managing users in the system.
 
 # @function zen::user::create
-# Creates a new system user with specified attributes.
-# @description This function creates a new system user with the given username, password, and admin status.
-# It sets restricted shells for non-admin users and grants sudo privileges for admin users.
-# Additionally, it handles the creation of necessary directories and sets appropriate permissions.
+# Creates a new user with specified attributes.
+# @description This function creates a new user with the given username, password, and admin status.
+# It adds users to the www-data group only if necessary, and grants sudo privileges for admin users.
 # @arg $1 string The username for the new user.
 # @arg $2 string The password for the new user.
 # @arg $3 string Indicates if the user should have admin privileges ('true' or 'false').
+# @arg $4 string (optional) Indicates if the user should be a system user ('true' or 'false').
+# @arg $5 string (optional) Indicates if the user should be added to the www-data group ('true' or 'false').
 # @return 0 if the user is created successfully, 1 otherwise.
-# @note For non-admin users, the shell is restricted; admin users get sudo privileges without a password requirement.
-# shellcheck disable=SC2154
+# @note Non-admin users have a restricted shell; admin users have sudo privileges without a password.
 zen::user::create() {
 	local username="$1"
 	local password="$2"
-	local is_admin="$3" # true or false
+	local is_admin="${3:-false}" # true or false
+	local system="${4:-false}"
+	local add_www_data="${5:-false}"
 	local theshell="/bin/bash"
-	local bashrc="/home/${username}/.bashrc"
+	local create_home="-m"
+	local useradd_flags=""
 
 	mflibs::status::header "$(zen::i18n::translate "headers.user.create" "$username")"
-	# If the user is not an admin, restrict the shell
-	[ "$is_admin" == false ] && theshell="/bin/rbash"
-	mflibs::log "useradd ${username} -m -G www-data -s ${theshell}"
-	if [[ -n "${password}" ]]; then
-		zen::user::password::set "${username}" "${password}"
-	else
-		password=$(zen::user::password::generate 16)
-		zen::user::password::set "${username}" "${password}"
+	if [[ "$system" == "true" ]]; then
+		theshell="/usr/sbin/nologin"   # Disable login
+		create_home="--no-create-home" # System user
+		useradd_flags="-r"             # System user
 	fi
-	zen::vault::pass::store "${username}.main" "${password}"
-	[ "$is_admin" == true ] && echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
-	mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}" /home/"${username}"/bin
-	setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
-	cd /home/"${username}" && {
-		mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize"
-		mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "${bashrc}"
-		zen::permission::fix "/home/${username}" "644" "755" "${username}" "${username}"
-		zen::permission::fix "/opt/${username}" "644" "755" "${username}" "${username}"
-		[[ ! -x "/home/${username}/bin/dirsize" ]] && chmod +x "/home/${username}/bin/dirsize"
-	}
+	[ "$is_admin" == "false" ] && theshell="/bin/rbash"
+	if [[ "$add_www_data" == "true" ]]; then
+		useradd_flags="${useradd_flags} -G www-data"
+	fi
+	if ! mflibs::log "useradd ${username} ${create_home} ${useradd_flags} -s ${theshell}"; then
+		mflibs::status::error "$(zen::i18n::translate "errors.user.create" "$username")"
+		return 1
+	fi
+	if [[ "$system" == "false" || -n "${password}" ]]; then
+		if [[ -z "${password}" ]]; then
+			password=$(zen::user::password::generate 16)
+		fi
+		zen::validate::input "password" "${password}"
+		zen::user::password::set "${username}" "${password}"
+		zen::vault::pass::store "${username}.main" "${password}"
+	fi
+	if [[ "$is_admin" == "true" ]]; then
+		echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
+	fi
+	if [[ "$system" == "false" ]]; then
+		mkdir -p /home/"${username}"/.config /home/"${username}"/.mediaease/backups /opt/"${username}" /home/"${username}"/bin
+		setfacl -R -m u:"${username}":rwx /home/"${username}" /opt/"${username}"
+		cd /home/"${username}" && {
+			mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/extras/scripts/dirsize.tpl" "bin/dirsize"
+			mflibs::file::copy "/opt/MediaEase/MediaEase/zen/src/extras/templates/bash-user.tpl" "/home/${username}/.bashrc"
+			zen::permission::fix "/home/${username}" "644" "755" "${username}" "${username}"
+			zen::permission::fix "/opt/${username}" "644" "755" "${username}" "${username}"
+			[[ ! -x "/home/${username}/bin/dirsize" ]] && chmod +x "/home/${username}/bin/dirsize"
+		}
+	fi
 	mflibs::status::success "$(zen::i18n::translate "success.user.create" "$username")"
 	return 0
 }
