@@ -254,3 +254,42 @@ zen::user::password::set() {
 		return 1
 	fi
 }
+
+# @function zen::user::remove
+# @description Removes an existing user and their associated home directory and files if requested.
+# This function removes a specified user from the system and optionally deletes their home directory and associated files.
+# @arg $1 string The username of the user to be removed.
+# @arg $2 bool (optional) Indicates whether the user's home directory should also be removed. Defaults to 'true'.
+# @return 0 if the user is successfully removed, 1 otherwise.
+# @note Ensure the username is valid, as this action cannot be undone.
+zen::user::remove() {
+	local username="$1"
+	local remove_home="${2:-true}" # By default, remove the home directory
+	local userdel_flags=""
+	if [[ -z "$username" ]]; then
+		mflibs::status::error "$(zen::i18n::translate "errors.user.remove_no_username")"
+		return 1
+	fi
+	if [[ "$remove_home" == "true" ]]; then
+		userdel_flags="--remove"
+	fi
+	mflibs::status::header "$(zen::i18n::translate "headers.user.remove" "$username")"
+	if ! id -u "$username" &>/dev/null; then
+		mflibs::status::error "$(zen::i18n::translate "errors.user.not_found" "$username")"
+		return 1
+	fi
+	[[ "$remove_home" == "true" ]] && userdel_flags="--remove"
+	mflibs::status::header "$(zen::i18n::translate "headers.user.remove" "$username")"
+	for dir in "/home/${username:?}" "/opt/${username:?}" "/opt/single_user_apps/${username:?}"; do
+		[[ -d "$dir" ]] && rm -rf "$dir"
+	done
+	grep -q "^${username}:" /etc/sudoers && sed -i "/^${username} ALL=(ALL) NOPASSWD:ALL/d" /etc/sudoers
+	sed -i "/^${username} ALL=(ALL) NOPASSWD:ALL/d" /etc/sudoers
+	[[ -f "/etc/sudoers.d/${username}" ]] && rm -f "/etc/sudoers.d/${username}"
+	if ! userdel $userdel_flags "$username"; then
+		mflibs::status::error "$(zen::i18n::translate "errors.user.remove_failed" "$username")"
+		return 1
+	fi
+	mflibs::status::success "$(zen::i18n::translate "success.user.remove" "$username")"
+	return 0
+}
