@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# @file software/official/unpackerr/unpackerr.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description unpackerr handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::unpackerr::add
+# @description Adds a Unpackerr for a user, including downloading, configuring, and starting the service.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+zen::software::unpackerr::add() {
+    # grab the source code
+    zen::dependency::external::install "$app_name"
+    local branch="main"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="false"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "Unpackerr/unpackerr" "$is_prerelease" "amd64.linux.gz "
+    cd "$install_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$install_dir")"
+    zen::software::unpackerr::configure
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+# shellcheck disable=SC2034
+zen::software::unpackerr::configure() {
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    cp -pR "/opt/${user[username]}/$app_name/examples/$app_name.conf.example" "/home/${user[username]}/.config/$app_name/$app_name.conf"
+    apps=("radarr" "sonarr" "lidarr" "readarr" "whisparr")
+    keys=("ApiKey" "Port" "UrlBase" "BindAddress")
+    for app in "${apps[@]}"; do
+        if [[ $(zen::software::is::installed "$app" "${user[id]}") -gt 0 ]]; then
+            for key in "${keys[@]}"; do
+                zen::software::unpackerr::get_config_key "$app" "$key"
+            done
+        fi
+    done
+    for app in "${apps[@]}"; do
+        if [[ $(zen::software::is::installed "$app" "${user[id]}") -gt 0 ]]; then
+            local api_key port url_base bind_address
+            api_key=$(zen::software::unpackerr::get_config_key "$app" "ApiKey")
+            port=$(zen::software::unpackerr::get_config_key "$app" "Port")
+            url_base=$(zen::software::unpackerr::get_config_key "$app" "BaseUrl")
+            bind_address=$(zen::software::unpackerr::get_config_key "$app" "BindAddress")
+            sed -i "/^\[[$app]\]/,/^$/s~# url = .*~url = \"${url_base:-http://$bind_address:$port}\"~" "$config_file"
+            sed -i "/^\[[$app]\]/,/^$/s~# api_key = .*~api_key = \"$api_key\"~" "$config_file"
+        else
+            sed -i "/^\[[$app]\]/,/^$/s/^/# /" "$config_file"
+        fi
+    done
+    zen::software::autogen
+    zen::service::generate "$app_name" "$software_config_file" "true"
+    zen::permission::private "/home/${user[username]}/.config/$app_name" "${user[username]}" "${user[username]}"
+    zen::service::manage "start" "$app_name@${user[username]}.service"
+    zen::proxy::generate "$app_name" "${default_port}" "$software_config_file"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::unpackerr::update
+# @description Updates Unpackerr for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+zen::software::unpackerr::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    declare -g install_dir="/opt/single_user_apps/$app_name"
+    mkdir -p "$install_dir"
+    zen::git::clone "Unpackerr/Unpackerr" "/tmp/$app_name" "$branch"
+    mv "/tmp/$app_name"/* "$install_dir"
+    zen::permission::read_exec "$install_dir" "unpackerr"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::unpackerr::remove
+# @description Removes Unpackerr for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+zen::software::unpackerr::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    zen::user::remove "Unpackerr"
+}
+
+# @function zen::software::unpackerr::backup
+# @description Creates a backup for Unpackerr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::unpackerr::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::unpackerr::reset
+# @description Resets Unpackerr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::unpackerr::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::unpackerr::reinstall
+# @description Reinstalls Unpackerr for a user.
+# @note This function is currently a placeholder and needs implementation.
+zen::software::unpackerr::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::unpackerr::get_config_key
+# @description Gets a key from the software's configuration file.
+# @param app_name The name of the software.
+# @param key_name The name of the key to get.
+zen::software::unpackerr::get_config_key() {
+    local app_name="$1"
+    local key_name="$2"
+    local config_file="/home/${user[username]}/.config/$app_name/config.xml"
+    local key_value=""
+    if [[ -f "$config_file" ]]; then
+        key_value=$(grep -oPm1 "(?<=<$key_name>)[^<]+" "$config_file")
+        if [[ -n "$key_value" ]]; then
+            export "${app_name^^}_${key_name^^}=$key_value"
+        else
+            echo "Could not find $key_name for $app_name in $config_file."
+        fi
+    else
+        echo "Configuration file for $app_name not found."
+    fi
+}

@@ -1,0 +1,36 @@
+arguments:
+  app_name: Unpackerr
+  altname: unpackerr
+  description: unpackerr_description
+  pro_only: false
+  logo_path: unpackerr.png
+  group: automation
+  details:
+    docs: https://unpackerr.zip/docs
+    github: https://github.com/Unpackerr/unpackerr
+    homepage: https://unpackerr.zip/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/unpackerr
+  multi_user: true
+  ports:
+    - default: [12001-13999]
+    - ssl: [35001-35999]
+  service_directives:
+    - Environment="TMPDIR=/home/%i/tmp/$app_name"
+    - EnvironmentFile=-/home/%i/.config/$app_name
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name /usr/bin/chmod +x /opt/%i/$app_name/$app_name
+    - ExecStart=screen -dmS $app_name /opt/%i/$app_name/$app_name -c "/home/%i/.config/$app_name/$app_name.conf" $DAEMON_OPTS
+    - Restart=always
+    - RestartSec=10
+    - StandardOutput=syslog
+    - StandardError=syslog
+    - SyslogIdentifier=$app_name
+    - WorkingDirectory=/home/%i/tmp/$app_name
+    - UMask=002
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.ini
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
