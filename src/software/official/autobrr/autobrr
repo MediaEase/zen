@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# @file software/official/autobrr/autobrr.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Autobrr handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::autobrr::add
+# @alias Install Autobrr
+# @description Adds Autobrr for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (Autobrr).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add autobrr -u <username>
+# @example
+#   zen software add autobrr -u <username> -o branch=beta # installs the beta (nightly) version
+zen::software::autobrr::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/usr/local/bin" "autobrr/autobrr" "$is_prerelease" "linux_x86_64.tar.gz"
+    zen::permission::all_exec "/usr/local/bin/$app_name" "root" "root"
+    zen::permission::all_exec "/usr/local/bin/autobrrctl" "root" "root"
+    # configure the app. This will also generate the proxy file
+    zen::software::autobrr::config "$is_prerelease"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::autobrr::config
+# @internal
+# @description Configures Autobrr for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Autobrr.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::autobrr::config "false"  # disables pre-release (develop)
+# @example
+#   zen::software::autobrr::config "true" # enables pre-release (nightly)
+zen::software::autobrr::config() {
+    local is_prerelease="$1"
+    declare -g url_base
+    zen::software::autogen
+    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::manage "stop" "$app_name@${user[username]}.service"
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    url_base="/${user[username]}/${app_name}"
+    wget https://github.com/autobrr/autobrr/blob/develop/config.toml -O "/home/${user[username]}/.config/$app_name/config.toml"
+    sed -i "/^host =/s/host = .*/host = \"127.0.0.1\"/; \
+        /^port =/s/port = .*/port = ${default_port}/; \
+        /^#logPath =/s|#logPath = .*|logPath = \"/home/${user[username]}/.config/${app_name}/log/autobrr.log\"|; \
+        /^sessionSecret =/s|sessionSecret = .*|sessionSecret = \"$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)\"|; \
+        /^#baseUrl =/s|#baseUrl = .*|baseUrl = \"$url_base\"|" "/home/${user[username]}/.config/$app_name/config.toml"
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    echo "${user[password]}" | mflibs::log "autobrrctl --config /home/${user[username]}/.config/$app_name/config.toml create-user ${user[username]}"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    zen::service::manage "start" "$app_name@${user[username]}.service"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::autobrr::update
+# @alias Update Autobrr
+# @description Updates Autobrr for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update autobrr -u <username>
+# @example
+#   zen software update autobrr -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::autobrr::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "Autobrr/Autobrr" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::autobrr::remove
+# @alias Remove Autobrr
+# @description Removes Autobrr for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove autobrr -u <username>
+zen::software::autobrr::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::autobrr::backup
+# @alias Backup Autobrr
+# @description Creates a backup for Autobrr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup autobrr -u <username>
+zen::software::autobrr::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::autobrr::reset
+# @alias Reset Autobrr
+# @description Resets Autobrr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset autobrr -u <username>
+zen::software::autobrr::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::autobrr::reinstall
+# @alias Reinstall Autobrr
+# @description Reinstalls Autobrr for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall autobrr -u <username>
+zen::software::autobrr::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}
