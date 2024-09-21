@@ -1,0 +1,34 @@
+arguments:
+  app_name: Whisparr
+  altname: whisparr
+  description: whisparr_description
+  pro_only: false
+  logo_path: whisparr.png
+  group: automation
+  details:
+    docs: https://wiki.servarr.com/Whisparr
+    github: https://github.com/Whisparr/Whisparr
+    homepage: https://whisparr.github.io/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/whisparr
+  multi_user: true
+  ports:
+    - default: [12001-13999]
+    - ssl: [35001-35999]
+  service_directives:
+    - Type=simple
+    - Environment=TMPDIR=/home/%i/tmp/$app_name
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name
+    - ExecStart=/opt/%i/$app_name/Whisparr -nobrowser -data=/home/%i/.config/$app_name -config=/home/%i/.config/$app_name/config.xml
+    - TimeoutStopSec=20
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port

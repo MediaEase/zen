@@ -150,6 +150,8 @@ vpn:
   apt: expect iptables openssl ca-certificates libcap-ng-dev libpam0g-dev libudev-dev libsystemd-dev libnl-genl-3-dev liblz4-dev python3-docutils
 webconsole:
   apt: jq
+whisparr:
+  apt: referenceassemblies-pcl ca-certificates-mono mono-devel mediainfo sqlite3
 x2go:
   apt: xfce4 xfce4-terminal mate-desktop-environment x2gomatebindings firefox-esr
 znc:
