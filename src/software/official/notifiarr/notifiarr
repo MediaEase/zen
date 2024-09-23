@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# @file software/official/notifiarr/notifiarr.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Notifiarr handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::notifiarr::add
+# @alias Install Notifiarr
+# @description Adds Notifiarr for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (Notifiarr).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add notifiarr -u <username>
+# @example
+#   zen software add notifiarr -u <username>
+zen::software::notifiarr::add() {
+    zen::git::get_release "/home/${user[username]}/bin/$app_name" "Notifiarr/notifiarr" "false" "notifiarr.amd64.linux.gz"
+    mv "/home/${user[username]}/bin/$app_name/notifiarr.amd64.linux" "/home/${user[username]}/bin/$app_name/Notifiarr"
+    # configure the app. This will also generate the proxy file
+    zen::software::notifiarr::config
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::notifiarr::config
+# @internal
+# @description Configures Notifiarr for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Notifiarr.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::notifiarr::config "false"  # disables pre-release (develop)
+# @example
+#   zen::software::notifiarr::config "true" # enables pre-release (nightly)
+zen::software::notifiarr::config() {
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::software::autogen
+    wget -q0- https://github.com/Notifiarr/notifiarr/blob/main/examples/notifiarr.conf.example -O "/home/${user[username]}/.config/$app_name/notifiarr.conf"
+    url_base="/${user[username]}/${app_name}"
+    mkdir -p "/home/${user[username]}/.config/${app_name}"
+    # generate the proxy configuration
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::user_exec "/home/${user[username]}/bin/$app_name/Notifiarr" "${user[username]}"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::notifiarr::update
+# @alias Update Notifiarr
+# @description Updates Notifiarr for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update notifiarr -u <username>
+# @example
+#   zen software update notifiarr -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::notifiarr::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    tempdir=$(mktemp -d)
+    zen::git::get_release "$tempdir" "Notifiarr/notifiarr" "false" "notifiarr.amd64.linux.gz"
+    mv "$tempdir/notifiarr.amd64.linux" "/home/${user[username]}/bin/$app_name/Notifiarr"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::notifiarr::remove
+# @alias Remove Notifiarr
+# @description Removes Notifiarr for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove notifiarr -u <username>
+zen::software::notifiarr::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+    rm -rf /home/"${user[username]}"/bin/"$app_name"
+}
+
+# @function zen::software::notifiarr::backup
+# @alias Backup Notifiarr
+# @description Creates a backup for Notifiarr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup notifiarr -u <username>
+zen::software::notifiarr::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::notifiarr::reset
+# @alias Reset Notifiarr
+# @description Resets Notifiarr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset notifiarr -u <username>
+zen::software::notifiarr::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::notifiarr::reinstall
+# @alias Reinstall Notifiarr
+# @description Reinstalls Notifiarr for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall notifiarr -u <username>
+zen::software::notifiarr::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

@@ -1,0 +1,39 @@
+arguments:
+  app_name: Notifiarr
+  altname: notifiarr
+  description: notifiarr_description
+  pro_only: false
+  logo_path: notifiarr.png
+  group: automation
+  details:
+    docs: https://notifiarr.wiki/
+    github: https://github.com/Notifiarr/notifiarr
+    homepage: https://notifiarr.com/
+    mediaease_docs: https://mediaease.github.io/docs/software/official/notifiarr
+  multi_user: true
+  ports:
+    - default: [12001-13999]
+    - ssl: [35001-35999]
+  service_directives:
+    - Type=simple
+    - Environment=TMPDIR=/home/%i/tmp/$app_name
+    - Environment=DN_LOG_FILE/home/%i/.config/$app_name/logs/app.log
+    - Environment=DN_HTTP_LOG=/home/%i/.config/$app_name/logs/http.log
+    - Environment=DN_DEBUG_LOG=/home/%i/.config/$app_name/logs/debug.log
+    - Environment=DN_SERVICES_LOG_FILE=/home/%i/.config/$app_name/logs/services.log
+    - Environment=DN_QUIET=true
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name
+    - ExecStart=/home/%i/bin/$app_name/notifiarr --config=/home/%i/.config/$app_name/$app_name.conf
+    - TimeoutStopSec=20
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port
