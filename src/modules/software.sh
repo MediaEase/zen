@@ -62,24 +62,24 @@ zen::software::port_randomizer() {
 	local retries=10
 	local interval=1500
 	local use_range=false
-	if [[ "$port_type" == "port_range" ]]; then
+	if [[ "$port_type" == "default" ]]; then
+		port_low=49000
+		port_high=52999
+	elif [[ "$port_type" == "ssl" ]]; then
+		port_low=30000
+		port_high=39999
+	elif [[ "$port_type" == "port_range" ]]; then
 		use_range=true
-		port_type="default"
+		port_low=22000
+		port_high=25999
+	else
+		mflibs::status::error "Invalid port type specified for $app_name"
+		return 1
 	fi
-
-	port_range=$(yq e ".arguments.ports[] | select(.${port_type} != null) | .${port_type}" "$software_config_file")
-	if [[ -z "$port_range" ]]; then
-		mflibs::status::error "$(zen::i18n::translate "errors.network.port_range_missing" "$app_name")"
-	fi
-
-	port_low=$(echo "$port_range" | tr -d '[]' | cut -d'-' -f1)
-	port_high=$(echo "$port_range" | tr -d '[]' | cut -d'-' -f2)
-
 	if [[ "$use_range" == true ]]; then
 		while ((retries > 0)); do
 			local start_port=$((port_low + RANDOM % ((port_high - port_low + 1) - interval)))
 			local end_port=$((start_port + interval))
-
 			local range_is_free=true
 			for ((port = start_port; port <= end_port; port++)); do
 				if netstat -tuln | grep -q ":$port "; then
@@ -87,28 +87,26 @@ zen::software::port_randomizer() {
 					break
 				fi
 			done
-
 			if [[ "$range_is_free" == true ]]; then
 				echo "${start_port}-${end_port}"
 				return 0
 			fi
-
 			((retries--))
 		done
-
 		mflibs::status::error "$(zen::i18n::translate "errors.network.port_in_use" "$app_name")"
-	else
-		while ((retries > 0)); do
-			local port=$((port_low + RANDOM % (port_high - port_low + 1)))
-			if ! netstat -tuln | grep -q ":$port "; then
-				echo "$port"
-				return 0
-			fi
-			((retries--))
-		done
-
-		mflibs::status::error "$(zen::i18n::translate "errors.network.port_in_use" "$app_name")"
+		return 1
 	fi
+	while ((retries > 0)); do
+		local port=$((port_low + RANDOM % (port_high - port_low + 1)))
+		if ! netstat -tuln | grep -q ":$port "; then
+			echo "$port"
+			return 0
+		fi
+		((retries--))
+	done
+
+	mflibs::status::error "$(zen::i18n::translate "errors.network.port_in_use" "$app_name")"
+	return 1
 }
 
 # @function zen::software::infobox
