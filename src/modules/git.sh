@@ -192,3 +192,38 @@ zen::git::tree() {
         fi
     done
 }
+
+# @function zen::git::download_from_binaries
+# Downloads a file from the MediaEase binaries repository.
+# @description This function downloads a file from the MediaEase binaries repository and saves it to a local path.
+# Supports partial name matching via the GitHub API if an exact match is not provided.
+# If multiple versions are available and no version is provided, it will download the latest version.
+# @arg $1 string Partial or full name of the file to download.
+# @arg $2 string Version of the file to download (optional).
+# @arg $3 string Branch of the repository to download from (default: "main").
+# @exitcode 0 on successful download.
+# @exitcode 1 on failure.
+# @stdout Informs about the downloading process and results.
+zen::git::download_from_binaries() {
+    local file_name="$1"
+    local version="${2:-}"
+    local branch="${3:-main}"
+    local repo_name="MediaEase/binaries"
+    local remote_folder="release_assets/"
+    local api_url="https://api.github.com/repos/$repo_name/contents/$remote_folder?ref=$branch"
+    local download_url
+    daclare -g temp_binaries_path
+    temp_binaries_path="$(mktemp -d)"
+    if [[ -n "$version" ]]; then
+        download_url=$(curl -s "$api_url" | jq -r --arg name "$file_name" --arg ver "$version" '.[] | select(.name | contains($name) and contains($ver)) | .download_url' | head -n 1) || mflibs::status::error "$(zen::i18n::translate "errors.common.no_file_found" "$file_name" "$version")"
+    else
+        download_url=$(curl -s "$api_url" | jq -r --arg name "$file_name" '.[] | select(.name | contains($name)) | .name' | sort -V | tail -n 1 | xargs -I {} curl -s "$api_url" | jq -r --arg name "{}" '.[] | select(.name == $name) | .download_url') || mflibs::status::error "$(zen::i18n::translate "errors.common.no_file_found" "$file_name" "$version")"
+    fi
+    file_path=$(basename "$file_name" | cut -d'_' -f1)
+    file_path="${file_path//[0-9]/}"
+    wget -q -O "$temp_binaries_path/$file_path" "$download_url" || {
+        mflibs::status::error "$(zen::i18n::translate "errors.common.download_file" "$file_path" "$temp_binaries_path")"
+    }
+    mflibs::file::extract "$temp_binaries_path/$file_path"
+    mflibs::status::success "$(zen::i18n::translate "info.common.download_success" "$file_path" "$temp_binaries_path")"
+}
