@@ -26,7 +26,7 @@ zen::software::bazarr::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "morpheus65535/bazarr" "$is_prerelease" "bazarr.zip"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repor" "$is_prerelease" "bazarr.zip"
     # configure the app. This will also generate the proxy file
     zen::software::bazarr::config "$is_prerelease"
     # create a backup file
@@ -87,7 +87,7 @@ zen::software::bazarr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "Bazarr/Bazarr" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 

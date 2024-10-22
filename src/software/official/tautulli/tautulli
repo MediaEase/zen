@@ -26,7 +26,7 @@ zen::software::tautulli::add() {
     if ! id -u Tautulli &>/dev/null; then
         zen::user::create "Tautulli" "" "false" "true" "false"
     fi
-    zen::git::clone "Tautulli/Tautulli" "$install_dir" "$branch"
+    zen::git::clone "$software_repo" "$install_dir" "$branch"
     cd "$install_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$install_dir")"
     zen::software::tautulli::configure
     zen::software::backup::create "$app_name" "$software_config_file"
@@ -72,7 +72,7 @@ zen::software::tautulli::update() {
     zen::service::manage "stop" "$service_name"
     declare -g install_dir="/opt/single_user_apps/$app_name"
     mkdir -p "$install_dir"
-    zen::git::clone "Tautulli/Tautulli" "/tmp/$app_name" "$branch"
+    zen::git::clone "$software_repo" "/tmp/$app_name" "$branch"
     mv "/tmp/$app_name"/* "$install_dir"
     zen::permission::read_exec "$install_dir" "tautulli"
     zen::service::manage "start" "$service_name"

@@ -93,7 +93,11 @@ zen::software::whisparr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "Whisparr/Whisparr" "$is_prerelease" "linux-core-x64.tar.gz"
+    mflibs::file::mkcd "/opt/${user[username]}/$app_name"
+    mflibs::log "wget --content-disposition 'http://whisparr.servarr.com/v1/update/nightly/updatefile?os=linux&runtime=netcore&arch=x64'"
+    file_name=$(ls)
+    mflibs::file::extract "$file_name"
+    rm -rf "$file_name"
     zen::service::manage "start" "$service_name"
 }
 

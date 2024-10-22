@@ -26,7 +26,7 @@ zen::software::autobrr::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/usr/local/bin" "autobrr/autobrr" "$is_prerelease" "linux_x86_64.tar.gz"
+    zen::git::get_release "/usr/local/bin" "$software_repo" "$is_prerelease" "linux_x86_64.tar.gz"
     zen::permission::all_exec "/usr/local/bin/$app_name" "root" "root"
     zen::permission::all_exec "/usr/local/bin/autobrrctl" "root" "root"
     # configure the app. This will also generate the proxy file
@@ -84,7 +84,7 @@ zen::software::autobrr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "Autobrr/Autobrr" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 

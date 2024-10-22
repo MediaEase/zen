@@ -22,7 +22,7 @@ zen::software::sabnzbd::add() {
     local sabnzbd_source_path="/opt/${user[username]}/$app_name"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "sabnzbd/sabnzbd" "$is_prerelease" "-src.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "-src.tar.gz"
     # configure the app. This will also generate the proxy file
     zen::software::sabnzbd::config "$is_prerelease"
     zen::workspace::venv::create "$venv_path"
@@ -91,7 +91,7 @@ zen::software::sabnzbd::update() {
     temp_dir=$(mktemp -d)
     local is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
-    zen::git::get_release "$temp_dir" "sabnzbd/sabnzbd" "$is_prerelease" "-src.tar.gz"
+    zen::git::get_release "$temp_dir" "$software_repo" "$is_prerelease" "-src.tar.gz"
     find "$sabnzbd_source_path" -mindepth 1 -not -path "$venv_path" -not -path "$venv_path/*" -delete
     mv "$temp_dir"/* "$sabnzbd_source_path"
     rm -rf "$temp_dir"

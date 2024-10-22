@@ -26,7 +26,7 @@ zen::software::radarr::add() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
-	zen::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
 	zen::software::radarr::config "$is_prerelease"
 	# generate the service file, this will also start it
@@ -100,7 +100,7 @@ zen::software::radarr::update() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
-	zen::git::get_release "/opt/${user[username]}/$app_name" "Radarr/Radarr" "$is_prerelease" "linux-core-x64.tar.gz"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
 	zen::service::manage "start" "$service_name"
 }
 

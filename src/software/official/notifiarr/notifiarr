@@ -23,7 +23,7 @@
 # @example
 #   zen software add notifiarr -u <username>
 zen::software::notifiarr::add() {
-    zen::git::get_release "/home/${user[username]}/bin/$app_name" "Notifiarr/notifiarr" "false" "notifiarr.amd64.linux.gz"
+    zen::git::get_release "/home/${user[username]}/bin/$app_name" "$software_repo" "false" "notifiarr.amd64.linux.gz"
     mv "/home/${user[username]}/bin/$app_name/notifiarr.amd64.linux" "/home/${user[username]}/bin/$app_name/Notifiarr"
     # configure the app. This will also generate the proxy file
     zen::software::notifiarr::config
@@ -72,7 +72,7 @@ zen::software::notifiarr::update() {
     [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
     zen::service::manage "stop" "$service_name"
     tempdir=$(mktemp -d)
-    zen::git::get_release "$tempdir" "Notifiarr/notifiarr" "false" "notifiarr.amd64.linux.gz"
+    zen::git::get_release "$tempdir" "$software_repo" "false" "notifiarr.amd64.linux.gz"
     mv "$tempdir/notifiarr.amd64.linux" "/home/${user[username]}/bin/$app_name/Notifiarr"
     zen::service::manage "start" "$service_name"
 }

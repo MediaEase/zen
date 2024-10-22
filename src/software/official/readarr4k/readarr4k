@@ -19,7 +19,7 @@ zen::software::readarr4k::add() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
-	zen::git::get_release "/opt/${user[username]}/$app_name" "Readarr/Readarr" "$is_prerelease" "linux-core-x64.tar.gz"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
 	# configure the app. This will also generate the proxy file
 	zen::software::readarr4k::config "$is_prerelease"
 	# generate the service file, this will also start it
@@ -88,7 +88,7 @@ zen::software::readarr4k::update() {
 	is_prerelease="false"
 	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
 	# grab the correct release
-	zen::git::get_release "/opt/${user[username]}/$app_name" "Readarr4k/Readarr4k" "$is_prerelease" "linux-core-x64.tar.gz"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
 	zen::service::manage "start" "$service_name"
 }
 

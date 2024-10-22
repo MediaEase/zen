@@ -26,7 +26,7 @@ zen::software::nzbget::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "nzbgetcom/nzbget" "$is_prerelease" "source"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "source"
     # configure the app. This will also generate the proxy file
     zen::software::nzbget::config "$is_prerelease"
     # generate the service file, this will also start it
@@ -122,7 +122,7 @@ zen::software::nzbget::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "nzbgetcom/nzbget" "$is_prerelease" "amd64.deb"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "amd64.deb"
     zen::service::manage "start" "$service_name"
 }
 

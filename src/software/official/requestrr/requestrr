@@ -26,7 +26,7 @@ zen::software::requestrr::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="false" # Requestrr does not have a beta branch
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "thomst08/Requestrr" "$is_prerelease" "linux-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-x64.tar.gz"
     # configure the app. This will also generate the proxy file
     zen::software::requestrr::config
     # create a backup file
@@ -99,7 +99,7 @@ zen::software::requestrr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "thomst08/Requestrr" "$is_prerelease" "linux-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 
