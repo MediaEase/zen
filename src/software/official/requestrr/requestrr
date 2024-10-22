@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+# @file software/official/requestrr/requestrr.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Requestrr handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::requestrr::add
+# @alias Install Requestrr
+# @description Adds Requestrr for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (Requestrr).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add requestrr -u <username>
+# @example
+#   zen software add requestrr -u <username>
+zen::software::requestrr::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="false" # Requestrr does not have a beta branch
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "thomst08/Requestrr" "$is_prerelease" "linux-x64.tar.gz"
+    # configure the app. This will also generate the proxy file
+    zen::software::requestrr::config
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::requestrr::config
+# @internal
+# @description Configures Requestrr for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Requestrr.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::requestrr::config
+zen::software::requestrr::config() {
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::software::autogen
+    url_base="/${user[username]}/${app_name}"
+    mkdir -p "/home/${user[username]}/.config/${app_name}"
+    sed -i "s|\"ConfigPath\": \".*\"|\"ConfigPath\": \"/home/${user[username]}/.config/${app_name}\"|" "/home/${user[username]}/.config/${app_name}/Requestrr/appsettings.json"
+    sed -i "s|\"Port\": 4545|\"Port\": ${default_port}|" "/home/${user[username]}/.config/${app_name}/Requestrr/settings.json"
+    sed -i "s|\"BaseUrl\": \"/\"|\"BaseUrl\": \"${url_base}\"|" "/home/${user[username]}/.config/${app_name}/Requestrr/settings.json"
+    # generate the proxy configuration
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+    zen::permission::user_exec "/opt/${user[username]}/$app_name/Requestrr" "${user[username]}"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    # generate the service file, this will also start it
+    zen::service::generate "$app_name" "$software_config_file"
+    # send a request to the api :
+    payload=$(
+        cat <<EOF
+{
+    "Username": "${user[username]}",
+    "Password": "${user[password]}",
+    "PasswordConfirmation": "${user[password]}"
+}
+EOF
+    )
+    RESPONSE=$(curl -s -X POST "http://localhost:${default_port}/api/auth/register" \
+        -H "Content-Type: application/json" \
+        -H "Accept: application/json" \
+        -d "$payload")
+
+    if echo "$RESPONSE" | grep -q '"token"'; then
+        mflibs::shell::text::green "User ${user[username]} registered successfully."
+    else
+        mflibs::shell::text::red "Failed to register user ${user[username]} . Response:"
+        echo "$RESPONSE"
+    fi
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::requestrr::update
+# @alias Update Requestrr
+# @description Updates Requestrr for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update requestrr -u <username>
+# @example
+#   zen software update requestrr -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::requestrr::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "thomst08/Requestrr" "$is_prerelease" "linux-x64.tar.gz"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::requestrr::remove
+# @alias Remove Requestrr
+# @description Removes Requestrr for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove requestrr -u <username>
+zen::software::requestrr::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::requestrr::backup
+# @alias Backup Requestrr
+# @description Creates a backup for Requestrr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup requestrr -u <username>
+zen::software::requestrr::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::requestrr::reset
+# @alias Reset Requestrr
+# @description Resets Requestrr settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset requestrr -u <username>
+zen::software::requestrr::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::requestrr::reinstall
+# @alias Reinstall Requestrr
+# @description Reinstalls Requestrr for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall requestrr -u <username>
+zen::software::requestrr::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

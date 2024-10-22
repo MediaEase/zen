@@ -1,0 +1,31 @@
+arguments:
+  app_name: Requestrr
+  altname: requestrr
+  description: requestrr_description
+  pro_only: false
+  logo_path: requestrr.png
+  group: automation
+  details:
+    docs: https://github.com/thomst08/requestrr/wiki
+    github: https://github.com/thomst08/requestrr
+    mediaease_docs: https://mediaease.github.io/docs/software/official/requestrr
+  multi_user: true
+  service_directives:
+    - Type=simple
+    - Environment=TMPDIR=/home/%i/tmp/$app_name
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name
+    - ExecStart=/opt/%i/Requestrr/Requestrr.WebApi -c /home/%i/.config/$app_name/appsettings.json
+    - KillMode=process
+    - TimeoutStopSec=20
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - ssl_port
+    - default_port
