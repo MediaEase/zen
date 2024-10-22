@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+# @file software/official/jackett/jackett.sh
+# @version: 1.0.0
+# @project MediaEase
+# @description Jackett handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2024, Thomas Chauveau
+# All rights reserved.
+
+# @function zen::software::jackett::add
+# @alias Install Jackett
+# @description Adds Jackett for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (Jackett).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add jackett -u <username>
+# @example
+#   zen software add jackett -u <username> -o branch=beta # installs the beta (nightly) version
+zen::software::jackett::add() {
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
+    # configure the app. This will also generate the proxy file
+    zen::software::jackett::config
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+################################################################################
+# @function zen::software::jackett::config
+# @internal
+# @description Configures Jackett for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Jackett.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::jackett::config  # disables pre-release (develop)
+# @example
+#   zen::software::jackett::config # enables pre-release (nightly)
+zen::software::jackett::config() {
+    declare -g url_base
+    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+    zen::software::autogen
+    url_base="/${user[username]}/${app_name}"
+    mkdir -p "/home/${user[username]}/.config/${app_name}"
+    cat >"/home/${user[username]}/.config/${app_name}/ServerConfig.json" <<JCON
+{
+    "Port": ${default_port},
+    "AllowExternal": true,
+    "APIKey": "${apikey}",
+    "AdminPassword": "",
+    "InstanceId": "",
+    "BlackholeDir": "",
+    "UpdateDisabled": false,
+    "UpdatePrerelease": false,
+    "BasePathOverride": "",
+    "OmdbApiKey": "",
+    "OmdbApiUrl": "",
+    "ProxyUrl": "",
+    "ProxyType": 0,
+    "ProxyPort": null,
+    "ProxyUsername": "",
+    "ProxyPassword": "",
+    "ProxyIsAnonymous": true
+}
+JCON
+
+    # generate the proxy configuration
+    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+    zen::permission::user_exec "/opt/${user[username]}/$app_name/Jackett" "${user[username]}"
+    zen::service::generate "$app_name" "$software_config_file"
+    zen::proxy::generate "$app_name" "$default_port" "$url_base"
+    cookie=$(curl -v "127.0.0.1:${default_port}/jackett/UI/Dashboard" -L 2>&1 | grep -m1 Set-Cookie | awk '{printf $3}' | sed 's/;//g')
+    curl "http://127.0.0.1:${default_port}/jackett/api/v2.0/server/adminpassword" -H "Content-Type: application/json" -H "Cookie: ${cookie}" --data-binary "\"${password}\""
+    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+}
+
+# @function zen::software::jackett::update
+# @alias Update Jackett
+# @description Updates Jackett for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update jackett -u <username>
+# @example
+#   zen software update jackett -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::jackett::update() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::jackett::remove
+# @alias Remove Jackett
+# @description Removes Jackett for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove jackett -u <username>
+zen::software::jackett::remove() {
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::jackett::backup
+# @alias Backup Jackett
+# @description Creates a backup for Jackett settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup jackett -u <username>
+zen::software::jackett::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::jackett::reset
+# @alias Reset Jackett
+# @description Resets Jackett settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset jackett -u <username>
+zen::software::jackett::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::jackett::reinstall
+# @alias Reinstall Jackett
+# @description Reinstalls Jackett for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall jackett -u <username>
+zen::software::jackett::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

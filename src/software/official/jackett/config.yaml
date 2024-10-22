@@ -1,0 +1,34 @@
+arguments:
+  app_name: Jackett
+  altname: jackett
+  description: jackett_description
+  pro_only: false
+  logo_path: jackett.png
+  group: automation
+  details:
+    docs: https://github.com/Jackett/Jackett/wiki
+    github: https://github.com/Jackett/Jackett
+    homepage: https://github.com/Jackett/Jackett
+    mediaease_docs: https://mediaease.github.io/docs/software/official/jackett
+  multi_user: true
+  ports:
+    - default: [12001-13999]
+    - ssl: [35001-35999]
+  service_directives:
+    - Type=simple
+    - Environment=TMPDIR=/home/%i/tmp/$app_name
+    - WorkingDirectory=/home/%i
+    - ExecStartPre=-/bin/mkdir -p /home/%i/tmp/$app_name
+    - ExecStart=/opt/%i/$app_name/Jackett --NoRestart
+    - TimeoutStopSec=20
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /home/%i/.config/$app_name/config.xml
+    - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /home/%i/.config/$app_name
+    - install: /opt/%i/$app_name
+  autogen:
+    - apikey
+    - default_port
