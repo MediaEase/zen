@@ -19,7 +19,7 @@ if [[ $USER == 'root' ]]; then
     mapfile -t setting_fields < <(sqlite3 "$db_file" "PRAGMA table_info(setting);" | awk -F'|' '$2 != "id" {print $2}')
 
     local -a commands software_ops user_ops support_ops log_ops migrate_ops pull_ops service_ops user_add_ops
-    commands=("software" "user" "support" "set" "pull" "service" "log" "migrate")
+    commands=("software" "user" "support" "set" "pull" "service" "log" "migrate" "tools")
     software_ops=("add" "remove" "reinstall" "update" "backup" "restore" "reset" "create")
     service_ops=("start" "stop" "status" "enable" "disable" "reload" "restart")
     user_ops=("add" "remove" "ban" "unban" "set")
@@ -28,6 +28,9 @@ if [[ $USER == 'root' ]]; then
     log_ops=("[servicename]")
     migrate_ops=("init" "restore")
     pull_ops=()
+    tools_subcommands=("igpu" "kernel")
+    igpu_ops=("update")
+    kernel_ops=("check")
 
     used_flags=()
     for word in "${COMP_WORDS[@]}"; do
@@ -133,6 +136,24 @@ if [[ $USER == 'root' ]]; then
       ;;
     pull)
       mapfile -t COMPREPLY < <(compgen -W "${pull_ops[*]}" -- "$current")
+      ;;
+    tools)
+      if [[ "$COMP_CWORD" -eq 2 ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "${tools_subcommands[*]}" -- "$current")
+      else
+        case "${COMP_WORDS[2]}" in
+        igpu)
+          if [[ "$COMP_CWORD" -eq 3 ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "${igpu_ops[*]}" -- "$current")
+          fi
+          ;;
+        kernel)
+          if [[ "$COMP_CWORD" -eq 3 ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "${kernel_ops[*]}" -- "$current")
+          fi
+          ;;
+        esac
+      fi
       ;;
     *)
       mapfile -t COMPREPLY < <(compgen -W "${commands[*]}" -- "$current")
