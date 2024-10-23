@@ -271,6 +271,16 @@ zen::prompt::input() {
 # @example
 #   zen::validate::input "username" "us" # returns 1
 # @example
+#   zen::validate::input "quota" "100GB" # returns 0
+# @example
+#   zen::validate::input "quota" "1000MB" # returns 0
+# @example
+#   zen::validate::input "quota" "1TB" # returns 0
+# @example
+#   zen::validate::input "quota" "10KB" # returns 1
+# @example
+#  zen::validate::input "quota" "10" # returns 1
+# @example
 #   zen::validate::input "version" "1.0.0" # returns 0
 # @example
 #   zen::validate::input "version" "1.0.0-alpha.1" # returns 0
@@ -335,6 +345,9 @@ zen::validate::input() {
     elif [[ "$filter" == "password" && ${#input} -ge 6 ]]; then
       return 0
     fi
+    ;;
+  quota)
+    [[ "$input" =~ ^[0-9]+(M|G|T)B$ ]] && return 0
     ;;
   version)
     [[ "$input" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-alpha(\.[0-9]+)?|-beta(\.[0-9]+)?|-rc(\.[0-9]+)?)?$ ]] && return 0
