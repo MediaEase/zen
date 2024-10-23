@@ -28,9 +28,10 @@ if [[ $USER == 'root' ]]; then
     log_ops=("[servicename]")
     migrate_ops=("init" "restore")
     pull_ops=()
-    tools_subcommands=("igpu" "kernel")
+    tools_subcommands=("igpu" "kernel" "quota")
     igpu_ops=("update")
     kernel_ops=("check")
+    quota_ops=("install" "status" "set")
 
     used_flags=()
     for word in "${COMP_WORDS[@]}"; do
@@ -150,6 +151,15 @@ if [[ $USER == 'root' ]]; then
         kernel)
           if [[ "$COMP_CWORD" -eq 3 ]]; then
             mapfile -t COMPREPLY < <(compgen -W "${kernel_ops[*]}" -- "$current")
+          fi
+          ;;
+        quota)
+          if [[ "$COMP_CWORD" -eq 3 ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "${quota_ops[*]}" -- "$current")
+          elif [[ "${COMP_WORDS[3]}" == "set" && "$COMP_CWORD" -eq 4 ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "${users[*]}" -- "$current")
+          elif [[ "${COMP_WORDS[3]}" == "set" && "$COMP_CWORD" -eq 5 ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "max 100MB 500MB 1GB 10GB 100GB 1TB 10TB" -- "$current")
           fi
           ;;
         esac
