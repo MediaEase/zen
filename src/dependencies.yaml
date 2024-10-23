@@ -111,6 +111,8 @@ plex_debrid:
           chmod +x /usr/local/bin/rclone_rd
 qbittorrent:
   apt: libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libboost-python-dev qtbase5-dev qttools5-dev-tools libqt5svg5-dev libgeoip-dev
+quota:
+  apt: quota
 radarr:
   apt: curl sqlite3 mediainfo
 radarr4k:
