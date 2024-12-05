@@ -24,7 +24,7 @@ zen::database::query() {
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing_query")"
   fi
 
-  declare -g sqlite3_db
+  #shellcheck disable=SC2154
   if [[ ! -f "$sqlite3_db" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing" "$sqlite3_db")"
   fi
