@@ -299,6 +299,7 @@ zen::dependency::external::install() {
 			install_command=$(yq e ".${app_name}.external[] | select(has(\"$software_name\")) | .${software_name}.install" "$dependencies_file")
 			local temp_script="temp_install_$software_name.sh"
 			echo "#!/bin/bash" >"$temp_script"
+			echo "export BASH_XTRACEFD=2" >>"$temp_script"
 			echo "$install_command" >>"$temp_script"
 			chmod +x "$temp_script"
 			mflibs::log "./$temp_script"
