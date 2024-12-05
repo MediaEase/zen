@@ -68,11 +68,11 @@ zen::i18n::generate::system_locale() {
 		locale_encoding=$(echo "$locale_setting" | cut -d. -f2)
 		tmpfile=$(mktemp)
 		while IFS= read -r line; do
-			if [[ "$line" =~ ^#\ *en_US.UTF-8\ UTF-8 ]]; then
-				echo "en_US.UTF-8 UTF-8" >>"$tmpfile"
-			elif [[ "$line" =~ ^en_US.UTF-8\ UTF-8 ]]; then
-				if [[ "$locale_base" != "en_US" ]]; then
-					echo "# en_US.UTF-8 UTF-8" >>"$tmpfile"
+			if [[ "$line" =~ ^#\ *en_[A-Z]{2}.UTF-8\ UTF-8 ]]; then
+				echo "${BASH_REMATCH[0]:2}" >>"$tmpfile"
+			elif [[ "$line" =~ ^en_[A-Z]{2}.UTF-8\ UTF-8 ]]; then
+				if [[ "$locale_base" != "${BASH_REMATCH[0]:0:5}" ]]; then
+					echo "# ${BASH_REMATCH[0]}" >>"$tmpfile"
 				else
 					echo "$line" >>"$tmpfile"
 				fi
