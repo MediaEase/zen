@@ -23,8 +23,7 @@ zen::database::query() {
   if [[ -z "$query" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing_query")"
   fi
-
-  #shellcheck disable=SC2154
+  sqlite3_db="$(zen::vault::pass::reveal "system.mediease_db")"
   if [[ ! -f "$sqlite3_db" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing" "$sqlite3_db")"
   fi
