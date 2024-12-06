@@ -202,7 +202,7 @@ zen::prompt::input() {
 
 # @function zen::validate::input
 # @description: Validates user input based on a specific filter.
-# @arg $1: string - Filter for the input (e.g., 'email', 'url', 'ip', 'ipv4', 'ipv6', 'mac', 'hostname', 'fqdn', 'domain', 'numeric', 'group').
+# @arg $1: string - Filter for the input (e.g., 'email', 'url', 'ip', 'ipv4', 'ipv6', 'mac', 'hostname', 'fqdn', 'domain', 'numeric', 'group', 'database', 'github', 'docs', 'port_range', 'password', 'username', 'quota', 'version').
 # @arg $2: string - The user's input to validate.
 # @exitcode 0: Successful execution, valid input.
 # @exitcode 1: Invalid input.
@@ -214,6 +214,10 @@ zen::prompt::input() {
 #   zen::validate::input "url" "https://example.com" # returns 0
 # @example
 #   zen::validate::input "url" "example.com" # returns 1
+# @example
+#   zen::validate::input "database" "data" # returns 0
+# @example
+#   zen::validate::input "database" "$data%" # returns 1
 # @example
 #   zen::validate::input "ip" "192.168.1.1" # returns 0
 # @example
@@ -338,11 +342,13 @@ zen::validate::input() {
   numeric)
     [[ "$input" =~ ^[0-9]+$ ]] && return 0
     ;;
-  password | username)
+  password | username | database)
     [[ ! $input =~ ['!@#$%^&*()_+=<>?[]|`"'] ]] && return 0
     if [[ "$filter" == "username" && ${#input} -ge 3 ]]; then
       return 0
     elif [[ "$filter" == "password" && ${#input} -ge 6 ]]; then
+      return 0
+    elif [[ "$filter" == "database" && ${#input} -ge 3 ]]; then
       return 0
     fi
     ;;
