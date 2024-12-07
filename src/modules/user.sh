@@ -53,7 +53,7 @@ zen::user::create() {
 		fi
 		zen::validate::input "password" "${password}"
 		zen::user::password::set "${username}" "${password}"
-		zen::vault::pass::store "${username}.main" "${password}"
+		zen::vault::key::store "${username}.main" "${password}"
 	fi
 	if [[ "$is_admin" == "true" ]]; then
 		echo "${username} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
@@ -188,7 +188,7 @@ zen::user::load() {
 		mflibs::shell::text::red "$(zen::i18n::translate "errors.user.not_found" "${username}")"
 		exit 1
 	fi
-	user_password=$(zen::vault::pass::reveal "$username.main")
+	user_password=$(zen::vault::key::reveal "$username.main")
 	user["password"]="${user_password}"
 	return 0
 }
