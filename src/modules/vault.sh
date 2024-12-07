@@ -83,15 +83,15 @@ zen::vault::create() {
 	mflibs::status::success "$(zen::i18n::translate "success.security.create_vault")"
 }
 
-# @function zen::vault::pass::encode
+# @function zen::vault::string::encode
 # @description Encodes a given string using base64 encoding.
 # @arg $1 string "The string to be encoded."
 # @return "Encoded string in base64 format."
 # @exitcode 0 "If the string is encoded successfully."
 # @exitcode 1 "If no string is provided."
 # @example
-#    zen::vault::pass::encode "password"
-zen::vault::pass::encode() {
+#    zen::vault::string::encode "value"
+zen::vault::string::encode() {
 	local string="${1}"
 	if [[ -z "$string" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.security.no_string_to_encode")"
@@ -102,21 +102,21 @@ zen::vault::pass::encode() {
     echo -n "$encoded_string"
 }
 
-# @function zen::vault::pass::decode
+# @function zen::vault::key::decode
 # @internal
-# @description Finds and decodes the hashed password from the vault.
-# @arg $1 string "The key for the password entry."
-# @return "Decoded password if successful."
+# @description Finds and decodes the hashed value from the vault.
+# @arg $1 string "The key for the value entry."
+# @return "Decoded value if successful."
 # @exitcode 1 "If the key is not found."
 # @example
-#    zen::vault::pass::decode "username.type"
-zen::vault::pass::decode() {
+#    zen::vault::key::decode "username.type"
+zen::vault::key::decode() {
 	local key="$1"
 	local name type
 	local encoded_name encoded_type hashed_key hashed_value
 	IFS='.' read -r name type <<<"$key"
-	encoded_name=$(zen::vault::pass::encode "$name")
-	encoded_type=$(zen::vault::pass::encode "$type")
+	encoded_name=$(zen::vault::string::encode "$name")
+	encoded_type=$(zen::vault::string::encode "$type")
 	hashed_key="${encoded_name}.${encoded_type}"
 	hashed_value=$(yq e ".$hashed_key" "$credentials_file")
 	if [[ -n "$hashed_value" ]]; then
@@ -128,70 +128,70 @@ zen::vault::pass::decode() {
 	fi
 }
 
-# @function zen::vault::pass::store
-# @description Stores a new password in the vault.
-# @arg $1 string "The key for the password entry."
-# @arg $2 string "The password to store."
+# @function zen::vault::key::store
+# @description Stores a new value in the vault.
+# @arg $1 string "The key for the value entry."
+# @arg $2 string "The value to store."
 # @global credentials_file "Path to the credentials file."
-# @exitcode 0 "If the password is stored successfully."
+# @exitcode 0 "If the value is stored successfully."
 # @exitcode 1 "If the key already exists."
 # @example
-#    zen::vault::pass::store "username.type" "password"
-zen::vault::pass::store() {
+#    zen::vault::key::store "username.type" "value"
+zen::vault::key::store() {
 	local key="$1"
-	local password="$2"
-	local username type hashed_password hashed_username hashed_key
+	local value="$2"
+	local username type hashed_value hashed_username hashed_key
 	username=$(echo "$key" | cut -d'.' -f1)
 	type=$(echo "$key" | cut -d'.' -f2)
-	hashed_type=$(zen::vault::pass::encode "$type")
-	hashed_username=$(zen::vault::pass::encode "$username")
+	hashed_type=$(zen::vault::string::encode "$type")
+	hashed_username=$(zen::vault::string::encode "$username")
 	hashed_key=".$hashed_username.$hashed_type"
-	mflibs::status::info "$(zen::i18n::translate "messages.security.store_password" "$username" "$type")"
+	mflibs::status::info "$(zen::i18n::translate "messages.security.store_key" "$username" "$type")"
 	if [[ $(yq e "$hashed_key" "$credentials_file") != "null" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.security.key_already_exists" "$key")"
 	fi
 	zen::vault::permissions "remove"
-	hashed_password=$(zen::vault::pass::encode "$password")
-	yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_password\"" "$credentials_file"
+	hashed_value=$(zen::vault::string::encode "$value")
+	yq e -i ".\"$hashed_username\".\"$hashed_type\" = \"$hashed_value\"" "$credentials_file"
 	zen::vault::permissions "add"
-	mflibs::status::success "$(zen::i18n::translate "success.security.store_password")"
+	mflibs::status::success "$(zen::i18n::translate "success.security.store_key")"
 }
 
-# @function zen::vault::pass::update
-# @description Updates an existing password in the vault.
-# @arg $1 string "The key for the password entry."
-# @arg $2 string "The new password to update."
+# @function zen::vault::key::update
+# @description Updates an existing value in the vault.
+# @arg $1 string "The key for the value entry."
+# @arg $2 string "The new value to update."
 # @global credentials_file "Path to the credentials file."
-# @exitcode 0 "If the password is updated successfully."
+# @exitcode 0 "If the value is updated successfully."
 # @exitcode 1 "If the key is not found."
 # @example
-#    zen::vault::pass::update "username.type" "password"
-zen::vault::pass::update() {
+#    zen::vault::key::update "username.type" "value"
+zen::vault::key::update() {
 	local key="$1"
-	local password="$2"
-	local hashed_key hashed_password
-	hashed_key=$(zen::vault::pass::encode "$key")
-	hashed_password=$(zen::vault::pass::encode "$password")
+	local value="$2"
+	local hashed_key hashed_value
+	hashed_key=$(zen::vault::string::encode "$key")
+	hashed_value=$(zen::vault::string::encode "$value")
 
 	if yq e ".$hashed_key" "$credentials_file" &>/dev/null; then
 		zen::vault::permissions "remove"
-		yq e -i ".$hashed_key = \"$hashed_password\"" "$credentials_file"
+		yq e -i ".$hashed_key = \"$hashed_value\"" "$credentials_file"
 		zen::vault::permissions "add"
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.security.key_missing")"
 	fi
 }
 
-# @function zen::vault::pass::reveal
-# @description Reveals the password associated with a given key from the vault.
-# @arg $1 string "The key whose password is to be revealed."
+# @function zen::vault::key::reveal
+# @description Reveals the value associated with a given key from the vault.
+# @arg $1 string "The key whose value is to be revealed."
 # $arg $2 string "The context of the key."
-# @return "Reveals the associated password if successful."
+# @return "Reveals the associated value if successful."
 # @example
-#    zen::vault::pass::reveal "username.type"
+#    zen::vault::key::reveal "username.type"
 # @example
-#    zen::vault::pass::reveal "username.type" "context" # Optionally pass a context to reveal protected passwords.
-zen::vault::pass::reveal() {
+#    zen::vault::key::reveal "username.type" "context" # Optionally pass a context to reveal protected values.
+zen::vault::key::reveal() {
 	local key="$1"
 	local context=${2:-main}
 	if [[ "$key" == system.* && "$context" != "mediaease" ]]; then
@@ -200,7 +200,7 @@ zen::vault::pass::reveal() {
 		mflibs::status::error "$(zen::i18n::translate "errors.security.invalid_context")"
 	else
 		declare -g VAULT_PASSWORD
-		VAULT_PASSWORD=$(zen::vault::pass::decode "$@")
+		VAULT_PASSWORD=$(zen::vault::key::decode "$@")
 		[[ "$context" == "main" ]] && printf "Password for %s is : %s\n" "$key" "$VAULT_PASSWORD"
 		[[ "$context" == "mediaease" ]] && echo -n "$VAULT_PASSWORD"
 		export VAULT_PASSWORD
