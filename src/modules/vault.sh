@@ -113,14 +113,16 @@ zen::vault::pass::encode() {
 zen::vault::pass::decode() {
 	local key="$1"
 	local name type
-	local encoded_name encoded_type hashed_key hashed_password
+	local encoded_name encoded_type hashed_key hashed_value
 	IFS='.' read -r name type <<<"$key"
 	encoded_name=$(zen::vault::pass::encode "$name")
 	encoded_type=$(zen::vault::pass::encode "$type")
 	hashed_key="${encoded_name}.${encoded_type}"
-	hashed_password=$(yq e ".$hashed_key" "$credentials_file")
-	if [[ -n "$hashed_password" ]]; then
-		echo "$hashed_password" | base64 --decode
+	hashed_value=$(yq e ".$hashed_key" "$credentials_file")
+	if [[ -n "$hashed_value" ]]; then
+		local padded_value
+		padded_value=$(echo "$hashed_value" | awk '{ while (length($0) % 4 != 0) $0 = $0 "="; print }')
+		echo "$padded_value" | base64 --decode
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.security.key_not_decodable")"
 	fi
