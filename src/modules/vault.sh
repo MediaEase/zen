@@ -96,7 +96,10 @@ zen::vault::pass::encode() {
 	if [[ -z "$string" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.security.no_string_to_encode")"
 	fi
-	echo -n "$string" | base64 | sed 's/=*$//'
+	local encoded_string
+	encoded_string=$(echo -n "$string" | base64)
+    encoded_string="${encoded_string%%=*}"
+    echo -n "$encoded_string"
 }
 
 # @function zen::vault::pass::decode
