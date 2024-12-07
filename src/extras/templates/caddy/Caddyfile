@@ -1,6 +1,6 @@
 {
     persist_config off
-    import fragments/logger.caddy
+    import fragments/logger.conf
     debug
 }
 {{SERVER_NAME}} {
