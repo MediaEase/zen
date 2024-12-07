@@ -92,12 +92,13 @@ errors:
     port_in_use: "Le port {arg0} est indisponible."
     port_range_missing: "Aucune plage de ports trouvée pour {arg0}."
   security:
+    configure_ssh: "Échec de la sécurisation de SSH."
     key_already_exists: "La clé {arg0} existe déjà... Arrêt..."
     key_missing: "Clé introuvable."
     key_not_decodable: "Impossible de décoder la clé."
     key_not_revealable: "Impossible de révéler la clé."
+    invalid_context: "Contexte invalide : {arg0}."
     no_string_to_encode: "Aucune chaîne fournie pour le codage."
-    configure_ssh: "Échec de la sécurisation de SSH."
   service:
     already_running: "Le service {arg0} est déjà en cours d'exécution."
     disable: "Échec de la désactivation du service {arg0}."
@@ -142,6 +143,7 @@ messages:
     configure_bashrc: "Configuration de bashrc..."
     configure_mediaease_environment: "Configuration de l'environnement MediaEase..."
     credentials: "Vous pouvez utiliser les identifiants suivants pour vous connecter."
+    db_query: "Execution de la requête: {arg0}."
   filesystem:
     disks_to_format: "Les disques suivants seront formatés et réinitialisés : {arg0} à {arg1}. Système de fichiers utilisé : {arg2}."
     future_disk: "Le disque {arg0} sera créé suite à l'opération."
@@ -155,7 +157,7 @@ messages:
   security:
     create_vault: "Création du coffre fort..."
     last_time: "C'est la dernière fois que vous verrez le sel utilisateur. Veuillez le sauvegarder quelque part en sécurité."
-    store_password: "Stockage du mot de passe dans le coffre fort..."
+    store_key: "Stockage de d'une clé dans le coffre fort..."
     user_salt: "Sel utilisateur."
   service:
     disable: "Désactivation du service {arg0}..."
@@ -234,7 +236,7 @@ success:
     create_vault: "Coffre fort créé."
     init_vault: "Coffre fort initialisé."
     configure_ssh: "SSH sécurisé."
-    store_password: "Mot de passe stocké dans le coffre fort avec succès."
+    store_key: "Clé stockée dans le coffre fort avec succès."
     store_salt: "Sel utilisateur stocké."
   service:
     disable: "Service {arg0} désactivé."

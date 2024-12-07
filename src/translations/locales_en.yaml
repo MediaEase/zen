@@ -92,12 +92,13 @@ errors:
     port_in_use: "Port {arg0} is unavailable."
     port_range_missing: "No port range found for {arg0}."
   security:
+    configure_ssh: "Failed to secure SSH."
     key_already_exists: "Key {arg0} already exists... Exiting."
     key_missing: "Key not found."
     key_not_decodable: "Unable to decode key."
     key_not_revealable: "Unable to reveal key."
+    invalid_context: "Invalid context: {arg0}."
     no_string_to_encode: "No string provided for encoding."
-    configure_ssh: "Failed to secure SSH."
   service:
     already_running: "Service {arg0} is already running."
     disable: "Failed to disable {arg0} service."
@@ -142,6 +143,7 @@ messages:
     configure_bashrc: "Configuring bashrc..."
     configure_mediaease_environment: "Configuring MediaEase environment..."
     credentials: "You can use the following credentials to log in."
+    db_query: "Executing database query: {arg0}."
   filesystem:
     disks_to_format: "The following disks will be formatted and reset: {arg0} to {arg1}. Filesystem {arg2} will be used."
     future_disk: "The disk {arg0} will be created as a result of the operation."
@@ -155,7 +157,7 @@ messages:
   security:
     create_vault: "Creating vault..."
     last_time: "This is the last time you will see the user salt. Please save it somewhere secure."
-    store_password: "Storing password in the vault..."
+    store_value: "Storing a key in the vault..."
     user_salt: "User salt."
   service:
     disable: "Disabling {arg0} service..."
@@ -233,7 +235,7 @@ success:
     create_vault: "Vault created."
     init_vault: "Vault initialized."
     configure_ssh: "SSH secured."
-    store_password: "Password stored successfully in the vault."
+    store_key: "Clé stored successfully in the vault."
     store_salt: "User salt stored."
   service:
     disable: "Service {arg0} disabled."
