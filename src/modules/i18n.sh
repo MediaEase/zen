@@ -161,7 +161,9 @@ zen::i18n::translate() {
 		done
 		translation="${translation%\"}"
 		translation="${translation#\"}"
-		translation="$(tr '[:lower:]' '[:upper:]' <<<"${translation:0:1}")${translation:1}"
+		if [[ ! "$translation" =~ ^\{arg0\} ]] && [[ ! "$key" == *".dependency."* ]]; then
+			translation="$(tr '[:lower:]' '[:upper:]' <<<"${translation:0:1}")${translation:1}"
+		fi
 	fi
 	printf '%s' "$translation"
 }
