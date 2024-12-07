@@ -194,13 +194,15 @@ zen::vault::pass::update() {
 zen::vault::pass::reveal() {
 	local key="$1"
 	local context=${2:-main}
-	if [[ "$key" == "system.mediease_beta" && "$context" != "mediaease" ]]; then
+	if [[ "$key" == system.* && "$context" != "mediaease" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.security.key_not_revealable")"
-	elif [[ "$key" != "system.mediease_beta" && $context == "main" || "$key" != "system.mediease_beta" && $context == "zen" ]]; then
+	elif [[ "$key" != system.* && "$context" != "main" ]]; then
+		mflibs::status::error "$(zen::i18n::translate "errors.security.invalid_context")"
+	else
 		declare -g VAULT_PASSWORD
 		VAULT_PASSWORD=$(zen::vault::pass::decode "$@")
-		[[ $context == "main" ]] && printf "Password for %s is : %s\n" "$key" "$VAULT_PASSWORD"
-		[[ $context == "zen" ]] && echo -n "$VAULT_PASSWORD"
+		[[ "$context" == "main" ]] && printf "Password for %s is : %s\n" "$key" "$VAULT_PASSWORD"
+		[[ "$context" == "mediaease" ]] && echo -n "$VAULT_PASSWORD"
 		export VAULT_PASSWORD
 	fi
 }
