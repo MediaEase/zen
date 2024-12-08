@@ -23,12 +23,20 @@ zen::database::query() {
   if [[ -z "$query" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing_query")"
   fi
-  sqlite3_db="$(zen::vault::pass::reveal "system.mediease_db")"
+  # shellcheck disable=SC2154
   if [[ ! -f "$sqlite3_db" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing" "$sqlite3_db")"
   fi
-  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
-  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
+  if ! sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"; then
+    if [[ " ${MFLIBS_LOADED[*]} " =~ verbose ]]; then
+      local table
+      table=$(echo "$query" | awk '{print $2}')
+      local dump_query="SELECT * FROM $table;"
+      content=$(sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$dump_query")
+      echo "Content of $table: $content"
+    fi
+    mflibs::status::error "$(zen::i18n::translate "errors.environment.db_query_failed" "$query")"
+  fi
 }
 
 # @function zen::database::select
@@ -171,7 +179,7 @@ zen::database::update() {
   fi
 
   local query="UPDATE ${table} SET ${update_clause} WHERE ${where_clause};"
-
+  [[ " ${MFLIBS_LOADED[*]} " =~ debug ]] && mflibs::status::info "$(zen::i18n::translate "messages.environment.db_query" "$query")"
   zen::database::query "$query"
 }
 
