@@ -97,69 +97,6 @@ zen::prompt::raid() {
   output_var="$choice"
 }
 
-# @function zen::prompt::code
-# @description: Prompts the user to input a specific code or string. Can be used for verification purposes.
-# @example:
-#   zen::prompt::code "Enter the secret code:" "1234" "code"
-# @arg $1: string - Custom prompt message.
-# @arg $2: string - The specific code or string the user must input.
-# @arg $3: string (optional) - Context of the prompt ('code' for general code, 'password' for password input).
-# @stdout: Custom prompt message and additional context-specific prompt (if applicable).
-# @exitcode 0: Correct code or string entered.
-# @exitcode 1: Incorrect input, continues prompting.
-# @caution Ensure that the code or string provided is kept secure and not easily guessable.
-# @important This function is useful for securing sensitive operations by requiring user verification.
-zen::prompt::code() {
-  local prompt="${1:-}"
-  local string="${2:-}"
-  local context="${3:-code}"
-
-  while true; do
-    printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
-    printf "%s " "$prompt"
-    if [[ "$context" == "code" ]]; then
-      mflibs::shell::text::red::sl "$string"
-    elif [[ "$context" == "password" ]]; then
-      zen::vault::pass::decode "$string"
-    fi
-    mflibs::shell::text::cyan " ➜ "
-    read -r reply </dev/tty
-    if [[ "$reply" == "$string" ]]; then
-      return 0
-    else
-      mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
-    fi
-  done
-}
-
-# @function zen::prompt::password
-# @description: Prompts the user to input a password. The input is hidden from the terminal.
-# @example:
-#   zen::prompt::password "Enter your password:" "password"
-# @arg $1: string - Custom prompt message.
-# @arg $2: string - The password the user must input.
-# @stdout: Custom prompt message and hidden password input.
-# @exitcode 0: Correct password entered.
-# @exitcode 1: Incorrect input, continues prompting.
-# @caution Ensure that the password provided is kept secure and not easily guessable.
-# @important This function is useful for securing sensitive operations by requiring user verification.
-zen::prompt::password() {
-  local prompt="${1:-}"
-  local password="${2:-}"
-
-  while true; do
-    printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
-    zen::vault::pass::decode "$password"
-    mflibs::shell::text::cyan " ➜ "
-    read -r reply </dev/tty
-    if [[ "$reply" == "$password" ]]; then
-      return 0
-    else
-      mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
-    fi
-  done
-}
-
 # @function zen::prompt::input
 # @description: Safely prompts the user for input and stores the result in a variable. The prompt message is customizable. We can filter things like email, URL, etc.
 #               This function is useful for validating user input and ensuring that the input matches a specific format.
