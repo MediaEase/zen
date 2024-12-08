@@ -112,10 +112,26 @@ zen::prompt::input() {
   local prompt="${1:-}"
   local filter="${2:-}"
   local output_var_name="${3:-}"
-  local reply
+  local code_to_match reply
+
+  if [[ "$filter" == "code" ]]; then
+    code_to_match=$(shuf -i 100000-999999 -n 1)
+  fi
+  if [[ "$filter" == "code" ]]; then
+    if (( RANDOM % 2 )); then
+      code_to_match=$(shuf -i 100000-999999 -n 1)
+    else
+      code_to_match=$(tr -dc 'A-Za-z' </dev/urandom | head -c 6)
+    fi
+  fi
 
   while true; do
-    printf "%s %s" "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
+    if [[ "$filter" == "code" ]]; then
+      printf "%s %s [%s]: " "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt" " $code_to_match "
+    else
+      printf "%s %s: " "$(mflibs::shell::text::cyan::sl " ➜ ")" "$prompt"
+    fi
+
     if [[ "$filter" == "password" ]]; then
       read -r -s reply </dev/tty
       echo ""
@@ -123,7 +139,13 @@ zen::prompt::input() {
       read -r reply </dev/tty
     fi
 
-    if [[ -n "$filter" ]]; then
+    if [[ "$filter" == "code" ]]; then
+      if [[ "$reply" == "$code_to_match" ]]; then
+        return 0
+      else
+        mflibs::shell::text::red "$(zen::i18n::translate "prompts.common.invalid_input" "$reply")"
+      fi
+    elif [[ -n "$filter" ]]; then
       if zen::validate::input "$filter" "$reply"; then
         export "$output_var_name"="$reply"
         return 0
