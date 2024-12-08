@@ -224,3 +224,160 @@ zen::common::scons::install() {
 	fi
 	mflibs::status::success "$(zen::i18n::translate "success.build.scons_install" "$source_dir")"
 }
+
+# @function zen::common::validate
+# @description: Validates user input based on a specific filter.
+# @arg $1: string - Filter for the input (e.g., 'email', 'url', 'ipv4', 'ipv6', 'mac', 'hostname', 'fqdn', 'domain', 'numeric', 'group', 'database', 'github', 'docs', 'port_range', 'password', 'username', 'quota', 'version').
+# @arg $2: string - The user's input to validate.
+# @exitcode 0: Successful execution, valid input.
+# @exitcode 1: Invalid input.
+# @example
+#   zen::common::validate "email" "contact@me.com" # returns 0
+# @example
+#   zen::common::validate "email" "contact@me" # returns 1
+# @example
+#   zen::common::validate "url" "https://example.com" # returns 0
+# @example
+#   zen::common::validate "url" "example.com" # returns 1
+# @example
+#   zen::common::validate "database" "data" # returns 0
+# @example
+#   zen::common::validate "database" "$data%" # returns 1
+# @example
+#   zen::common::validate "ipv4" "192.168.1.1" # returns 0
+# @example
+#   zen::common::validate "ipv4" "256.256.256.256" # returns 1
+# @example
+#   zen::common::validate "ipv6" "2001:0db8:85a3:0000:0000:8a2e:0370:7334" # returns 0
+# @example
+#   zen::common::validate "ipv6" "2001:0db8:85a3::8a2e:0370:7334" # returns 1
+# @example
+#   zen::common::validate "mac" "00:1A:2B:3C:4D:5E" # returns 0
+# @example
+#   zen::common::validate "mac" "00:1A:2B:3C:4D:5E:6F" # returns 1
+# @example
+#   zen::common::validate "hostname" "example-hostname" # returns 0
+# @example
+#   zen::common::validate "hostname" "example_hostname" # returns 1
+# @example
+#   zen::common::validate "fqdn" "example.com" # returns 0
+# @example
+#   zen::common::validate "fqdn" "example..com" # returns 1
+# @example
+#   zen::common::validate "domain" "example.com" # returns 0
+# @example
+#   zen::common::validate "domain" "example" # returns 1
+# @example
+#   zen::common::validate "group" "media" # returns 0
+# @example
+#   zen::common::validate "group" "unsupported_group" # returns 1
+# @example
+#   zen::common::validate "github" "https://github.com/MediaEase/shdoc" # returns 0
+# @example
+#   zen::common::validate "github" "MediaEase/shdoc" # returns 0
+# @example
+#   zen::common::validate "docs" "https://example.com/docs" # returns 0
+# @example
+#   zen::common::validate "docs" "https://example.com/documentation" # returns 1
+# @example
+#   zen::common::validate "port_range" "8000-9000" # returns 0
+# @example
+#   zen::common::validate "port_range" "8000:9000" # returns 1
+# @example
+#   zen::common::validate "numeric" "12345" # returns 0
+# @example
+#   zen::common::validate "numeric" "12345a" # returns 1
+# @example
+#   zen::common::validate "password" "password1234" # returns 0
+# @example
+#   zen::common::validate "password" "passw'~ord" # returns 1
+# @example
+#   zen::common::validate "username" "user123" # returns 0
+# @example
+#   zen::common::validate "username" "us" # returns 1
+# @example
+#   zen::common::validate "quota" "100GB" # returns 0
+# @example
+#   zen::common::validate "quota" "1000MB" # returns 0
+# @example
+#   zen::common::validate "quota" "1TB" # returns 0
+# @example
+#   zen::common::validate "quota" "10KB" # returns 1
+# @example
+#  zen::common::validate "quota" "10" # returns 1
+# @example
+#   zen::common::validate "version" "1.0.0" # returns 0
+# @example
+#   zen::common::validate "version" "1.0.0-alpha.1" # returns 0
+# @example
+#   zen::common::validate "version" "1.0.0-beta" # returns 0
+# @example
+#   zen::common::validate "version" "1.0.0-rc.1" # returns 0
+# @example
+#   zen::common::validate "version" "1.0.0-rc.1.1" # returns 1
+# @example
+#   zen::common::validate "version" "Best Version Ever" # returns 1
+zen::common::validate() {
+local filter="$1"
+local input="$2"
+case "$filter" in
+	docs)
+		[[ "$input" =~ ^https://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/docs ]] && return 0
+	;;
+	domain)
+		[[ "$input" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]] && return 0
+	;;
+	email)
+		[[ "$input" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]] && return 0
+	;;
+	fqdn)
+		[[ "$input" =~ ^([a-zA-Z0-9.-]+\.)+[a-zA-Z]{2,}$ ]] && return 0
+	;;
+	github)
+		[[ "$input" =~ ^(https://(github|gitlab)\.com/[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+|[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)$ ]] && return 0
+	;;
+	group)
+		[[ "$input" =~ ^(full|automation|media|remote|download)$ ]] && return 0
+	;;
+	hostname)
+		[[ "$input" =~ ^[a-zA-Z0-9._@-]+$ ]] && return 0
+	;;
+	ipv4)
+		[[ "$input" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 0
+	;;
+	ipv6)
+		[[ "$input" =~ ^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$ ]] && return 0
+	;;
+	mac)
+		[[ "$input" =~ ^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$ ]] && return 0
+	;;
+	numeric)
+		[[ "$input" =~ ^[0-9]+$ ]] && return 0
+	;;
+	port_range)
+		[[ "$input" =~ ^[0-9]+-[0-9]+$ ]] && return 0
+	;;
+	password | username | database)
+		[[ ! $input =~ ['!@#$%^&*()_+=<>?[]|`"'] ]] && return 0
+		if [[ "$filter" == "username" && ${#input} -ge 3 ]]; then
+			return 0
+		elif [[ "$filter" == "password" && ${#input} -ge 6 ]]; then
+			return 0
+		elif [[ "$filter" == "database" && ${#input} -ge 3 ]]; then
+			return 0
+		fi
+	;;
+	quota)
+		[[ "$input" =~ ^[0-9]+(M|G|T)B$ ]] && return 0
+	;;
+	url)
+		[[ "$input" =~ ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} ]] && return 0
+	;;
+	version)
+		[[ "$input" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-alpha(\.[0-9]+)?|-beta(\.[0-9]+)?|-rc(\.[0-9]+)?)?$ ]] && return 0
+	;;
+	*)
+		return 1
+	;;
+	esac
+}

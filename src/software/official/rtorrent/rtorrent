@@ -24,7 +24,7 @@ zen::software::rtorrent::add() {
         fi
     done
     if [[ ${#not_installed[@]} -gt 0 ]]; then
-        zen::validate::input "version" "$software_version"
+        zen::common::validate "version" "$software_version"
         valid_versions=$(zen::software::get_config_key_value "$software_config_file" '.arguments.versions[]')
         valid_version_found=false
         for version in "${valid_versions[@]}"; do

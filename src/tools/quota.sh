@@ -95,7 +95,7 @@ zen::tools::quota::set() {
     if [[ -z "$username" ]]; then
         zen::prompt::input "$(mflibs::shell::text::white "Enter username:")" "username" username
     else
-        if ! zen::validate::input "username" "$username"; then
+        if ! zen::common::validate "username" "$username"; then
             mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_username" "$username")"
             exit 1
         fi

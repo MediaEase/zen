@@ -51,7 +51,7 @@ zen::user::create() {
 		if [[ -z "${password}" ]]; then
 			password=$(zen::user::password::generate 16)
 		fi
-		zen::validate::input "password" "${password}"
+		zen::common::validate "password" "${password}"
 		zen::user::password::set "${username}" "${password}"
 		zen::vault::key::store "${username}.main" "${password}"
 	fi
