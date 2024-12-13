@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/service.sh
 # @project MediaEase
-# @version 1.0.0
+# @version 1.0.26
 # @description Contains a library of functions used in the MediaEase Project for managing services.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com

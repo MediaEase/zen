@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/permission.sh
 # @project MediaEase
-# @version 1.0.0
+# @version 1.0.3
 # @description Contains a library of functions to manage file permissions in the MediaEase project.
 # @license BSD-3 Clause (Included in LICENSE)
 
