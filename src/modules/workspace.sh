@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/workspace.sh
 # @project MediaEase
-# @version 1.3.1
+# @version 1.3.2
 # @brief A library for managing Python virtual environments.
 # @description Contains a library of functions used in the MediaEase Project for managing virtual environments.
 # @author Thomas Chauveau (tomcdj71)

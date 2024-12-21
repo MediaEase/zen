@@ -1,0 +1,153 @@
+name: Release Submodule (Zen)
+on:
+  push:
+    branches: [ "main", "develop" ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      REPO_PATH: "${{ github.workspace }}"
+      SCRIPTS_PATH: "${{ github.workspace }}/workflows"
+      UNENCRYPTED_PATH: "${{ github.workspace }}/unencrypted"
+      PRE_RELEASE_IDENTIFIER: ""
+      VERSION: ""
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          path: ${{ env.REPO_PATH }}
+          fetch-depth: 0
+
+      - name: Checkout workflows scripts
+        uses: actions/checkout@v4
+        with:
+          repository: MediaEase/workflows
+          ref: main
+          path: ${{ env.SCRIPTS_PATH }}
+          token: ${{ secrets.MEDIAEASE_ACCESS_TOKEN }}
+      
+      - name: Checkout unencrypted binaries
+        uses: actions/checkout@v4
+        with:
+          repository: MediaEase/unencrypted
+          token: ${{ secrets.MEDIAEASE_ACCESS_TOKEN }}
+          path: ${{ env.UNENCRYPTED_PATH }}
+          ref: ${{ github.ref }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update zen script
+        run: |
+          set -e
+          cd ${{ env.REPO_PATH }}
+          zen_version_changed=false
+          zen_version=$(sudo ./src/zen.sh version || echo "unknown")
+          echo "current_zen_version=$zen_version" >> $GITHUB_ENV
+          if [ ${{ github.ref }} == "refs/heads/develop" ]; then zen_file="zen-dev.sh"; else zen_file="zen.sh"; fi
+          rm -f zen.sh
+          cp -pR ${{ env.UNENCRYPTED_PATH }}/compiled/$zen_file ./src/zen.sh
+          echo "new_zen_version=$zen_version" >> $GITHUB_ENV
+          if [ "${{ env.current_zen_version }}" != "${{ env.new_zen_version }}" ]; then
+            echo "zen_version_changed=true" >> $GITHUB_ENV
+          fi
+
+      - name: Fetch all tags
+        run: |
+          cd ${{ env.REPO_PATH }}
+          git fetch --tags
+
+      - name: Update documentation
+        run: |
+          set -e
+          cd ${{ env.REPO_PATH }}
+          python3 ${{ env.SCRIPTS_PATH }}/submodules/update_copyrights.py
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            ./${{ env.SCRIPTS_PATH }}/autodocs.sh
+          fi
+          echo "documentation_updated=true" >> $GITHUB_ENV
+
+      - name: Calculate Submodule Version
+        if: ${{ env.documentation_updated == 'true' }}
+        run: |
+          set -o pipefail
+          set -e 
+          cd ${{ env.REPO_PATH }}
+          python3 ${{ env.SCRIPTS_PATH }}/submodules/calculate_version.py > version.txt
+          echo "Version file: $(cat version.txt)"
+          VERSION=$(cat version.txt)
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            pre_release_identifier="-$(cat ${{ env.SCRIPTS_PATH }}/prerelease_identifier.txt)"
+            echo "PRE_RELEASE_IDENTIFIER=${pre_release_identifier}" >> $GITHUB_ENV
+            echo "identifier: $(cat ${{ env.SCRIPTS_PATH }}/prerelease_identifier.txt)"
+          fi
+          echo "VERSION=${VERSION}${{ env.PRE_RELEASE_IDENTIFIER }}" >> $GITHUB_ENV
+          echo "version : $VERSION${{ env.PRE_RELEASE_IDENTIFIER }}"
+          echo "submodule_version_calculated=true" >> $GITHUB_ENV
+          rm version.txt
+
+      - name: Generate Changelog
+        if: ${{ env.submodule_version_calculated == 'true' }}
+        run: |
+          cd ${{ env.REPO_PATH }}
+          python3 ${{ env.SCRIPTS_PATH }}/submodules/generate_changelog.py ${{ env.VERSION }}${{ env.PRE_RELEASE_IDENTIFIER }}
+          echo "changelog_generated=true" >> $GITHUB_ENV
+          
+      - name: Commit and push zen.sh changes
+        if: ${{ env.zen_version_changed == 'true' }}
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: ${{ secrets.GIT_AUTHOR }}
+          author_email: "${{ secrets.GIT_EMAIL }}"
+          committer_name: ${{ secrets.GIT_AUTHOR }}
+          committer_email: "${{ secrets.GIT_EMAIL }}"
+          default_author: user_info
+          message: "chore: update zen handler to v${{ env.new_zen_version }} [automated]"
+          add: src/zen.sh
+          push: false
+          pull: "--rebase --autostash"
+
+      - name: Commit and push documentation changes
+        id: commit_docs
+        if: ${{ env.documentation_updated == 'true' }} && ${{ env.submodule_version_calculated == 'true' }}
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: ${{ secrets.GIT_AUTHOR }}
+          author_email: "${{ secrets.GIT_EMAIL }}"
+          committer_name: ${{ secrets.GIT_AUTHOR }}
+          committer_email: "${{ secrets.GIT_EMAIL }}"
+          default_author: user_info
+          message: "docs: update documentation for v${{ env.VERSION }}${{ env.PRE_RELEASE_IDENTIFIER }} [automated]"
+          add: |
+            docs
+            src
+          push: true
+          pull: "--rebase --autostash"
+
+      - name: Create Release
+        if: ${{ steps.commit_docs.outputs.pushed == 'true' }}
+        run: |
+          cd ${{ env.REPO_PATH }}
+          unset GH_TOKEN GITHUB_TOKEN
+          echo GH_TOKEN=${{ secrets.MEDIAEASE_ACCESS_TOKEN }}
+          echo GITHUB_TOKEN=${{ secrets.MEDIAEASE_ACCESS_TOKEN }}
+          gh auth login --with-token <<< "${{ secrets.MEDIAEASE_ACCESS_TOKEN }}"
+          RELEASE_NOTES_FILE="docs/changelogs/raw/CHANGELOG_${{ env.VERSION }}${{ env.PRE_RELEASE_IDENTIFIER }}.md"
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            gh release create v${{ env.VERSION }}${{ env.PRE_RELEASE_IDENTIFIER }} \
+              --target develop \
+              --prerelease \
+              --notes-file $RELEASE_NOTES_FILE \
+              --title "Release v${{ env.VERSION }} (Pre-release)" 
+          else
+            gh release create v${{ env.VERSION }} \
+              --target main \
+              --notes-file $RELEASE_NOTES_FILE \
+              --title "Release v${{ env.VERSION }}" 
+          fi

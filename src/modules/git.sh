@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/git.sh
 # @project MediaEase
-# @version 1.2.0
+# @version 1.2.1
 # @description Contains a library of common functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com

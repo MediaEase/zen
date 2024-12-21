@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/official/filebrowser/filebrowser.sh
-# @version 1.1.1
+# @version 1.1.2
 # @project MediaEase
 # @description FileBrowser handler
 # @author Thomas Chauveau (tomcdj71)
