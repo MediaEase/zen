@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/i18n.sh
 # @project MediaEase
-# @version 1.0.30
+# @version 1.0.31
 # @description Contains a library of internationalization functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/software.sh
 # @project MediaEase
-# @version 1.2.7
+# @version 1.2.8
 # @description Contains a library of functions used in the MediaEase Project for managing software.
 # @license BSD-3 Clause (Included in LICENSE)
 # @copyright Copyright (C) 2024, Thomas Chauveau

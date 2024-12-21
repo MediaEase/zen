@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/proxy.sh
 # @project MediaEase
-# @version 1.2.2
+# @version 1.2.3
 # @description Contains a library of functions used in the MediaEase Project for managing proxies.
 # @license BSD-3 Clause (Included in LICENSE)
 
