@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/user.sh
 # @project MediaEase
-# @version 1.3.4
+# @version 1.3.5
 # @description A library for internationalization functions.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
