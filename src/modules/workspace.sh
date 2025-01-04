@@ -221,3 +221,28 @@ zen::workspace::install_uv() {
 
 	return 0
 }
+
+# @function zen::workspace::go::install
+# this function will install go temporary. It will be used for some app builds and will be removed after the build.
+# @description This function installs the Go programming language on the system.
+# @arg $1 string (optional) The version of Go to install.
+# @return 1 if Go installation fails.
+# @exitcode 0 Success in installing Go.
+# @note This function will install Go on the system if it is not already installed.
+zen::workspace::go::install() {
+	local version=${1:-1.17.2}
+	if ! command -v go &>/dev/null; then
+		mflibs::shell::text::yellow "$(zen::i18n::translate "messages.virtualization.install_go")"
+		mflibs::log "curl -LsSf https://golang.org/dl/go${version}.linux-amd64.tar.gz | tar -C /usr/local -xz"
+		if ! command -v go &>/dev/null; then
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.go_install_failed")"
+			return 1
+		fi
+		mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.go_installed")"
+	fi
+	if ! command -v go &>/dev/null; then
+		mflibs::status::error "$(zen::i18n::translate "errors.virtualization.go_install_failed")"
+		return 1
+	fi
+	return 0
+}
