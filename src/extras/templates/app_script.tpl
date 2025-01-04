@@ -4,7 +4,7 @@
 # @project MediaEase
 # @description {{ SOFTWARE_NAME }} handler
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
+# @copyright Copyright (C) 2025, MediaEase
 # All rights reserved.
 
 # @function zen::software::{{ SOFTWARE_NAME_LOWERED }}::add

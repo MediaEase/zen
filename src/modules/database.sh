@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/database.sh
 # @project MediaEase
-# @version 1.0.16
+# @version 1.0.17
 # @description Contains a library of database functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::database::query
 # @description Executes a given SQLite3 query on the database.

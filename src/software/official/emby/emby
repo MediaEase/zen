@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file software/official/emby/emby.sh
-# @version 1.1.7
+# @version 1.1.8
 # @project MediaEase
 # @description Emby handler
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::software::emby::add
 # @description Adds a Emby for a user, including downloading, configuring, and starting the service.

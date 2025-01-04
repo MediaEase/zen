@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # @file modules/software.sh
 # @project MediaEase
-# @version 1.2.8
+# @version 1.2.9
 # @description Contains a library of functions used in the MediaEase Project for managing software.
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::software::is::installed
 # Checks if a specific software is installed for a given user.

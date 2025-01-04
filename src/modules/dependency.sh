@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/dependency.sh
 # @project MediaEase
-# @version 1.5.9
+# @version 1.5.10
 # @description Contains a library of functions used in the MediaEase Project for managing dependencies.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::dependency::apt::manage
 # Manages APT dependencies for specified software.

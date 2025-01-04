@@ -2,13 +2,12 @@
 
 # @file: handlers/user_handler.sh
 # @project MediaEase
-# @version 1.1.8
+# @version 1.1.9
 # @description A handler for user management commands.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::user::handle_action
 # @description Handles the specified action for user management.

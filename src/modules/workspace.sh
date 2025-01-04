@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # @file modules/workspace.sh
 # @project MediaEase
-# @version 1.3.4
+# @version 1.4.5
 # @brief A library for managing Python virtual environments.
 # @description Contains a library of functions used in the MediaEase Project for managing virtual environments.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::workspace::venv::create
 # Creates a Python virtual environment at the specified path under a specific user context.

@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/common.sh
 # @project MediaEase
-# @version 1.7.9
+# @version 1.7.10
 # @description Contains a library of common functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @section Environment Functions
 # @description The following functions are used for environment variable management.

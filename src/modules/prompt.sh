@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/prompt.sh
 # @project MediaEase
-# @version 1.8.6
+# @version 1.8.7
 # @description Contains a library of internationalization functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::prompt::yn
 # @description: prompt for yes or no

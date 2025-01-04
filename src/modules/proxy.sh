@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # @file modules/proxy.sh
 # @project MediaEase
-# @version 1.2.3
+# @version 1.2.4
 # @description Contains a library of functions used in the MediaEase Project for managing proxies.
 # @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::proxy::generate
 # Generates a Caddy proxy configuration file for an application.

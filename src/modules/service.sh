@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/service.sh
 # @project MediaEase
-# @version 1.0.29
+# @version 1.0.30
 # @description Contains a library of functions used in the MediaEase Project for managing services.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 # systemd service files for applications within MediaEase.
 # @notes Handles both single-user and multi-user service scenarios, and dynamically
 # determines service names and configurations based on application needs and user settings.

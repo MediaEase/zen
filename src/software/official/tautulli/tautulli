@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file software/official/tautulli/tautulli.sh
-# @version 1.1.4
+# @version 1.1.5
 # @project MediaEase
 # @description tautulli handler
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::software::tautulli::add
 # @description Adds a Tautulli for a user, including downloading, configuring, and starting the service.

@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/user.sh
 # @project MediaEase
-# @version 1.3.6
+# @version 1.3.7
 # @description A library for internationalization functions.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @section User Management Functions
 # @description Functions related to managing users in the system.

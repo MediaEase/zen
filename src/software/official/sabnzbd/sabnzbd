@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file software/sabnzbd/sabnzbd.sh
-# @version 1.1.5
+# @version 1.1.6
 # @project MediaEase
 # @description Sabnzbd handler
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::software::sabnzbd::add
 # @description Adds a Sabnzbd for a user, including downloading, configuring, and starting the service.

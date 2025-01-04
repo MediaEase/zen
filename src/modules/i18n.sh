@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file modules/i18n.sh
 # @project MediaEase
-# @version 1.0.31
+# @version 1.0.32
 # @description Contains a library of internationalization functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::i18n::load_locale_file
 # @description Loads the appropriate locale file based on the specified language code.

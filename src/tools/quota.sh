@@ -2,12 +2,11 @@
 # @file zen/src/tools/quota.sh
 # @project MediaEase
 # @description Quota installation and management tool
-# @version 1.1.5
+# @version 1.1.6
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::tools::quota::install
 # @description Installs and configures user disk quotas on the system.

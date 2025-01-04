@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # @file software/official/notifiarr/notifiarr.sh
-# @version 1.1.4
+# @version 1.1.5
 # @project MediaEase
 # @description Notifiarr handler
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)
-# @copyright Copyright (C) 2024, Thomas Chauveau
-# All rights reserved.
+# @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::software::notifiarr::add
 # @alias Install Notifiarr
