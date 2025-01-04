@@ -264,3 +264,23 @@ zen::workspace::go::uninstall() {
 	fi
 	return 0
 }
+
+# @function zen::workspace::go::build
+# @description This function builds a Go application.
+# @arg $1 string The path to the Go application.
+# @arg $2 string The path to the Go binary.
+# @return 1 if the Go build fails.
+# @exitcode 0 Success in building the Go application.
+# @note This function will build a Go application at the specified path.
+zen::workspace::go::build() {
+	local app_path="$1"
+	local binary_path="$2"
+	mflibs::shell::text::yellow "$(zen::i18n::translate "messages.virtualization.build_go")"
+	mflibs::log "go build -o $binary_path $app_path"
+	if [[ ! -f "$binary_path" ]]; then
+		mflibs::status::error "$(zen::i18n::translate "errors.virtualization.go_build_failed")"
+		return 1
+	fi
+	mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.go_build")"
+	return 0
+}
