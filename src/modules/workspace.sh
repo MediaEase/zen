@@ -246,3 +246,21 @@ zen::workspace::go::install() {
 	fi
 	return 0
 }
+
+# @function zen::workspace::go::uninstall
+# @description This function removes the Go programming language from the system.
+# @return 1 if Go removal fails.
+# @exitcode 0 Success in removing Go.
+# @note This function will remove Go from the system if it is installed.
+zen::workspace::go::uninstall() {
+	if command -v go &>/dev/null; then
+		mflibs::shell::text::yellow "$(zen::i18n::translate "messages.virtualization.remove_go")"
+		rm -rf /usr/local/go
+		if command -v go &>/dev/null; then
+			mflibs::status::error "$(zen::i18n::translate "errors.virtualization.go_remove_failed")"
+			return 1
+		fi
+		mflibs::shell::text::green "$(zen::i18n::translate "success.virtualization.go_removed")"
+	fi
+	return 0
+}
