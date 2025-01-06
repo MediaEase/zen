@@ -74,6 +74,8 @@ flood:
     - pnpm:
         install: |
           pnpm add -g npm node-gyp npm-check-updates
+grafana:
+  apt: adduser libfontconfig1 libfontconfig1-dev python3 python3-pip python3-psutil python3-docopt influxdb telegraf fluent-bit loki promtail smartmontools nvme-cli
 headphones:
   apt: nodejs python3-pip python3-venv
 jellyfin:
