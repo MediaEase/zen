@@ -101,6 +101,11 @@ sources:
         echo "Package: syncthing" | tee /etc/apt/preferences.d/syncthing > /dev/null
         echo "Pin: origin apt.syncthing.net" | tee -a /etc/apt/preferences.d/syncthing > /dev/null
         echo "Pin-Priority: 990" | tee -a /etc/apt/preferences.d/syncthing > /dev/null
+  telegraf:
+    url: "https://repos.influxdata.com/debian stable main"
+    options:
+      deb-src: false
+      gpg-key: "https://repos.influxdata.com/influxdata-archive.key"
   x2go:
     url: "http://packages.x2go.org/debian $(lsb_release -sc) extras main"
     options:
