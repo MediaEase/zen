@@ -69,8 +69,14 @@ zen::software::port_randomizer() {
 		port_high=39999
 	elif [[ "$port_type" == "port_range" ]]; then
 		use_range=true
-		port_low=22000
-		port_high=25999
+		if [[ "$app_name" == "grafana" ]]; then
+			port_low=9810
+			port_high=9960
+			interval=15
+		else
+			port_low=22000
+			port_high=25999
+		fi
 	else
 		mflibs::status::error "Invalid port type specified for $app_name"
 		return 1
