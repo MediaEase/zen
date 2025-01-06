@@ -4,6 +4,12 @@ sources:
     options:
       deb-src: true
       gpg-key: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+  grafana:
+    url: "https://apt.grafana.com stable main"
+    options:
+      arch: "amd64"
+      deb-src: false
+      gpg-key: "https://apt.grafana.com/gpg.key"
   filebot:
     url: "https://get.filebot.net/deb/ stable main"
     options:
