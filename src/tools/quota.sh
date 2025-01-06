@@ -2,7 +2,7 @@
 # @file zen/src/tools/quota.sh
 # @project MediaEase
 # @description Quota installation and management tool
-# @version 1.1.6
+# @version 1.1.7
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
 # @license BSD-3 Clause (Included in LICENSE)

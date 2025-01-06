@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/official/rtorrent/rtorrent.sh
-# @version 1.0.25
+# @version 1.0.26
 # @project MediaEase
 # @description rTorrent handler
 # @author Thomas Chauveau (tomcdj71)

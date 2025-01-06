@@ -1,0 +1,17 @@
+<h1>Changelog for version 0.75.9-alpha</h1>
+<h2>🎉 New Features</h2>
+<ul><li><code><a href="https://github.com/MediaEase/zen/commit/b8cd03c" class="commit-link" data-hovercard-type="commit">b8cd03c</a></code> (grafana) add grafana preliminary support (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/4ead1af" class="commit-link" data-hovercard-type="commit">4ead1af</a></code> <code>zen::software::port_randomizer</code> add a condition for generate grafana port ranges (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/cd7125a" class="commit-link" data-hovercard-type="commit">cd7125a</a></code> (workspace) <code>zen::workspace::go::build</code> function (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/bd9c679" class="commit-link" data-hovercard-type="commit">bd9c679</a></code> (workspace) <code>zen::workspace::go::uninstall</code> function (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/07aa11f" class="commit-link" data-hovercard-type="commit">07aa11f</a></code> (workspace) <code>zen::workspace::go::install</code> function (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
+<h2>🏗️ Build System & Dependencies</h2>
+<ul><li><code><a href="https://github.com/MediaEase/zen/commit/9a7fa11" class="commit-link" data-hovercard-type="commit">9a7fa11</a></code> add grafana dependencies (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/49a70af" class="commit-link" data-hovercard-type="commit">49a70af</a></code> add telegraf apt source (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/5c957ac" class="commit-link" data-hovercard-type="commit">5c957ac</a></code> add fluentbit apt source (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
+<li><code><a href="https://github.com/MediaEase/zen/commit/67000ef" class="commit-link" data-hovercard-type="commit">67000ef</a></code> add grafana apt source (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
+<h2>🤷 Other Changes</h2>
+<ul><li><code><a href="https://github.com/MediaEase/zen/commit/74e6aba" class="commit-link" data-hovercard-type="commit">74e6aba</a></code> Simplifies Go build function (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
+<h2>Other Changes</h2>
+<ul><li><code><a href="https://github.com/MediaEase/zen/commit/cde595b" class="commit-link" data-hovercard-type="commit">cde595b</a></code> update copyright notice (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
+<div style="margin-top: 20px;"><strong>Full Changelog:</strong> <a href="https://github.com/MediaEase/zen/compare/v0.70.9-alpha...0.75.9-alpha" target="_blank">v0.70.9-alpha...0.75.9-alpha</a></div>
