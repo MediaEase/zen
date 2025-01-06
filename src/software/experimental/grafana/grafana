@@ -1,0 +1,270 @@
+#!/usr/bin/env bash
+# @file software/official/grafana/grafana.sh
+# @version 1.0.0
+# @project MediaEase
+# @description Grafana handler
+# @author Thomas Chauveau (tomcdj71)
+# @author_contact thomas.chauveau.pro@gmail.com
+# @license BSD-3 Clause (Included in LICENSE)
+# @copyright Copyright (C) 2025, MediaEase
+
+# @function zen::software::grafana::add
+# @alias Install Grafana
+# @description Installs Grafana, and startin the service.
+# @global app_name The name of the application (Grafana).
+# @global app_name_sanitized A sanitized version of the application name for display.
+# @global software_config_file Path to the software's configuration file.
+# @global user An associative array containing user-specific information.
+# @note Disables SC2154 because the variable is defined in the main script.
+# shellcheck disable=SC2154
+# @example
+#   zen software add grafana
+zen::software::grafana::add() {
+    zen::user::is::admin
+    for app in "${app_name}" "fluentbit" "telegraf"; do
+        zen::dependency::apt::add_source "$app"
+    done
+    zen::dependency::apt::update
+    zen::dependency::apt::install::inline "$app_name"
+    # configure the app. This will also generate the proxy file
+    zen::software::grafana::add_prometheus
+    zen::software::grafana::add_plugins
+    zen::software::grafana::config
+    # create a backup file
+    zen::software::backup::create "$app_name" "$software_config_file"
+}
+
+# @function zen::software::grafana::add_prometheus
+# @description Installs Prometheus
+# @note this will create the "prometheus" user
+# @example
+#   zen::software::grafana::add_prometheus
+zen::software::grafana::add_prometheus() {
+    local target_dir="/opt/grafana/prometheus"
+    local plugin_name="prometheus"
+    zen::user::create "${plugin_name}" "${plugin_name}" false true false
+    usermod --shell /sbin/nologin ${plugin_name}
+    mkdir -p /etc/${plugin_name} /var/lib/${plugin_name}
+    zen::git::get_release "/tmp/pushgateway" "prometheus/pushgateway" false "linux-amd64.tar.gz"
+    mv /tmp/pushgateway/linux-amd64/pushgateway "/var/lib/pushgateway"
+    cd "${target_dir}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "${target_dir}")"
+    for file in prometheus promtool; do
+        ln -s ${file} /usr/local/bin/${file}
+        zen::permission::read_exec "/usr/local/bin/${file}" "${plugin_name}" "${plugin_name}"
+    done
+    local zen_grafana_dir
+    zen_grafana_dir=$(find "${zen_base_path}/src/software/" -type d -name "grafana" 2>/dev/null | head -n 1)
+    mflibs::file::copy "${zen_grafana_dir}/templates/${plugin_name}/${plugin_name}.yml.tpl" "/etc/${plugin_name}/${plugin_name}.yml"
+    zen::permission::read_exec "/etc/${plugin_name}/${plugin_name}.yml" "${plugin_name}" "${plugin_name}"
+}
+
+# @function zen::software::grafana::add_fluentbit
+# @description Installs Fluentbit from the official repository
+# @example
+#   zen::software::grafana::add_fluentbit
+zen::software::grafana::add_fluentbit() {
+    local target_dir="/opt/grafana/fluentbit"
+    apt-get download fluent-bit
+    dpkg -x fluent-bit*.deb /tmp/fluent-bit
+    mv /tmp/fluent-bit/opt/fluent-bit ${target_dir}
+    rm -rf /tmp/fluent-bit/lib/systemd/
+    mv /tmp/fluent-bit/lib/ /lib/
+    mv /tmp/fluent-bit/etc/ /etc/
+    mv /opt/fluent-bit ${target_dir}
+    mv /etc/fluent-bit/fluent-bit.conf /etc/fluent-bit/fluent-bit.conf.bak
+    local zen_grafana_dir
+    zen_grafana_dir=$(find "${zen_base_path}/src/software/" -type d -name "grafana" 2>/dev/null | head -n 1)
+    mflibs::file::copy "${zen_grafana_dir}/templates/fluentbit/fluentbit.conf" "/etc/fluent-bit/fluentbit.conf"
+    rm -rf /tmp/fluent-bit
+}
+
+# @function zen::software::grafana::add_plugins
+# @description Installs Grafana plugins
+# @example
+#   zen::software::grafana::add_plugins
+zen::software::grafana::add_plugins() {
+    local target_dir="/opt/grafana/tools"
+    local tools
+    tools=("prometheus/blackbox_exporter" "matusnovak/prometheus-smartctl" "prometheus-community/node-exporter-textfile-collector-scripts" "prometheus-community/smartctl_exporter")
+    for tool in "${tools[@]}"; do
+        local tool_name=${tool##*/}
+        if [[ $tool_name == *exporter* ]]; then
+            tool_name=${tool_name/_exporter/}
+            target_dir="/opt/grafana/tools/exporter"
+        else 
+            target_dir="/opt/grafana/tools/scripts"
+        fi
+        tool_name=${tool_name/_exporter/}
+        zen::git::clone "${tool}" "${target_dir}/${tool_name}"
+    done
+    cd "${target_dir}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "${target_dir}")"
+    for plugin in prometheus-smartctl node-exporter-textfile-collector-scripts; do
+        dir=$(find "${target_dir}" -type d -name "${plugin}" 2>/dev/null | head -n 1)
+        cd "${dir}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "${dir}")"
+        zen::workspace::venv::create "${dir}" "root" true
+    done
+    for plugin in exporter/blackbox exporter/smartctl; do
+        cd "${target_dir}/${plugin}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "${target_dir}/${plugin}")"
+        if ! command -v go &>/dev/null; then
+            zen::workspace::go::install
+        fi
+        zen::workspace::go::build "${target_dir}/${plugin}"
+        if [[ $plugin == *smartctl ]]; then
+            zen::permission::read_exec "${target_dir}/${plugin}/smartctl_exporter" "root" "root"
+            ln -s "${target_dir}/${plugin}/smartctl_exporter" /usr/local/bin/smartctl_exporter
+        else
+            zen::permission::read_exec "${target_dir}/${plugin}/blackbox_exporter" "root" "root"
+            ln -s "${target_dir}/${plugin}/blackbox_exporter" /usr/local/bin/blackbox_exporter
+        fi
+    done
+}
+
+################################################################################
+# @function zen::software::grafana::config
+# @internal
+# @description Configures Grafana for a user, including setting up configuration files and proxy settings.
+# @arg $1 string Indicates whether to use a prerelease version of Grafana.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::grafana::config
+zen::software::grafana::config() {
+    local systemd_dir="/etc/systemd/system/grafana.service.d"
+    local zen_grafana_dir
+    zen_grafana_dir=$(find "${zen_base_path}/src/software/" -type d -name "grafana" 2>/dev/null | head -n 1)
+    mkdir -p ${systemd_dir}
+    rm /usr/lib/systemd/system/grafana-server.service ${systemd_dir}/grafana.service
+    for file in "${zen_grafana_dir}"/templates/*.service.tpl; do
+        local plugin_name
+        plugin_name=$(basename "${file}" .service.tpl)
+        mflibs::file::copy "${zen_grafana_dir}/templates/${plugin_name}/${plugin_name}.service.tpl" "${systemd_dir}/${plugin_name}.service"
+    done
+    zen::git::get_release "/opt/grafana" "$software_repo" "$software_branch" "linux-core-x64.tar.gz"
+    systemctl daemon-reload
+    for file in "${systemd_dir}"/*; do
+        zen::service::manage "enable" "${file}"
+        zen::service::manage "start" "${file}"
+        zen::service::manage "status" "${file}"
+    done
+    # get basic auth token
+    local basic_auth_token
+    basic_auth_token=$(echo -n "admin:admin" | base64)
+    # create service account
+    local api_url="http://localhost:3000/api"
+    curl --location --request POST "${api_url}/serviceaccounts" \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Basic ${basic_auth_token}" \
+        --data-raw '{
+            "name": "admin",
+            "role": "Admin",
+            "isDisabled": false
+        }'
+    # update admin password
+    local user_password datasource dashboard
+    user_password=$(zen::vault::reveal "$user")
+    # update admin to real user
+    curl --location --request PUT "${api_url}/users/1" \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Basic ${basic_auth_token}" \
+        --data-raw "{
+            \"name\": \"${user[username]}\",
+            \"login\": \"${user[username]}\",
+            \"email\": \"${user[email]}\",
+            \"password\": \"${user_password}\"
+        }"
+    # add Prometheus datasource
+    datasource=$(cat "${zen_grafana_dir}/templates/datasource.json")
+    curl --location --request POST "${api_url}/datasources" \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Basic ${basic_auth_token}" \
+        --data-raw "${datasource}"
+
+    # create dashboard
+    dashboard=$(cat "${zen_grafana_dir}/templates/dashboard.json")
+    curl --location --request POST "${api_url}/dashboards/db" \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: Basic YWRtaW46YWRtaW4=' \
+        --data-raw "${dashboard}"
+    rm -rf /etc/grafana/provisioning/datasources/*
+    cp -pR "${zen_grafana_dir}/templates/datasources.yaml" /etc/grafana/provisioning/datasources.yaml
+    cp -pR "${zen_grafana_dir}/templates/provisioning" /etc/grafana/provisioning
+}
+
+# @function zen::software::grafana::update
+# @alias Update Grafana
+# @description Updates Grafana for a user, including stopping the service, downloading the latest release, and restarting.
+# @global user An associative array containing user-specific information.
+# @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update grafana -u <username>
+# @example
+#   zen software update grafana -u <username> -o branch=beta # update to latest beta (nightly) version
+zen::software::grafana::update() {
+    zen::user::is::admin
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+    zen::service::manage "stop" "$service_name"
+    rm -rf "/opt/${user[username]}/$app_name"
+    is_prerelease="false"
+    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
+    # grab the correct release
+    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::service::manage "start" "$service_name"
+}
+
+# @function zen::software::grafana::remove
+# @alias Remove Grafana
+# @description Removes Grafana for a user, including disabling and deleting the service and cleaning up files.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen software remove grafana -u <username>
+zen::software::grafana::remove() {
+    zen::user::is::admin
+    local service_name
+    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
+    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+
+    zen::service::manage "disable" "$service_name"
+    rm -f "$service_file"
+    zen::proxy::remove "$app_name" "${user[username]}"
+    rm -rf /opt/"${user[username]}"/"$app_name"
+    rm -rf /home/"${user[username]}"/.config/"$app_name"
+    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+}
+
+# @function zen::software::grafana::backup
+# @alias Backup Grafana
+# @description Creates a backup for Grafana settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup grafana -u <username>
+zen::software::grafana::backup() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::grafana::reset
+# @alias Reset Grafana
+# @description Resets Grafana settings for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset grafana -u <username>
+zen::software::grafana::reset() {
+    local username="$1"
+    local app_name="$2"
+}
+
+# @function zen::software::grafana::reinstall
+# @alias Reinstall Grafana
+# @description Reinstalls Grafana for a user.
+# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall grafana -u <username>
+zen::software::grafana::reinstall() {
+    local username="$1"
+    local app_name="$2"
+}

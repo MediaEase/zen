@@ -1,0 +1,10 @@
+[
+    {
+        "labels": { "group": "service-status" },
+        "targets": [
+            "https://mydomain.com/status",
+            "http://0.0.0.0:1234/status",
+            "http://0.0.0.0:5678/health"
+        ]
+    }
+]

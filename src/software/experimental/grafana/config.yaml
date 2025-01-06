@@ -1,0 +1,23 @@
+arguments:
+  app_name: Grafana
+  altname: grafana
+  description: grafana_description
+  pro_only: false
+  logo_path: grafana.png
+  group: monitoring
+  details:
+    docs: https://grafana.com/docs/grafana/latest/
+    github: https://github.com/grafana/grafana
+    homepage: https://grafana.com
+    mediaease_docs: https://mediaease.github.io/docs/software/experimental/grafana
+  multi_user: false
+  files:
+    - service: /etc/systemd/system/$app_name@.service
+    - config: /etc/$app_name/$app_name.ini
+    - proxy: /etc/caddy/softwares/$app_name.caddy
+  paths:
+    - backup: /home/%i/.mediaease/backups/$app_name
+    - data: /etc/$app_name
+    - install: /usr/share/$app_name
+  autogen:
+    - port_range
