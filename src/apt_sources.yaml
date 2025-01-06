@@ -10,6 +10,12 @@ sources:
       arch: "amd64"
       deb-src: false
       gpg-key: "https://apt.grafana.com/gpg.key"
+  fluentbit:
+    url: "https://packages.fluentbit.io/debian/$(lsb_release -sc)  $(lsb_release -sc) main"
+    options:
+      arch: "amd64"
+      deb-src: false
+      gpg-key: "https://packages.fluentbit.io/fluentbit.key"
   filebot:
     url: "https://get.filebot.net/deb/ stable main"
     options:
