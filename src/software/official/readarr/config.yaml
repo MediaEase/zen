@@ -1,7 +1,6 @@
 arguments:
   app_name: Readarr
   altname: readarr
-  description: readarr_description
   pro_only: false
   logo_path: readarr.png
   group: automation

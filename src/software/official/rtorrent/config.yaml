@@ -1,7 +1,6 @@
 arguments:
   app_name: rTorrent
   altname: rtorrent
-  description: rtorrent_description
   note: rtorrent_note
   pro_only: false
   logo_path: rtorrent.png

@@ -1,7 +1,6 @@
 arguments:
   app_name: Radarr
   altname: radarr
-  description: radarr_description
   pro_only: false
   logo_path: radarr.png
   group: automation

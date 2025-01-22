@@ -1,10 +1,8 @@
 arguments:
   app_name: Lidarr
   altname: lidarr
-  description: lidarr_description
   pro_only: false
   logo_path: lidarr.png
-  group: automation
   details:
     docs: https://wiki.servarr.com/Lidarr
     github: https://github.com/Lidarr/Lidarr

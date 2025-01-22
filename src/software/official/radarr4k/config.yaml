@@ -1,7 +1,6 @@
 arguments:
   app_name: Radarr4K
   altname: radarr4k
-  description: radarr4k_description
   pro_only: false
   logo_path: radarr4k.png
   group: automation

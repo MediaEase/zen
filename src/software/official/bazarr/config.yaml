@@ -1,7 +1,6 @@
 arguments:
   app_name: Bazarr
   altname: bazarr
-  description: bazarr_description
   pro_only: false
   logo_path: bazarr.png
   group: automation

@@ -1,7 +1,6 @@
 arguments:
   app_name: Tautulli
   altname: tautulli
-  description: tautulli_description
   pro_only: false
   logo_path: tautulli.png
   group: automation

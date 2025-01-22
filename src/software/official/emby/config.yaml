@@ -1,7 +1,6 @@
 arguments:
   app_name: Emby
   altname: emby
-  description: emby_description
   pro_only: false
   logo_path: emby.png
   group: media

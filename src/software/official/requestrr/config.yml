@@ -1,7 +1,6 @@
 arguments:
   app_name: Requestrr
   altname: requestrr
-  description: requestrr_description
   pro_only: false
   logo_path: requestrr.png
   group: automation

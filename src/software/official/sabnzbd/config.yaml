@@ -1,7 +1,6 @@
 arguments:
   app_name: Sabnzbd
   altname: sabnzbd
-  description: sabnzbd_description
   note: sabnzbd_note
   pro_only: false
   logo_path: sabnzbd.png

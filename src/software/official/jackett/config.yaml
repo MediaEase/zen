@@ -1,7 +1,6 @@
 arguments:
   app_name: Jackett
   altname: jackett
-  description: jackett_description
   pro_only: false
   logo_path: jackett.png
   group: automation

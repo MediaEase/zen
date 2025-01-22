@@ -1,7 +1,6 @@
 arguments:
   app_name: Sonarr4K
   altname: sonarr4k
-  description: sonarr4k_description
   pro_only: false
   logo_path: sonarr4k.png
   group: automation

@@ -1,7 +1,6 @@
 arguments:
   app_name: Notifiarr
   altname: notifiarr
-  description: notifiarr_description
   pro_only: false
   logo_path: notifiarr.png
   group: automation

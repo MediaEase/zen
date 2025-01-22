@@ -1,7 +1,6 @@
 arguments:
   app_name: Whisparr
   altname: whisparr
-  description: whisparr_description
   pro_only: false
   logo_path: whisparr.png
   group: automation

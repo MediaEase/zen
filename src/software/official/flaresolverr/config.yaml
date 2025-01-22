@@ -1,7 +1,6 @@
 arguments:
   app_name: FlareSolverr
   altname: flaresolverr
-  description: flaresolverr_description
   pro_only: false
   logo_path: flaresolverr.png
   group: automation

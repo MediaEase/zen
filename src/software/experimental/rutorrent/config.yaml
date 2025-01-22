@@ -1,7 +1,6 @@
 arguments:
   app_name: ruTorrent
   altname: rutorrent
-  description: rutorrent_description
   note: rutorrent_note
   pro_only: false
   multi_user: false

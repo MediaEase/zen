@@ -1,7 +1,6 @@
 arguments:
   app_name: Filebrowser
   altname: filebrowser
-  description: filebrowser_description
   pro_only: false
   logo_path: filebrowser.png
   group: full

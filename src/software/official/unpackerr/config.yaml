@@ -1,7 +1,6 @@
 arguments:
   app_name: Unpackerr
   altname: unpackerr
-  description: unpackerr_description
   pro_only: false
   logo_path: unpackerr.png
   group: automation
