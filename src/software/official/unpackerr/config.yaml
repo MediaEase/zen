@@ -3,7 +3,7 @@ arguments:
   altname: unpackerr
   pro_only: false
   logo_path: unpackerr.png
-  group: automation
+  group: management
   details:
     docs: https://unpackerr.zip/docs
     github: https://github.com/Unpackerr/unpackerr

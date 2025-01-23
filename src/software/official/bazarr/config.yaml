@@ -3,7 +3,7 @@ arguments:
   altname: bazarr
   pro_only: false
   logo_path: bazarr.png
-  group: automation
+  group: media
   details:
     docs: https://wiki.bazarr.media/
     github: https://github.com/morpheus65535/bazarr

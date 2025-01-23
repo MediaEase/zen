@@ -3,7 +3,7 @@ arguments:
   altname: filebrowser
   pro_only: false
   logo_path: filebrowser.png
-  group: full
+  group: media
   details:
     docs: https://filebrowser.org/
     github: https://github.com/filebrowser/filebrowser

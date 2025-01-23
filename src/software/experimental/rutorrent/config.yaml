@@ -5,7 +5,7 @@ arguments:
   pro_only: false
   multi_user: false
   logo_path: rutorrent.png
-  group: automation
+  group: download
   parent_service: rTorrent
   details:
     github: https://github.com/Novik/ruTorrent

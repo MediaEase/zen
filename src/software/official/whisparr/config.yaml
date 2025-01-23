@@ -3,7 +3,7 @@ arguments:
   altname: whisparr
   pro_only: false
   logo_path: whisparr.png
-  group: automation
+  group: media
   details:
     docs: https://wiki.servarr.com/Whisparr
     github: https://github.com/Whisparr/Whisparr

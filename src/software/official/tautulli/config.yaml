@@ -3,7 +3,7 @@ arguments:
   altname: tautulli
   pro_only: false
   logo_path: tautulli.png
-  group: automation
+  group: monitoring
   details:
     docs: https://github.com/Tautulli/Tautulli/wiki
     github: https://github.com/Tautulli/Tautulli

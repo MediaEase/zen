@@ -1,9 +1,9 @@
 arguments:
   app_name: Readarr4K
-  altname: readarr
+  altname: readarr4k
   pro_only: false
   logo_path: readarr4k.png
-  group: automation
+  group: media
   details:
     docs: https://wiki.servarr.com/Readarr4k
     github: https://github.com/Readarr/Readarr

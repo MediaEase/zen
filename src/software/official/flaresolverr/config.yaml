@@ -3,7 +3,7 @@ arguments:
   altname: flaresolverr
   pro_only: false
   logo_path: flaresolverr.png
-  group: automation
+  group: proxy
   details:
     github: https://github.com/FlareSolverr/FlareSolverr
     mediaease_docs: https://mediaease.github.io/docs/software/official/flaresolverr

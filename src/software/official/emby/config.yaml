@@ -3,7 +3,7 @@ arguments:
   altname: emby
   pro_only: false
   logo_path: emby.png
-  group: media
+  group: streaming
   details:
     docs: https://emby.media/support/articles/Quick-Start.html
     github: https://github.com/MediaBrowser/Emby

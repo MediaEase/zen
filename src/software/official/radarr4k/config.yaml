@@ -3,7 +3,7 @@ arguments:
   altname: radarr4k
   pro_only: false
   logo_path: radarr4k.png
-  group: automation
+  group: media
   details:
     docs: https://wiki.servarr.com/Radarr
     github: https://github.com/Radarr/Radarr

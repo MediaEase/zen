@@ -3,7 +3,7 @@ arguments:
   altname: readarr
   pro_only: false
   logo_path: readarr.png
-  group: automation
+  group: media
   details:
     docs: https://wiki.servarr.com/Readarr
     github: https://github.com/Readarr/Readarr

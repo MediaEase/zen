@@ -7,7 +7,7 @@ arguments:
   precompiled: true
   precompiled_description: rtorrent_precompiled_description
   multi_user: true
-  group: automation
+  group: download
   details:
     github: https://github.com/rakshasa/rtorrent
     homepage: http://rakshasa.github.io/rtorrent/

@@ -3,6 +3,7 @@ arguments:
   altname: lidarr
   pro_only: false
   logo_path: lidarr.png
+  group: media
   details:
     docs: https://wiki.servarr.com/Lidarr
     github: https://github.com/Lidarr/Lidarr

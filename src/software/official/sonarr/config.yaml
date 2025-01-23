@@ -3,7 +3,7 @@ arguments:
   altname: sonarr
   pro_only: false
   logo_path: sonarr.png
-  group: automation
+  group: media
   details:
     docs: https://wiki.servarr.com/Sonarr
     github: https://github.com/Sonarr/Sonarr
