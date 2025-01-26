@@ -17,3 +17,5 @@ arguments:
     - backup: /home/%i/.mediaease/backups/$app_name
     - data: /srv/$app_name
   skip_requirements_check: true
+  ui_options:
+    - branches: [main, beta]

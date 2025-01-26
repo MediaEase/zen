@@ -28,7 +28,5 @@ arguments:
     - data: /home/%i/download-clients/$app_name
   autogen:
     - port_range
-  versions:
-    - "0.9.6"
-    - "0.9.7"
-    - "0.9.8"
+  ui_options:
+    - versions: ["0.9.8", "0.10.0"]

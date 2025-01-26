@@ -27,3 +27,6 @@ arguments:
     - apikey
     - ssl_port
     - default_port
+  ui_options:
+    - subdomain: true
+    - branches: [master, nightly]

@@ -30,3 +30,6 @@ arguments:
     - backup: /home/%i/.mediaease/backups/$app_name
     - data: /home/%i/.config/$app_name
     - install: /opt/%i/$app_name
+  ui_options:
+    - branches: [main]
+

@@ -21,3 +21,5 @@ arguments:
   autogen:
     - port_range
   skip_requirements_check: true
+  ui_options:
+    - subdomain: true

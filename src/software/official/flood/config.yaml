@@ -27,3 +27,5 @@ arguments:
     - install: /opt/%i/$app_name
   autogen:
     - default_port
+  ui_options:
+    - subdomain: true

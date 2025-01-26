@@ -31,3 +31,6 @@ arguments:
   autogen:
     - ssl_port
     - default_port
+  ui_options:
+    - subdomain: true
+    - branches: [main, beta]

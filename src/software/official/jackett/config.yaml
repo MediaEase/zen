@@ -28,3 +28,5 @@ arguments:
   autogen:
     - apikey
     - default_port
+  ui_options:
+    - subdomain: true
