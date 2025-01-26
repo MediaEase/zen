@@ -10,9 +10,6 @@ arguments:
     homepage: https://flood.js.org/
     mediaease_docs: https://mediaease.github.io/docs/software/official/flood
   multi_user: true
-  ports:
-    - default: [19000-20999]
-    - ssl: [36001-36999]
   service_directives:
     - Type=simple
     - EnvironmentFile=/home/%i/.config/flood/env

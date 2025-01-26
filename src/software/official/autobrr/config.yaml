@@ -10,9 +10,6 @@ arguments:
     homepage: https://autobrr.com
     mediaease_docs: https://mediaease.github.io/docs/software/official/autobrr
   multi_user: true
-  ports:
-    - default: [12001-13999]
-    - ssl: [35001-35999]
   service_directives:
     - Type=simple
     - Environment=TMPDIR=/home/%i/tmp/$app_name

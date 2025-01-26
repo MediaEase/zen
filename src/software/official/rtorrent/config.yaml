@@ -12,8 +12,6 @@ arguments:
     github: https://github.com/rakshasa/rtorrent
     homepage: http://rakshasa.github.io/rtorrent/
     mediaease_docs: https://mediaease.github.io/docs/software/official/rtorrent
-  ports:
-    - default: [20000-61000]
   service_directives:
     - Type=forking
     - KillMode=none

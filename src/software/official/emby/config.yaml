@@ -10,9 +10,6 @@ arguments:
     homepage: https://emby.media/
     mediaease_docs: https://mediaease.github.io/docs/software/official/emby
   multi_user: true
-  ports:
-    default: [8090-9010]
-    ssl: [8920-8950]
   service_directives:
     - Type=simple
     - EnvironmentFile=/etc/%i-emby.conf

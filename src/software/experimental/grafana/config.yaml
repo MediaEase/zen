@@ -20,3 +20,4 @@ arguments:
     - install: /usr/share/$app_name
   autogen:
     - port_range
+  skip_requirements_check: true

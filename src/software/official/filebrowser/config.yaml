@@ -10,9 +10,6 @@ arguments:
     homepage: https://filebrowser.org/
     mediaease_docs: https://mediaease.github.io/docs/software/official/filebrowser
   multi_user: true
-  ports:
-    - default: [12001-13999]
-    - ssl: [35001-35999]
   service_directives:
     - Type=simple
     - ExecStart=/usr/local/bin/$app_name -d /home/%i/.config/$app_name/$app_name.db

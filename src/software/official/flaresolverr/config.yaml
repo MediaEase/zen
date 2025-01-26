@@ -8,9 +8,6 @@ arguments:
     github: https://github.com/FlareSolverr/FlareSolverr
     mediaease_docs: https://mediaease.github.io/docs/software/official/flaresolverr
   multi_user: true
-  ports:
-    - default: [12001-13999]
-    - ssl: [35001-35999]
   service_directives:
     - Type=simple
     - Environment="LOG_LEVEL=info"
