@@ -9,6 +9,7 @@ arguments:
     github: https://github.com/Readarr/Readarr
     homepage: https://readarr.com/
     mediaease_docs: https://mediaease.github.io/docs/software/official/readarr
+  multi_user: true
   service_directives:
     - Type=simple
     - Environment=TMPDIR=/home/%i/tmp/$app_name
