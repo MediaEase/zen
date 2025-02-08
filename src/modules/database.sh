@@ -26,16 +26,8 @@ zen::database::query() {
   if [[ ! -f "$sqlite3_db" ]]; then
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing" "$sqlite3_db")"
   fi
-  if ! sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"; then
-    if [[ " ${MFLIBS_LOADED[*]} " =~ verbose ]]; then
-      local table
-      table=$(echo "$query" | awk '{print $2}')
-      local dump_query="SELECT * FROM $table;"
-      content=$(sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$dump_query")
-      echo "Content of $table: $content"
-    fi
-    mflibs::status::error "$(zen::i18n::translate "errors.environment.db_query_failed" "$query")"
-  fi
+  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
+  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
 }
 
 # @function zen::database::select
@@ -68,7 +60,7 @@ zen::database::select() {
   if [[ -n "$additional_clauses" ]]; then
     query+=" ${additional_clauses}"
   fi
-
+  echo "$query"
   zen::database::query "$query"
 }
 
