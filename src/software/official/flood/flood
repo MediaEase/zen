@@ -17,7 +17,7 @@
 zen::software::flood::add() {
     # grab the source code
     zen::dependency::external::install "$app_name"
-    zen::git::clone "$software_repo" "/opt/${user[username]}/$app_name"
+    zen::git::clone "${config[github]}" "/opt/${user[username]}/$app_name"
     cd "/opt/${user[username]}/$app_name" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "/opt/${user[username]}/$app_name")"
     mflibs::log "su -c \"cd /opt/${user[username]}/$app_name; npm install --force && npm run build\" \"${user[username]}\""
     zen::software::flood::configure
@@ -65,7 +65,7 @@ zen::software::flood::update() {
     is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
     [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
     zen::service::manage "stop" "$service_name"
-    zen::git::clone "$software_repo" "/opt/${user[username]}/$app_name"
+    zen::git::clone "${config[github]}" "/opt/${user[username]}/$app_name"
     cd "/opt/${user[username]}/$app_name" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "/opt/${user[username]}/$app_name")"
     mflibs::log "su -c \"cd /opt/${user[username]}/$app_name; npm install --force && npm run build\" \"${user[username]}\""
     zen::service::manage "start" "$service_name"

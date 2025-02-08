@@ -12,7 +12,7 @@
 # @alias Install Requestrr
 # @description Adds Requestrr for a user, including downloading, configuring, and starting the service.
 # @global app_name The name of the application (Requestrr).
-# @global app_name_sanitized A sanitized version of the application name for display.
+# @global config An associative array repreenting useful variables taken from the software config file
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
@@ -25,7 +25,7 @@ zen::software::requestrr::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="false" # Requestrr does not have a beta branch
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-x64.tar.gz"
     # configure the app. This will also generate the proxy file
     zen::software::requestrr::config
     # create a backup file
@@ -98,7 +98,7 @@ zen::software::requestrr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 

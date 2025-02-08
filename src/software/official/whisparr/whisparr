@@ -66,7 +66,7 @@ zen::software::whisparr::config() {
 	<UpdateAutomatically>True</UpdateAutomatically>
 	<UpdateMechanism>BuiltIn</UpdateMechanism>
 	<LaunchBrowser>False</LaunchBrowser>
-	<InstanceName>${app_name_sanitized}</InstanceName>
+	<InstanceName>${config[altname]}</InstanceName>
 	<Theme>dark</Theme>
 </Config>
 RCON

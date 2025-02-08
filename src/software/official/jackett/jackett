@@ -12,7 +12,7 @@
 # @alias Install Jackett
 # @description Adds Jackett for a user, including downloading, configuring, and starting the service.
 # @global app_name The name of the application (Jackett).
-# @global app_name_sanitized A sanitized version of the application name for display.
+# @global config An associative array repreenting useful variables taken from the software config file
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
@@ -25,7 +25,7 @@ zen::software::jackett::add() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
     # configure the app. This will also generate the proxy file
     zen::software::jackett::config
     # create a backup file
@@ -99,7 +99,7 @@ zen::software::jackett::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 

@@ -12,7 +12,7 @@
 # @alias Install Grafana
 # @description Installs Grafana, and startin the service.
 # @global app_name The name of the application (Grafana).
-# @global app_name_sanitized A sanitized version of the application name for display.
+# @global config An associative array repreenting useful variables taken from the software config file
 # @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
@@ -138,7 +138,7 @@ zen::software::grafana::config() {
         plugin_name=$(basename "${file}" .service.tpl)
         mflibs::file::copy "${zen_grafana_dir}/templates/${plugin_name}/${plugin_name}.service.tpl" "${systemd_dir}/${plugin_name}.service"
     done
-    zen::git::get_release "/opt/grafana" "$software_repo" "$software_branch" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/grafana" "${config[github]}" "$software_branch" "linux-core-x64.tar.gz"
     systemctl daemon-reload
     for file in "${systemd_dir}"/*; do
         zen::service::manage "enable" "${file}"
@@ -212,7 +212,7 @@ zen::software::grafana::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "$software_repo" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
     zen::service::manage "start" "$service_name"
 }
 
