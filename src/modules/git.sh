@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/git.sh
 # @project MediaEase
-# @version 1.2.4
+# @version 1.2.5
 # @description Contains a library of common functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
@@ -82,7 +82,7 @@ zen::git::get_release() {
     mflibs::shell::text::white "$(zen::i18n::translate "messages.git.download_release" "$repo_name")"
     if [[ "$release_name" == "source" ]]; then
         local tag_name
-        tag_name=$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .tag_name")
+        tag_name=$(curl -s "$repo_url" | jq --argjson is_prerelease "$is_prerelease" -r '[.[] | select(.prerelease == $is_prerelease)] | first | .tag_name')
         if [[ -z "$tag_name" ]]; then
             mflibs::shell::text::red "$(zen::i18n::translate "errors.git.no_tag_found" "$repo_name")"
             return 1
@@ -91,7 +91,7 @@ zen::git::get_release() {
         release_version="$tag_name"
 
     else
-        release_url=$(curl -s "$repo_url" | jq -r "[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith(\"$release_name\")).browser_download_url")
+        release_url=$(curl -s "$repo_url" | jq -r --argjson is_prerelease "$is_prerelease" --arg release_name "$release_name" '[.[] | select(.prerelease == $is_prerelease)] | first | .assets[] | select(.name | endswith($release_name)).browser_download_url')
         release_version=$(echo "$release_url" | grep -oP '(?<=/download/)[^/]+(?=/[^/]+$)')
     fi
     if [[ -z "$release_url" ]]; then
