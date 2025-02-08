@@ -5,7 +5,9 @@ if [[ $USER == 'root' ]]; then
     COMPREPLY=()
     current="${COMP_WORDS[COMP_CWORD]}"
     prev_word="${COMP_WORDS[COMP_CWORD - 1]}"
-    db_file="/opt/MediaEase/MediaEase/harmonyui/var/data.db"
+    DATABASE_URL=$(grep '^DATABASE_URL' /srv/harmonyui/.env.local)
+    db_file="${DATABASE_URL##*/}"
+    db_file="/srv/harmonyui/$db_file"
 
     if [[ ! -f "$db_file" ]]; then
       printf "Database file not found: %s\n" "$db_file" >&2
