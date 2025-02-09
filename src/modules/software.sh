@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/software.sh
 # @project MediaEase
-# @version 1.2.9
+# @version 1.3.0
 # @description Contains a library of functions used in the MediaEase Project for managing software.
 # @license BSD-3 Clause (Included in LICENSE)
 # @copyright Copyright (C) 2025, MediaEase
@@ -267,12 +267,17 @@ zen::software::options::process() {
 		esac
 	done
 
-	# Check if the variables are not empty, export it
-	for var in software_branch software_email software_domain software_key; do
+	declare -A -g software_options
+	for var in software_branch software_email software_domain software_key software_version; do
 		if [[ -n "${!var}" ]]; then
-			export "${var?}"
+			software_options["$var"]="${!var}"
 		fi
 	done
+	if [[ -n "$software_branch" && "$software_branch" != "master" && "$software_branch" != "main" ]]; then
+		software_options[is_prerelease]="true"
+	else 
+		software_options[is_prerelease]="false"
+	fi
 }
 
 # @function zen::software::backup::create
