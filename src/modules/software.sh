@@ -248,6 +248,7 @@ zen::software::options::process() {
 		case "$option_name" in
 		branch)
 			software_branch="$option_value"
+			[[ "$option_value" == "beta" ]] && is_prerelease="true" || is_prerelease="false"
 			;;
 		email)
 			software_email="$option_value"
@@ -268,16 +269,11 @@ zen::software::options::process() {
 	done
 
 	declare -A -g software_options
-	for var in software_branch software_email software_domain software_key software_version; do
+	for var in software_branch software_email software_domain software_key software_version is_prerelease; do
 		if [[ -n "${!var}" ]]; then
 			software_options["$var"]="${!var}"
 		fi
 	done
-	if [[ -n "$software_branch" && "$software_branch" != "master" && "$software_branch" != "main" ]]; then
-		software_options[is_prerelease]="true"
-	else 
-		software_options[is_prerelease]="false"
-	fi
 }
 
 # @function zen::software::backup::create
