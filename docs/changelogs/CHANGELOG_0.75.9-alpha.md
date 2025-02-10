@@ -36,6 +36,8 @@
 <li><code><a href="https://github.com/MediaEase/zen/commit/3342623" class="commit-link" data-hovercard-type="commit">3342623</a></code> removes deprecated port configurations from various software configs (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
 <li><code><a href="https://github.com/MediaEase/zen/commit/23960e6" class="commit-link" data-hovercard-type="commit">23960e6</a></code> updates group classifications in config files (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li>
 <li><code><a href="https://github.com/MediaEase/zen/commit/6d93a49" class="commit-link" data-hovercard-type="commit">6d93a49</a></code> removes deprectaed description fields from config files (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
+<h2>📝 Documentation</h2>
+<ul><li><code><a href="https://github.com/MediaEase/zen/commit/822f6ef" class="commit-link" data-hovercard-type="commit">822f6ef</a></code> update documentation for v0.75.9-alpha [automated] (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
 <h2>🤷 Other Changes</h2>
 <ul><li><code><a href="https://github.com/MediaEase/zen/commit/74e6aba" class="commit-link" data-hovercard-type="commit">74e6aba</a></code> Simplifies Go build function (<a href="https://github.com/tomcdj71" class="user-mention notranslate">@tomcdj71</a>)</li></ul>
 <h2>Other Changes</h2>

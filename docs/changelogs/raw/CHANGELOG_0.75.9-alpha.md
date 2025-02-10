@@ -37,6 +37,10 @@
 - `23960e6` updates group classifications in config files (@tomcdj71)
 - `6d93a49` removes deprectaed description fields from config files (@tomcdj71)
 
+## 📝 Documentation
+
+- `822f6ef` update documentation for v0.75.9-alpha [automated] (@tomcdj71)
+
 ## 🤷 Other Changes
 
 - `74e6aba` Simplifies Go build function (@tomcdj71)
