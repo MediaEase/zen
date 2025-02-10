@@ -36,3 +36,4 @@ arguments:
   ui_options:
     - subdomain: true
     - branches: [main, beta]
+  release_name: bazarr.zip

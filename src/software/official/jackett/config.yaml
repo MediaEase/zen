@@ -30,3 +30,4 @@ arguments:
     - default_port
   ui_options:
     - subdomain: true
+  release_name: LinuxAMDx64.tar.gz

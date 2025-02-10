@@ -30,3 +30,4 @@ arguments:
     - default_port
   ui_options:
     - none
+  release_name: linux_x86_64.tar.gz

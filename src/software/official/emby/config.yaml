@@ -6,7 +6,7 @@ arguments:
   group: streaming
   details:
     docs: https://emby.media/support/articles/Quick-Start.html
-    github: https://github.com/MediaBrowser/Emby
+    github: https://github.com/MediaBrowser/Emby.Releases
     homepage: https://emby.media/
     mediaease_docs: https://mediaease.github.io/docs/software/official/emby
   multi_user: true
@@ -32,3 +32,4 @@ arguments:
   ui_options:
     - subdomain: true
     - branches: [main, beta]
+  release_name: emby-server-deb_*_amd64.deb

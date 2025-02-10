@@ -35,3 +35,4 @@ arguments:
     - default_port
   ui_options:
     - subdomain: true
+  release_name: notifiarr.amd64.linux.gz

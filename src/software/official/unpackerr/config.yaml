@@ -32,4 +32,4 @@ arguments:
     - install: /opt/%i/$app_name
   ui_options:
     - branches: [main]
-
+  release_name: amd64.linux.gz

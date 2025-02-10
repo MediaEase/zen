@@ -30,3 +30,4 @@ arguments:
     - default_port
   ui_options:
     - subdomain: true
+  release_name: linux-amd64-filebrowser.tar.gz
