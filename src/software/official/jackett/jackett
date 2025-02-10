@@ -22,14 +22,12 @@
 # @example
 #   zen software add jackett -u <username> -o branch=beta # installs the beta (nightly) version
 zen::software::jackett::add() {
-    is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
     # configure the app. This will also generate the proxy file
     zen::software::jackett::config
     # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 ################################################################################
@@ -74,7 +72,7 @@ JCON
     zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
     zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
     zen::permission::user_exec "/opt/${user[username]}/$app_name/Jackett" "${user[username]}"
-    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::generate "$app_name" "${config[config_file]}"
     zen::proxy::generate "$app_name" "$default_port" "$url_base"
     cookie=$(curl -v "127.0.0.1:${default_port}/jackett/UI/Dashboard" -L 2>&1 | grep -m1 Set-Cookie | awk '{printf $3}' | sed 's/;//g')
     curl "http://127.0.0.1:${default_port}/jackett/api/v2.0/server/adminpassword" -H "Content-Type: application/json" -H "Cookie: ${cookie}" --data-binary "\"${password}\""
@@ -99,7 +97,7 @@ zen::software::jackett::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[config_file]}"
     zen::service::manage "start" "$service_name"
 }
 

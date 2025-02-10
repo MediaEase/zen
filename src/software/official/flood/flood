@@ -21,7 +21,7 @@ zen::software::flood::add() {
     cd "/opt/${user[username]}/$app_name" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "/opt/${user[username]}/$app_name")"
     mflibs::log "su -c \"cd /opt/${user[username]}/$app_name; npm install --force && npm run build\" \"${user[username]}\""
     zen::software::flood::configure
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 # shellcheck disable=SC2034
@@ -42,8 +42,8 @@ FLOOD_OPTION_port=${default_port}
 FLOOD_OPTION_secret=$secret
 FLOOD_OPTION_rtsocket=/var/run/${user[username]}/.rtorrent.sock
 EOF
-    zen::service::generate "$app_name" "$software_config_file" "true"
-    zen::proxy::generate "$app_name" "${default_port}" "$software_config_file"
+    zen::service::generate "$app_name" "${config[config_file]}" "true"
+    zen::proxy::generate "$app_name" "${default_port}" "${config[config_file]}"
     local beforeDirectives=("import ../fragments/basic_auth.${user[username]}.conf" "@stripPrefix path_regexp strip ^/${user[username]}/$app_name/(.*)$" "rewrite @stripPrefix /{http.regexp.strip.1}")
     for directive in "${beforeDirectives[@]}"; do
         zen::proxy::add_directive "$app_name" "${user[username]}" "$directive" "before"

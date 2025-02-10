@@ -19,11 +19,10 @@
 zen::software::sabnzbd::add() {
     local venv_path="/opt/${user[username]}/$app_name/venv"
     local sabnzbd_source_path="/opt/${user[username]}/$app_name"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "-src.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
     # configure the app. This will also generate the proxy file
-    zen::software::sabnzbd::config "$is_prerelease"
+    zen::software::sabnzbd::config "${options[is_prerelease]}"
     zen::workspace::venv::create "$venv_path"
     # Build the virtual environment and install dependencies from requirements.txt
     zen::workspace::venv::build "$sabnzbd_source_path"
@@ -33,7 +32,7 @@ zen::software::sabnzbd::add() {
         mflibs::log "source $venv_path/bin/activate && python3 $sabnzbd_source_path/tools/make_mo.py"
     fi
     # generate the service file, this will also start it
-    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::generate "$app_name" "${config[config_file]}"
     zen::service::manage "stop" "$app_name"
     declare -g sab_config_file url_base
     sab_config_file=$(zen::software::get_config_key_value "$software_config_file" '.files[] | select(has("config")) | .config')
@@ -50,7 +49,7 @@ zen::software::sabnzbd::add() {
         -e "s/password = \"\"/password = \"${user[password]}\"/g" "$sab_config_file"
     zen::service::manage "start" "$app_name"
     # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 ################################################################################
@@ -88,9 +87,7 @@ zen::software::sabnzbd::update() {
     local sabnzbd_source_path="/opt/${user[username]}/$app_name"
     local temp_dir
     temp_dir=$(mktemp -d)
-    local is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
-    zen::git::get_release "$temp_dir" "${config[github]}" "$is_prerelease" "-src.tar.gz"
+    zen::git::get_release "$temp_dir" "${config[github]}" "${options[is_prerelease]}" "${config[config_file]}"
     find "$sabnzbd_source_path" -mindepth 1 -not -path "$venv_path" -not -path "$venv_path/*" -delete
     mv "$temp_dir"/* "$sabnzbd_source_path"
     rm -rf "$temp_dir"
@@ -124,7 +121,7 @@ zen::software::sabnzbd::remove() {
 # @description Creates a backup for Sabnzbd settings for a user.
 zen::software::sabnzbd::backup() {
     local app_name="$2"
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 # @function zen::software::sabnzbd::reset

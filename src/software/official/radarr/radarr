@@ -46,7 +46,7 @@ zen::software::radarr::config() {
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
 	zen::software::autogen
 	url_base="/${user[username]}/${app_name}"
-	[[ $is_prerelease == "true" ]] && branch="develop" || branch="master"
+	[[ ${options[is_prerelease]} == "true" ]] && branch="develop" || branch="master"
 	mkdir -p "/home/${user[username]}/.config/${app_name}"
 	cat >"/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
 <Config>

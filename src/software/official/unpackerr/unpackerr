@@ -17,12 +17,10 @@
 zen::software::unpackerr::add() {
     # grab the source code
     zen::dependency::external::install "$app_name"
-    local branch="main"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="false"
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "amd64.linux.gz "
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
     cd "$install_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$install_dir")"
     zen::software::unpackerr::configure
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 # shellcheck disable=SC2034
@@ -52,10 +50,10 @@ zen::software::unpackerr::configure() {
         fi
     done
     zen::software::autogen
-    zen::service::generate "$app_name" "$software_config_file" "true"
+    zen::service::generate "$app_name" "${config[config_file]}" "true"
     zen::permission::private "/home/${user[username]}/.config/$app_name" "${user[username]}" "${user[username]}"
     zen::service::manage "start" "$app_name@${user[username]}.service"
-    zen::proxy::generate "$app_name" "${default_port}" "$software_config_file"
+    zen::proxy::generate "$app_name" "${default_port}" "${config[config_file]}"
     mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
 }
 

@@ -22,16 +22,14 @@
 # @example
 #   zen software add autobrr -u <username> -o branch=beta # installs the beta (nightly) version
 zen::software::autobrr::add() {
-    is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/usr/local/bin" "${config[github]}" "$is_prerelease" "linux_x86_64.tar.gz"
+    zen::git::get_release "/usr/local/bin" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
     zen::permission::all_exec "/usr/local/bin/$app_name" "root" "root"
     zen::permission::all_exec "/usr/local/bin/autobrrctl" "root" "root"
     # configure the app. This will also generate the proxy file
-    zen::software::autobrr::config "$is_prerelease"
+    zen::software::autobrr::config "${options[is_prerelease]}"
     # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 ################################################################################
@@ -48,7 +46,7 @@ zen::software::autobrr::config() {
     local is_prerelease="$1"
     declare -g url_base
     zen::software::autogen
-    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::generate "$app_name" "${config[config_file]}"
     zen::service::manage "stop" "$app_name@${user[username]}.service"
     mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
     url_base="/${user[username]}/${app_name}"
@@ -83,7 +81,7 @@ zen::software::autobrr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
     zen::service::manage "start" "$service_name"
 }
 

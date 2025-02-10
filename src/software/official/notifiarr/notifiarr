@@ -19,17 +19,15 @@
 # shellcheck disable=SC2154
 # @example
 #   zen software add notifiarr -u <username>
-# @example
-#   zen software add notifiarr -u <username>
 zen::software::notifiarr::add() {
-    zen::git::get_release "/home/${user[username]}/bin/$app_name" "${config[github]}" "false" "notifiarr.amd64.linux.gz"
+    zen::git::get_release "/home/${user[username]}/bin/$app_name" "${config[github]}" false "${config[release_name]}"
     mv "/home/${user[username]}/bin/$app_name/notifiarr.amd64.linux" "/home/${user[username]}/bin/$app_name/Notifiarr"
     # configure the app. This will also generate the proxy file
     zen::software::notifiarr::config
     # generate the service file, this will also start it
-    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::generate "$app_name" "${config[config_file]}"
     # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 ################################################################################
@@ -71,7 +69,7 @@ zen::software::notifiarr::update() {
     [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
     zen::service::manage "stop" "$service_name"
     tempdir=$(mktemp -d)
-    zen::git::get_release "$tempdir" "${config[github]}" "false" "notifiarr.amd64.linux.gz"
+    zen::git::get_release "$tempdir" "${config[github]}" "false" "${config[config_file]}"
     mv "$tempdir/notifiarr.amd64.linux" "/home/${user[username]}/bin/$app_name/Notifiarr"
     zen::service::manage "start" "$service_name"
 }

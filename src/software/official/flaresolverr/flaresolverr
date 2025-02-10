@@ -15,16 +15,14 @@
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
 zen::software::flaresolverr::add() {
-    is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "flaresolverr_linux_x64.tar.gz "
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
     # configure the app. This will also generate the proxy file
-    zen::software::flaresolverr::config "$is_prerelease"
+    zen::software::flaresolverr::config "${options[is_prerelease]}"
     # generate the service file, this will also start it
-    zen::service::generate "$app_name" "$software_config_file"
+    zen::service::generate "$app_name" "${config[config_file]}"
     # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 ################################################################################
@@ -67,7 +65,7 @@ zen::software::flaresolverr::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[config_file]}"
     zen::service::manage "start" "$service_name"
 }
 

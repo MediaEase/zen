@@ -28,7 +28,7 @@ zen::software::tautulli::add() {
     zen::git::clone "${config[github]}" "$install_dir" "$branch"
     cd "$install_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$install_dir")"
     zen::software::tautulli::configure
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 # shellcheck disable=SC2034
@@ -40,7 +40,7 @@ zen::software::tautulli::configure() {
     zen::workspace::venv::create "/opt/$app_name" "Tautulli" "true"
     zen::permission::read_exec "$install_dir" "Tautulli" "nogroup"
     zen::software::autogen
-    zen::service::generate "$app_name" "$software_config_file" "true"
+    zen::service::generate "$app_name" "${config[config_file]}" "true"
     sleep 10
     mkdir -p "/home/${user[username]}/.config/$app_name/{backups,cache,exports,logs,newsletters}"
     zen::service::manage "stop" "$app_name@${user[username]}.service"
@@ -56,7 +56,7 @@ zen::software::tautulli::configure() {
         "/home/${user[username]}/.config/$app_name/config.ini"
     zen::permission::private "/home/${user[username]}/.config/$app_name" "${user[username]}" "${user[username]}"
     zen::service::manage "start" "$app_name@${user[username]}.service"
-    zen::proxy::generate "$app_name" "${default_port}" "$software_config_file"
+    zen::proxy::generate "$app_name" "${default_port}" "${config[config_file]}"
     mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
 }
 

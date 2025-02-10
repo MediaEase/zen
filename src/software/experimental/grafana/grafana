@@ -31,7 +31,7 @@ zen::software::grafana::add() {
     zen::software::grafana::add_plugins
     zen::software::grafana::config
     # create a backup file
-    zen::software::backup::create "$app_name" "$software_config_file"
+    zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
 # @function zen::software::grafana::add_prometheus
@@ -45,7 +45,7 @@ zen::software::grafana::add_prometheus() {
     zen::user::create "${plugin_name}" "${plugin_name}" false true false
     usermod --shell /sbin/nologin ${plugin_name}
     mkdir -p /etc/${plugin_name} /var/lib/${plugin_name}
-    zen::git::get_release "/tmp/pushgateway" "prometheus/pushgateway" false "linux-amd64.tar.gz"
+    zen::git::get_release "/tmp/pushgateway" "prometheus/pushgateway" false "${config[config_file]}"
     mv /tmp/pushgateway/linux-amd64/pushgateway "/var/lib/pushgateway"
     cd "${target_dir}" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "${target_dir}")"
     for file in prometheus promtool; do
@@ -138,7 +138,7 @@ zen::software::grafana::config() {
         plugin_name=$(basename "${file}" .service.tpl)
         mflibs::file::copy "${zen_grafana_dir}/templates/${plugin_name}/${plugin_name}.service.tpl" "${systemd_dir}/${plugin_name}.service"
     done
-    zen::git::get_release "/opt/grafana" "${config[github]}" "$software_branch" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/grafana" "${config[github]}" "$software_branch" "${config[config_file]}"
     systemctl daemon-reload
     for file in "${systemd_dir}"/*; do
         zen::service::manage "enable" "${file}"
@@ -212,7 +212,7 @@ zen::software::grafana::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "linux-core-x64.tar.gz"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[config_file]}"
     zen::service::manage "start" "$service_name"
 }
 
