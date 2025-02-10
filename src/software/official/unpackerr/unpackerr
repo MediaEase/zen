@@ -17,7 +17,7 @@
 zen::software::unpackerr::add() {
     # grab the source code
     zen::dependency::external::install "$app_name"
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
     cd "$install_dir" || mflibs::status::error "$(zen::i18n::translate "errors.filesystem.change_directory" "$install_dir")"
     zen::software::unpackerr::configure
     zen::software::backup::create "$app_name" "${config[config_file]}"

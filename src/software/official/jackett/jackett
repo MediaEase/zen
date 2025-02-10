@@ -23,7 +23,7 @@
 #   zen software add jackett -u <username> -o branch=beta # installs the beta (nightly) version
 zen::software::jackett::add() {
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
     # configure the app. This will also generate the proxy file
     zen::software::jackett::config
     # create a backup file
@@ -97,7 +97,7 @@ zen::software::jackett::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${options[is_prerelease]}" "${config[config_file]}"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[config_file]}"
     zen::service::manage "start" "$service_name"
 }
 

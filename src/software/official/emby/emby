@@ -16,7 +16,7 @@
 # shellcheck disable=SC2154
 zen::software::emby::add() {
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/${app_name}" "${config[github]}" "${options[is_prerelease]}" "${config[release_name]}"
+    zen::git::get_release "/opt/${user[username]}/${app_name}" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
     zen::common::fix::permissions "/opt/${user[username]}/${app_name}" "${user[username]}" "${user[username]}" "755" "644"
     # configure the app. This will also generate the proxy file
     if [[ -f /etc/emby-server.conf ]]; then

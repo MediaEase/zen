@@ -116,7 +116,7 @@ zen::software::rtorrent::update() {
     is_prerelease="false"
     [[ "$software_branch" == "beta" ]] && is_prerelease="true"
     # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "rTorrent/rTorrent" "${options[is_prerelease]}" "${config[config_file]}"
+    zen::git::get_release "/opt/${user[username]}/$app_name" "rTorrent/rTorrent" "${software_options[is_prerelease]}" "${config[config_file]}"
     zen::service::manage "start" "$service_name"
 }
 
