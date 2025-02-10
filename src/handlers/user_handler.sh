@@ -2,7 +2,7 @@
 
 # @file: handlers/user_handler.sh
 # @project MediaEase
-# @version 1.1.11
+# @version 1.1.12
 # @description A handler for user management commands.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com

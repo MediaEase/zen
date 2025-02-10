@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/rutorrent/rutorrent.sh
-# @version 1.0.7
+# @version 1.0.8
 # @project MediaEase
 # @description ruTorrent handler
 # @author Thomas Chauveau (tomcdj71)

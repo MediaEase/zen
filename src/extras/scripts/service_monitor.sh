@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file extras/scripts/service_monitor.sh
 # @project MediaEase
-# @version 1.0.0
+# @version 1.1.0
 # @brief Continuously monitor service logs and output JSON alerts on errors.
 # @description This script monitors in real time the system logs of specified services (e.g. radarr, plex) via journalctl. It detects log entries that indicate errors or service failures (including keywords "error", "Main process exited", "Failed with result 'exit-code'", and "Failed at step EXEC spawning"). When an error is detected, it outputs a JSON formatted alert that can be consumed by a frontend application.
 # @author Thomas Chauveau

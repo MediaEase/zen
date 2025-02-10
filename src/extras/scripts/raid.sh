@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file extras/scripts/raid.sh
 # @project MediaEase
-# @version 1.3.10
+# @version 1.3.11
 # @brief Automatically creates a RAID array and mounts it to the specified mount point.
 # @description This script facilitates the creation and mounting of a RAID array.
 # It includes functions to process command-line arguments, detect system disks, format and create the RAID array, and mount it.
