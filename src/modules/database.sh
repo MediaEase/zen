@@ -27,7 +27,6 @@ zen::database::query() {
     mflibs::status::error "$(zen::i18n::translate "errors.environment.db_missing" "$sqlite3_db")"
   fi
   sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query"
-  sqlite3 -cmd ".timeout 20000" "$sqlite3_db" "$query" >"$([[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && echo "/dev/stdout" || echo "/dev/null")"
 }
 
 # @function zen::database::select
