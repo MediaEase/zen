@@ -40,7 +40,7 @@ zen::vault::init() {
 		declare -g credentials_file="${vault_dir}/${vault_file}"
 		export credentials_file
 	fi
-	[[ " ${MFLIBS_LOADED[*]} " =~ verbose ]] && mflibs::status::success "$(zen::i18n::translate "success.security.init_vault")"
+	[[ " ${MFLIBS_LOADED[*]} " =~ DEBUG ]] && mflibs::status::success "$(zen::i18n::translate "success.security.init_vault")"
 }
 
 # @function zen::vault::create
@@ -121,7 +121,7 @@ zen::vault::key::decode() {
 	if [[ -n "$hashed_value" ]]; then
 		local padded_value
 		padded_value=$(echo "$hashed_value" | awk '{ while (length($0) % 4 != 0) $0 = $0 "="; print }')
-		echo "$padded_value" | base64 --decode
+		echo -n "$padded_value" | base64 --decode | head -n 1
 	else
 		mflibs::status::error "$(zen::i18n::translate "errors.security.key_not_decodable")"
 	fi
