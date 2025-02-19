@@ -188,6 +188,7 @@ zen::user::load() {
 		exit 1
 	fi
 	user_password=$(zen::vault::key::reveal "$username.main")
+	user_password=$(echo "${user_password}" | awk '{print $6}')
 	user["password"]="${user_password}"
 	return 0
 }
