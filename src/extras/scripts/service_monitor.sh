@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file extras/scripts/service_monitor.sh
 # @project MediaEase
-# @version 1.1.0
+# @version 1.2.0
 # @brief Continuously monitor service logs and output JSON alerts on errors.
 # @description This script monitors in real time the system logs of specified services (e.g. radarr, plex) via journalctl. It detects log entries that indicate errors or service failures (including keywords "error", "Main process exited", "Failed with result 'exit-code'", and "Failed at step EXEC spawning"). When an error is detected, it outputs a JSON formatted alert that can be consumed by a frontend application.
 # @author Thomas Chauveau
@@ -12,10 +12,11 @@
 command -v journalctl >/dev/null 2>&1 || { echo "journalctl is required but not installed. Aborting." >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "jq is required but not installed. Aborting." >&2; exit 1; }
 trap 'echo "Terminating..."; exit 0' SIGINT SIGTERM
-
-SERVICES=(
-    
-)
+SQLITE3_DB="$(grep DATABASE_URL "/srv/harmonyui/.env.local" | sed -E 's|^DATABASE_URL=||' | sed -E 's|"||g' | sed -E 's|^sqlite:///%kernel.project_dir%|/srv/harmonyui|')"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+USER=$(echo "$SCRIPT_DIR" | grep -oP "(?<=/home/)(.*)(?=/bin)")
+USER_ID=$(sqlite3 -cmd ".timeout 20000" "$SQLITE3_DB" "SELECT id FROM user WHERE username = '$USER'")
+mapfile -t SERVICES < <(sqlite3 -cmd ".timeout 20000" "$SQLITE3_DB" "SELECT name FROM service WHERE user_id = '$USER_ID'")
 
 cmd=(journalctl)
 for service in "${SERVICES[@]}"; do
