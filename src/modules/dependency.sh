@@ -58,6 +58,9 @@ zen::dependency::apt::manage() {
 		cmd_options=("$action" -y"${quiet_flag}")
 		apt-get "${cmd_options[@]}" && return
 		;;
+	remove)
+		zen::dependency::apt::remove "$software_name" && return
+		;;
 	*)
 		mflibs::status::error "$(zen::i18n::translate "errors.common.invalid_action" "$action")"
 		return 1
