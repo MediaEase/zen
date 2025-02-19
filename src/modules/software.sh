@@ -392,7 +392,7 @@ zen::software::autogen() {
 		esac
 	done
 
-	for var in apikey ssl_port default_port password; do
+	for var in apikey ssl_port default_port password port_range; do
 		if [[ -n "${!var}" ]]; then
 			export "${var?}"
 		fi
