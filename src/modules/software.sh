@@ -287,13 +287,20 @@ zen::software::options::process() {
 #   zen::software::backup::create "app_name"
 zen::software::backup::create() {
 	local app_name="$1"
-	local backup_dir="/home/${user[username]}/.mediaease/backups/$app_name"
-	backup_file="$backup_dir/$app_name-$(date +%Y%m%d-%H%M%S).tar.gz"
+	local context=${2:-"user"}
+	local backup_dir
+	backup_dir="/home/${user[username]}/.mediaease/backups/$app_name/manual"
+	if [[ "$context" == "base" ]]; then
+		backup_dir="/home/${user[username]}/.mediaease/backups/$app_name/base"
+		if [[ -d "$backup_dir" && -n "$(ls -A "$backup_dir")" ]]; then
+			backup_dir="/home/${user[username]}/.mediaease/backups/$app_name/manual"
+		fi
+	fi
 	mkdir -p "$backup_dir"
+	backup_file="$backup_dir/$app_name-$(date +%Y%m%d-%H%M%S).tar.gz"
 
 	local files_to_backup=()
 	readarray -t files_to_backup < <(yq e ".arguments.files[].*" "$software_config_file" | sed "s/%i/${user[username]}/g; s/\$app_name/$app_name/g")
-
 	if [ ${#files_to_backup[@]} -eq 0 ]; then
 		mflibs::status::error "$(zen::i18n::translate "errors.backup.no_backup_files" "$app_name")"
 	fi
