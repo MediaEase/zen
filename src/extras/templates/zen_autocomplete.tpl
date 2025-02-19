@@ -1,24 +1,22 @@
 #!/bin/bash
 if [[ $USER == 'root' ]]; then
   _zen() {
-    local current prev_word db_file preference_fields used_flags
+    local current prev_word SQLITE3_DB preference_fields used_flags
     COMPREPLY=()
     current="${COMP_WORDS[COMP_CWORD]}"
-    prev_word="${COMP_WORDS[COMP_CWORD - 1]}"
-    DATABASE_URL=$(grep '^DATABASE_URL' /srv/harmonyui/.env.local)
-    db_file="${DATABASE_URL##*/}"
-    db_file="/srv/harmonyui/$db_file"
+    prev_word="${COMP_WORDS[$((COMP_CWORD - 1))]}"
+    SQLITE3_DB="$(grep DATABASE_URL "/srv/harmonyui/.env.local" | sed -E 's|^DATABASE_URL=||' | sed -E 's|"||g' | sed -E 's|^sqlite:///%kernel.project_dir%|/srv/harmonyui|')"
 
-    if [[ ! -f "$db_file" ]]; then
-      printf "Database file not found: %s\n" "$db_file" >&2
+    if [[ ! -f "$SQLITE3_DB" ]]; then
+      printf "Database file not found: %s\n" "$SQLITE3_DB" >&2
       return 1
     fi
 
     local -a users software_apps services setting_fields
-    mapfile -t users < <(sqlite3 "$db_file" "SELECT username FROM user")
+    mapfile -t users < <(sqlite3 "$SQLITE3_DB" "SELECT username FROM user")
     mapfile -t software_apps < <(find /opt/MediaEase/MediaEase/zen/src/software/{official,experimental} -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
-    mapfile -t services < <(sqlite3 "$db_file" "SELECT name FROM service")
-    mapfile -t setting_fields < <(sqlite3 "$db_file" "PRAGMA table_info(setting);" | awk -F'|' '$2 != "id" {print $2}')
+    mapfile -t services < <(sqlite3 "$SQLITE3_DB" "SELECT name FROM service")
+    mapfile -t setting_fields < <(sqlite3 "$SQLITE3_DB" "PRAGMA table_info(setting);" | awk -F'|' '$2 != "id" {print $2}')
 
     local -a commands software_ops user_ops support_ops log_ops migrate_ops pull_ops service_ops user_add_ops
     commands=("software" "user" "support" "set" "pull" "service" "log" "migrate" "tools")
@@ -93,7 +91,7 @@ if [[ $USER == 'root' ]]; then
           elif [[ "$COMP_CWORD" -eq 5 ]]; then
             mapfile -t COMPREPLY < <(compgen -W "-s" -- "$current")
           elif [[ "$prev_word" == "-s" ]]; then
-            mapfile -t preference_fields < <(sqlite3 "$db_file" "PRAGMA table_info(preference);" | awk -F'|' '$2 != "id" && $2 != "user_id" && $2 != "pinned_apps" && $2 != "selected_widgets" {print $2}')
+            mapfile -t preference_fields < <(sqlite3 "$SQLITE3_DB" "PRAGMA table_info(preference);" | awk -F'|' '$2 != "id" && $2 != "user_id" && $2 != "pinned_apps" && $2 != "selected_widgets" {print $2}')
             mapfile -t COMPREPLY < <(compgen -W "${preference_fields[*]}" -- "$current")
           elif [[ "$COMP_CWORD" -eq 7 ]]; then
             mapfile -t COMPREPLY < <(compgen -W "-v" -- "$current")
