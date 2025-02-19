@@ -156,7 +156,7 @@ zen::software::infobox() {
 		*) translated_string="Action: $action" ;;
 		esac
 		$shell "################################################################################"
-		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
+		$shell "# $(zen::common::capitalize::first "$app_name") - $(zen::i18n::translate "wizard.$action")"
 		$shell "# $(date)"
 		$shell "# $translated_string"
 		$shell "################################################################################"
@@ -205,7 +205,7 @@ zen::software::infobox() {
 		*) translated_string="Action completed: $action" ;;
 		esac
 		$shell "################################################################################"
-		$shell "# $(zen::common::capitalize::first "$app_name") Install Wizard"
+		$shell "# $(zen::common::capitalize::first "$app_name") - $(zen::i18n::translate "wizard.$action")"
 		$shell "# $(date)"
 		$shell "# $outro"
 		[[ "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
@@ -215,8 +215,8 @@ zen::software::infobox() {
 		[[ -n "$mediaease_link" ]] && $shell "# $mediaease_link"
 		[[ -n "$access_link" && "$action" != "remove" ]] && $shell "# ------------------------------------------------------------------------------"
 		[[ -n "$access_link" && "$action" != "remove" ]] && $shell "# $access_link"
-		[[ -n "$username" ]] && $shell "# Username: $username"
-		[[ -n "$password" ]] && $shell "# Password: $password"
+		[[ -n "$username" && "$action" != "remove" && "$action" != "backup" ]] && $shell "# Username: $username"
+		[[ -n "$password" && "$action" != "remove" && "$action" != "backup" ]] && $shell "# Password: $password"
 		$shell "################################################################################"
 		;;
 	*)
