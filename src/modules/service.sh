@@ -217,76 +217,49 @@ zen::service::build::add_entry() {
 # @stdout Validates service configuration and inserts it into the database.
 # @note Constructs JSON objects for service configuration and stores them in the database.
 # @example
-#    zen::service::validate "true" "app_name_sanitized"
+#    zen::service::validate "radarr@jason.service" "true"
 zen::service::validate() {
-	local is_child="$1"
-	local app_name_sanitized="$2"
-	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.validate" "$app_name_sanitized")"
-	local json_ports json_configuration application_id parent_service_id json_result
-
-	# Assuming api_service[default_port] and api_service[ssl_port] contain simple strings or numbers
+	local service_name="$1"
+	local is_child="$2"
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.validate" "$service_name")"
+	local json_ports json_configuration parent_service_id json_result
 	json_ports=$(jq -n \
 		--arg default_port "${api_service[default_port]:-0}" \
 		--arg ssl_port "${api_service[ssl_port]:-0}" \
 		'[{"default": ($default_port | tonumber), "ssl": ($ssl_port | tonumber)}]')
-	# Configuration JSON
 	json_configuration=$(jq -n \
-		--arg data_path "${api_service[data_path]:-"none"}" \
-		--arg backup_path "${api_service[backup_path]:-"none"}" \
-		--arg caddyfile_path "${api_service[caddyfile_path]:-"none"}" \
+		--arg data_path "${config[data_path]:-"none"}" \
+		--arg backup_path "${config[backup_path]:-"none"}" \
+		--arg caddyfile_path "${config[app_proxy_file]:-"none"}" \
 		--arg root_url "${api_service[root_url]:-"none"}" \
 		'[{"data_path": $data_path, "backup_path": $backup_path, "caddyfile_path": $caddyfile_path, "root_url": $root_url}]')
-	# Application JSON
-	application_id=$(zen::database::select "id" "application" "altname = '$app_name_sanitized'")
-	application_id=$(echo "$application_id" | head -n 1)
-
+	json_configuration=$(echo "$json_configuration" | sed -e "s/%i/${user[username]}/g" -e "s/\$app_name/${config[altname]}/g")
 	if [[ "$is_child" == "true" ]]; then
 		parent_service_id=$(zen::database::select "id" "service" "id = (SELECT MAX(id) FROM service)")
 	else
 		parent_service_id="null"
+		parent_service_id=$(echo "$parent_service_id" | jq 'if . == "null" then null else . end')
 	fi
-
-	# Construct the final JSON
+	declare -g app_version
+	app_version=$(zen::software::get_version "${config[altname]}")
+	[[ -z "$app_version" ]] && app_version="0.0.0"
 	json_result=$(jq -n \
-		--arg name "${api_service[name]}" \
-		--arg version "0.0.0" \
-		--arg status "active" \
+		--arg app_name "${config[altname]}" \
+		--arg service_name "${api_service[name]}" \
+		--arg parent_service_id "$parent_service_id" \
+		--arg version "$app_version" \
 		--arg apikey "${api_service[apikey]}" \
-		--arg user_id "${user[id]}" \
 		--argjson ports "$json_ports" \
 		--argjson configuration "$json_configuration" \
-		--arg application_id "$application_id" \
-		--arg parent_service_id "$parent_service_id" \
 		'{
-			"name": $name,
-			"version": $version,
-			"status": $status,
-			"apikey": $apikey,
-			"ports": $ports,
-			"configuration": $configuration,
-			"application_id": $application_id,
+			"app_name": $app_name,
+			"service_name": $service_name,
 			"parent_service_id": $parent_service_id,
-			"user_id": $user_id
+			"version": $version,
+			"api_key": $apikey,
+			"ports": $ports,
+			"configuration": $configuration
 		}')
-	# Extract the individual fields from JSON except for JSON objects (ports and configuration)
-	local name version status apikey application_id parent_service_id user_id
-
-	read -r name version status apikey application_id parent_service_id user_id <<<"$(echo "$json_result" | jq -r '.name, .version, .status, .apikey, .application_id, .parent_service_id, .user_id')"
-
-	# Escape single quotes in the string values
-	name=${name//\'/\'\'}
-	version=${version//\'/\'\'}
-	status=${status//\'/\'\'}
-	apikey=${apikey//\'/\'\'}
-	application_id=${application_id//\'/\'\'}
-	parent_service_id=${parent_service_id//\'/\'\'}
-	user_id=${user_id//\'/\'\'}
-
-	# Convert JSON objects to strings for SQL insertion
-	ports=$(echo "$json_ports" | jq -c .)
-	configuration=$(echo "$json_configuration" | jq -c .)
-
-	# Call the zen::database::insert function
-	zen::database::insert "service" "name, version, status, apikey, ports, configuration, application_id, parent_service_id, user_id" "'$name', '$version', '$status', '$apikey', '$ports', '$configuration', '$application_id', '$parent_service_id', '$user_id'"
-	mflibs::shell::text::green "$(zen::i18n::translate "success.service.validate" "$app_name_sanitized")"
+	zen::request::api_put "/me/services/validate-service" "$json_result"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.service.validate" "$service_name")"
 }
