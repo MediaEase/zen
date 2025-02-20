@@ -153,6 +153,27 @@ zen::git::download_folder() {
     fi
 }
 
+# @function zen::git::compare_releases
+# @description This function check if the current version is a prerelease or stable release and then compares it with the latest release (stable or prerelease) from a GitHub repository.
+# @arg $1 string Full URL of the GitHub repository.
+# @arg $2 string Current version of the software.
+# @exitcode 0 if the current version is up-to-date.
+# @exitcode 1 if the current version is outdated.
+# @stdout Informs about the comparison process and results.
+zen::git::prerelease_check() {
+    local repo_name="$1"
+    local current_version="$2"
+    local repo_url="https://api.github.com/repos/$repo_name/releases"
+    local current_release
+    declare -g is_prerelease
+    current_release=$(curl -s "$repo_url" | jq -r --arg current_version "$current_version" '.[] | select(.tag_name == $current_version)')
+    if [[ -z "$current_release" ]]; then
+        mflibs::status::error "$(zen::i18n::translate "errors.git.no_release_found" "$repo_name")"
+    fi
+    is_prerelease=$(echo "$current_release" | jq -r '.prerelease')
+    [[ "$is_prerelease" == "true" ]]
+}
+
 # @function zen::git::tree
 # Lists the files in a given repository and branch.
 # @description This function lists the files in a specified repository and branch using the GitHub API.
