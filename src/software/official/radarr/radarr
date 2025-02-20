@@ -31,18 +31,13 @@ zen::software::radarr::add() {
 	zen::software::backup::create "$app_name" "${config[config_file]}"
 }
 
-################################################################################
 # @function zen::software::radarr::config
 # @internal
 # @description Configures Radarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string Indicates whether to use a prerelease version of Radarr.
 # @global user An associative array containing user-specific information.
 # @example
-#   zen::software::radarr::config "false"  # disables pre-release (develop)
-# @example
-#   zen::software::radarr::config "true" # enables pre-release (nightly)
+#   zen::software::radarr::config
 zen::software::radarr::config() {
-	local is_prerelease="$1"
 	declare -g url_base
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
 	zen::software::autogen
@@ -69,8 +64,6 @@ zen::software::radarr::config() {
 	<Theme>dark</Theme>
 </Config>
 RCON
-
-	# generate the proxy configuration
 	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
 	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
 	zen::permission::user_exec "/opt/${user[username]}/$app_name/${config[app_name]}" "${user[username]}"
