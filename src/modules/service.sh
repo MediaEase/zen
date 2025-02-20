@@ -16,7 +16,7 @@
 # @arg $1 string The name of the application.
 # @arg $2 bool Flag indicating if the service is for multiple users.
 # @arg $3 bool Flag indicating if the service should be started immediately (optional).
-# @global software_config_file Path to the software's configuration file.
+# @global config An associative array repreenting useful variables taken from the software config file
 # @stdout Creates a systemd service file for the application.
 # @note Handles both single-user and multi-user service scenarios.
 # shellcheck disable=SC2154
@@ -28,20 +28,13 @@ zen::service::generate() {
 	local is_child="$2"
 	local start="$3"
 	[[ -z "$start" ]] && start=true
-
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.service.generate" "$app_name")"
-	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-	service_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("service")).service' "${user[username]}" "$app_name")
-	caddy_file=$(zen::software::get_config_key_value "$software_config_file" '.arguments.files[] | select(has("proxy")).proxy' "${user[username]}" "$app_name")
-	backup_path=$(zen::software::get_config_key_value "$software_config_file" '.arguments.paths[] | select(has("backup")).backup' "${user[username]}" "$app_name")
-	data_path=$(zen::software::get_config_key_value "$software_config_file" '.arguments.paths[] | select(has("data")).data' "${user[username]}" "$app_name")
-	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
 	local -a service_directives
-	readarray -t service_directives < <(yq e ".arguments.service_directives[]" "$software_config_file")
+	readarray -t service_directives < <(yq e ".arguments.service_directives[]" "${config[config_file]}")
 
 	local service_content=(
 		"[Unit]"
-		"Description=$app_name_sanitized Daemon"
+		"Description=${config[app_name]} Daemon"
 		"After=syslog.target network.target"
 		""
 		"[Service]"
@@ -69,7 +62,7 @@ zen::service::generate() {
 		service_content+=("$directive")
 	done
 
-	if [[ "$is_multi" == "true" ]]; then
+	if [[ "${config[is_multi]}" == true ]]; then
 		service_content+=(
 			""
 			"[Install]"
@@ -78,14 +71,18 @@ zen::service::generate() {
 	fi
 
 	# Write the content to the service file
-	printf "%s\n" "${service_content[@]}" >"$service_file"
-	mflibs::shell::text::green "$(zen::i18n::translate "success.service.generate_systemd" "$app_name" "$service_name")"
+	[[ "${config[is_multi]}" == true ]] && service_name="${config[altname]}@.service" || service_name="${config[altname]}.service"
+	printf "%s\n" "${service_content[@]}" >"/etc/systemd/system/$service_name"
+	[[ "${config[is_multi]}" == true ]] && service_name="${config[altname]}@${user[username]}.service" || service_name="${config[altname]}.service"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.service.generate_systemd" "${config[altname]}" "$service_name")"
 	mflibs::log "systemctl daemon-reload"
 	# if not bypass_mode; then
 	zen::service::manage "enable" "$service_name"
 	# if no_start
 	if [[ "$start" == true ]]; then
-		zen::service::manage "start" "$service_name"
+		sleep 2
+		zen::service::manage "restart" "$service_name"
+		sleep 10
 	fi
 	if [[ -z "$bypass_mode" || "$bypass_mode" != true ]]; then
 		zen::service::build::add_entry "name" "$service_name"
@@ -96,10 +93,11 @@ zen::service::generate() {
 		zen::service::build::add_entry "backup_path" "$backup_path"
 		zen::service::build::add_entry "root_url" "${url_base}"
 		zen::service::build::add_entry "apikey" "$apikey"
-		zen::service::validate "$is_child" "$app_name_sanitized"
+		zen::service::validate "$service_name" "$is_child"
 	else
 		mflibs::shell::text::yellow "$(zen::i18n::translate "messages.software.bypass_active" "$app_name")"
 	fi
+	mflibs::log "systemctl daemon-reload"
 	export service_name
 }
 
