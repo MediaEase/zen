@@ -135,16 +135,21 @@ zen::service::manage() {
 				mflibs::shell::text::red "$(zen::i18n::translate "errors.service.start" "$service_name")"
 			fi
 		fi
+		sleep 5
 		;;
 	stop)
 		mflibs::status::info "$(zen::i18n::translate "messages.service.stop" "$service_name")"
-		if zen::service::manage "status" "$service_name"; then
-			if systemctl stop "$service_name"; then
-				mflibs::status::success "$(zen::i18n::translate "success.service.stop" "$service_name")"
-			else
-				mflibs::shell::text::red "$(zen::i18n::translate "errors.service.stop" "$service_name")"
-			fi
-		fi
+		if check_service_status >/dev/null ; then
+            if systemctl stop "$service_name"; then
+                while systemctl is-active --quiet "$service_name"; do
+                    mflibs::status::info "$(zen::i18n::translate "messages.service.stopping" "$service_name")"
+                    sleep 2
+                done
+                mflibs::status::success "$(zen::i18n::translate "success.service.stop" "$service_name")"
+            else
+                mflibs::shell::text::red "$(zen::i18n::translate "errors.service.stop" "$service_name")"
+            fi
+        fi
 		;;
 	restart | reload)
 		mflibs::status::info "$(zen::i18n::translate "messages.service.${action}" "$service_name")"
@@ -153,6 +158,7 @@ zen::service::manage() {
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.$action" "$service_name")"
 		fi
+		sleep 5
 		;;
 	enable)
 		systemctl daemon-reload
@@ -167,6 +173,7 @@ zen::service::manage() {
 		mflibs::status::info "$(zen::i18n::translate "messages.service.disable" "$service_name")"
 		if systemctl stop "$service_name" && systemctl disable "$service_name"; then
 			systemctl daemon-reload
+			sleep 2
 			mflibs::status::success "$(zen::i18n::translate "success.service.disable" "$service_name")"
 		else
 			mflibs::shell::text::red "$(zen::i18n::translate "errors.service.disable" "$service_name")"
