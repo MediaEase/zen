@@ -539,3 +539,45 @@ zen::software::get_version() {
 	fi
 	echo "$software_version"
 }
+
+# @function zen::software::remove
+# @description Removes a software entry from the database.
+# @global config[] Array of configuration settings.
+# @stdout Removes the software entry from the database.
+# @example
+#   zen::software::remove "app_name"
+# shellcheck disable=SC2154
+zen::software::remove() {
+	local app_altname="$1"
+	for file in "${config[app_config_file]}" "${config[app_proxy_file]}" "${config[app_database_file]}"; do
+		file="${file//%i/${user[username]}}"
+		file="${file//\$app_name/$app_altname}"
+		if [ -f "$file" ]; then
+			rm -f "$file" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.remove" "$file")"
+		else
+			mflibs::shell::text::yellow "$(zen::i18n::translate "errors.software.remove" "$file")"
+		fi
+	done
+	if [[ "${settings[remove_backup]}" == "true" ]]; then
+		config[backup_path]="${config[backup_path]//%i/${user[username]}}"
+		if [ -d "${config[backup_path]}" ]; then
+			rm -rf "${config[backup_path]}" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.remove" "${config[backup_path]}")"
+		else
+			mflibs::shell::text::yellow "$(zen::i18n::translate "errors.software.remove" "${config[backup_path]}")"
+		fi
+	fi
+	for path in "${config[data_path]}" "${config[install_path]}" "/home/${user[username]}/tmp/$app_altname"; do
+		path="${path//%i/${user[username]}}"
+		path="${path//\$app_name/$app_altname}"
+		if [ -d "$path" ]; then
+			rm -rf "$path" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.remove" "$path")"
+		else
+			mflibs::shell::text::yellow "$(zen::i18n::translate "errors.software.remove" "$path")"
+		fi
+	done
+	if [[ -z "$(zen::software::is::installed "$app_altname" "*")" ]]; then
+		file="${config[app_service_file]}"
+		file="${file//\$app_name/$app_altname}"
+        rm -f "$file" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.remove" "$file")"
+    fi
+}
