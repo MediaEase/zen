@@ -84,10 +84,16 @@ RCON
 zen::software::radarr::update() {
 	local service_name
 	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::software::radarr::read_config
+	current_conf[version]="v$(zen::software::get_version "$app_name")"
+	zen::git::prerelease_check "${config[github]}" "${current_conf[version]}"
 	zen::service::manage "stop" "$service_name"
 	rm -rf "/opt/${user[username]}/$app_name"
-	# grab the correct release
-	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "${config[release_name]}"
+	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
+	zen::permission::user_exec "/opt/${user[username]}/$app_name/${config[app_name]}" "${user[username]}"
+	zen::software::radarr::backup "$app_name" "manual"
 	zen::service::manage "start" "$service_name"
 }
 
