@@ -143,6 +143,43 @@ zen::software::radarr::reinstall() {
 	local app_name="$2"
 }
 
+# @function zen::software::radarr::read_config
+# @internal
+# @description Reads the Radarr configuration file and sets the variables.
+# @global current_conf An associative array containing the current configuration.
+# @example
+#   zen::software::radarr::read_config
+# shellcheck disable=SC2034
+zen::software::radarr::read_config() {
+	declare -A -g current_conf api_service
+    while IFS= read -r line; do
+        case "$line" in
+            *"<ApiKey>"*)
+                apikey=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<Port>"*)
+                default_port=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<SslPort>"*)
+                ssl_port=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<UrlBase>"*)
+                url_base=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+        esac
+    done < <(grep -E "<ApiKey>|<Port>|<SslPort>|<UrlBase>" "/home/${user[username]}/.config/${app_name}/config.xml")
+	current_conf[default_port]="$default_port"
+	current_conf[ssl_port]="$ssl_port"
+	current_conf[apikey]="$apikey"
+	current_conf[root_url]="$url_base"
+	api_service=(
+		[default_port]="${current_conf[default_port]}"
+		[ssl_port]="${current_conf[ssl_port]}"
+		[apikey]="${current_conf[apikey]}"
+		[root_url]="${current_conf[root_url]}"
+	)
+}
+
 # @function zen::software::radarr::secure
 # @internal
 # @description Secures Radarr for a user, including setting up configuration files and proxy settings.
