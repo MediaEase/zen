@@ -581,3 +581,35 @@ zen::software::remove() {
         rm -f "$file" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.remove" "$file")"
     fi
 }
+
+# @function zen::software::reset()
+# @description Resets a software entry to its default state.
+# @global config[] Array of configuration settings.
+# @stdout Resets the software entry to its default state.
+# @example
+#   zen::software::reset "app_name"
+# shellcheck disable=SC2154
+zen::software::reset() {
+	for file in "${config[app_service_file]}" "${config[app_proxy_file]}"; do
+		if [ -f "$file" ]; then
+			if grep -q "DATA_PATH" "$file"; then
+				sed -i "s|DATA_PATH=.*|DATA_PATH=${config[data_path]}|g" "$file"
+			fi
+			rm -f "$file" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.reset" "$file")"
+		else
+			mflibs::shell::text::yellow "$(zen::i18n::translate "errors.software.reset" "$file")"
+		fi
+	done
+	if [ -d "${config[data_path]}" ]; then
+		rm -rf "${config[data_path]:?}"/* && mflibs::shell::text::green "$(zen::i18n::translate "success.software.reset" "${config[data_path]}")"
+	else
+		mflibs::shell::text::yellow "$(zen::i18n::translate "errors.software.reset" "${config[data_path]}")"
+	fi
+	latest_backup=$(find "${config[backup_path]}" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+	if [ -n "$latest_backup" ]; then
+		tar -xzf "$latest_backup" -C "${config[data_path]}" && mflibs::shell::text::green "$(zen::i18n::translate "success.software.reset" "${config[data_path]}")"
+		find "${config[data_path]}" -name '*.service' -exec mv {} "${config[app_service_file]}" \; && mflibs::shell::text::green "$(zen::i18n::translate "success.software.reset" "${config[app_service_file]}")"
+	else
+		mflibs::shell::text::yellow "$(zen::i18n::translate "errors.software.reset" "${config[backup_path]}")"
+	fi
+}
