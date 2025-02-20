@@ -13,6 +13,7 @@ errors:
     already_installed_by_user: "{arg0} est déjà installé pour {arg1}."
     already_installed: "{arg0} est déjà installé."
     download_folder: "Échec du téléchargement du dossier."
+    file_not_found: "Fichier introuvable : {arg0}."
     insufficient_args: "Arguments insuffisants."
     invalid_action: "Action invalide : {arg0}."
     invalid_command: "Commande invalide : {arg0}."
@@ -82,6 +83,7 @@ errors:
     invalid_pull_action: "Action de pull invalide : {arg0}."
     no_release_found: "Aucune version trouvée."
     no_tag_found: "Aucun tag trouvé."
+    version_not_greater: "La version {arg0} n'est pas supérieure à la version actuelle {arg1}."
   network:
     api_unreachable: "API HarmonyUI injoignable."
     dashboard_unreachable: "Tableau de bord HarmonyUI injoignable."
@@ -91,6 +93,7 @@ errors:
     invalid_position: "Position invalide : {arg0}. Positions autorisées : {arg1}."
     port_in_use: "Le port {arg0} est indisponible."
     port_range_missing: "Aucune plage de ports trouvée pour {arg0}."
+    request_sent: "Échec de l'envoi de la requête à l'API."
   security:
     configure_ssh: "Échec de la sécurisation de SSH."
     key_already_exists: "La clé {arg0} existe déjà... Arrêt..."
@@ -112,6 +115,7 @@ errors:
     config_file_missing: "Fichier de configuration introuvable."
     config_syntax_invalid: "Syntaxe de configuration invalide : {arg0}."
     software_name_missing: "Nom de l'application introuvable."
+    secure: "Échec de la sécurisation de {arg0}."
   user:
     invalid_group_name: "Nom de groupe invalide : {arg0}."
     not_found: "Utilisateur introuvable : {arg0}."
@@ -151,7 +155,7 @@ messages:
     system_on_disk: "Le système est sur le disque {arg0}."
   git:
     download_release: "Téléchargement de la version..."
-    found_release: "Version trouvée."
+    found_release: "Version trouvée: {arg0}."
   network:
     generate: "Génération du proxy..."
   security:
@@ -178,6 +182,7 @@ messages:
     update_configuration: "Veuillez mettre à jour le fichier de configuration et le logo utilisé avec les valeurs correctes."
     update_translation_files: "Fichiers de traduction mis à jour :"
     warn_about_translation_files: "N'oubliez pas d'ajouter une description correcte pour l'application dans les fichiers de traduction."
+    secure: "Sécurisation de {arg0}..."
   user:
     add_to_group: "Ajout de l'utilisateur {arg0} au groupe {arg1}..."
     ban: "Bannissement de l'utilisateur {arg0}..."
@@ -232,6 +237,7 @@ success:
     api_reachable: "API accessible."
     dashboard_reachable: "Tableau de bord accessible."
     generate: "Proxy généré."
+    request_sent: "Requête envoyée à l'API."
   security:
     create_vault: "Coffre fort créé."
     init_vault: "Coffre fort initialisé."
@@ -251,6 +257,9 @@ success:
   software:
     configure: "{arg0} configuré."
     create: "{arg0} créé."
+    secure: "{arg0} sécurisé."
+    remove: "{arg0} supprimé."
+    not_installed_by_user: "{arg0} n'est pas installé pour {arg1}. Continuons l'installation."
   user:
     add_to_group: "Utilisateur ajouté au groupe {arg0}."
     ban: "Utilisateur {arg0} banni pour {arg1}."
@@ -370,3 +379,10 @@ prompts:
     username: "Entrez un nouveau nom d'utilisateur : "
     username_invalid: "Le nom d'utilisateur contient des caractères spéciaux. Voulez-vous utiliser ce nom d'utilisateur assaini : {arg0}."
     username_valid: "Nom d'utilisateur validé."
+
+wizard:
+  add: "Assistant d'installation"
+  remove: "Assistant de désinstallation"
+  reset: "Assistant de réinitialisation"
+  update: "Assistant de mise à jour"
+  backup: "Assistant de sauvegarde"

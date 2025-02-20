@@ -13,6 +13,7 @@ errors:
     already_installed_by_user: "{arg0} is already installed for {arg1}."
     already_installed: "{arg0} is already installed."
     download_folder: "Failed to download the folder."
+    file_not_found: "File not found: {arg0}."
     insufficient_args: "Insufficient arguments."
     invalid_action: "Invalid action: {arg0}."
     invalid_command: "Invalid command: {arg0}."
@@ -82,6 +83,7 @@ errors:
     invalid_pull_action: "Invalid pull action: {arg0}."
     no_release_found: "No release found."
     no_tag_found: "No tag found."
+    version_not_greater: "The version {arg0} is not greater than the current version {arg1}."
   network:
     api_unreachable: "HarmonyUI API unreachable."
     dashboard_unreachable: "HarmonyUI dashboard unreachable."
@@ -91,6 +93,7 @@ errors:
     invalid_position: "Invalid position: {arg0}. Must be {arg1}."
     port_in_use: "Port {arg0} is unavailable."
     port_range_missing: "No port range found for {arg0}."
+    request_sent: "Failed to send request to the API."
   security:
     configure_ssh: "Failed to secure SSH."
     key_already_exists: "Key {arg0} already exists... Exiting."
@@ -112,6 +115,8 @@ errors:
     config_file_missing: "Configuration file not found."
     config_syntax_invalid: "Invalid configuration expression: {arg0}."
     software_name_missing: "Software name not found."
+    secure: "Failed to secure {arg0}."
+    remove: "Failed to remove {arg0}."
   user:
     invalid_group_name: "Invalid group: {arg0}."
     not_found: "User not found: {arg0}."
@@ -151,7 +156,7 @@ messages:
     system_on_disk: "System is on disk {arg0}."
   git:
     download_release: "Getting release..."
-    found_release: "Release found."
+    found_release: "Release found: {arg0}."
   network:
     generate: "Generating proxy..."
   security:
@@ -178,6 +183,7 @@ messages:
     update_configuration: "Please update the configuration file and the logo used with the correct values."
     update_translation_files: "Translation files updated: "
     warn_about_translation_files: "Don't forget to add a correct description for the software in the translations files."
+    secure: "Securing {arg0}..."
   user:
     add_to_group: "Adding user {arg0} to group {arg1}..."
     ban: "Banning user {arg0}..."
@@ -231,6 +237,7 @@ success:
     api_reachable: "API reachable."
     dashboard_reachable: "Dashboard reachable."
     generate: "Proxy generated."
+    request_sent: "Request sent to the API."
   security:
     create_vault: "Vault created."
     init_vault: "Vault initialized."
@@ -250,6 +257,9 @@ success:
   software:
     configure: "{arg0} configured."
     create: "{arg0} created."
+    secure: "{arg0} secured."
+    remove: "{arg0} removed."
+    not_installed_by_user: "{arg0} is not installed for {arg1}. Continuing installation."
   user:
     add_to_group: "User added to group {arg0}."
     ban: "User {arg0} banned for {arg1}."
@@ -369,3 +379,10 @@ prompts:
     username: "Enter a new username: "
     username_invalid: "Username contains special characters. Do you want to use this sanitized username: {arg0}."
     username_valid: "Username validated."
+
+wizard:
+  add: "Install Wizard"
+  remove: "Uninstall Wizard"
+  reset: "Reset Wizard"
+  update: "Update Wizard"
+  backup: "Backup Wizard"
