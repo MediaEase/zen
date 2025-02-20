@@ -98,7 +98,14 @@ zen::git::get_release() {
         mflibs::shell::text::red "$(zen::i18n::translate "errors.git.no_release_found" "$repo_name")"
         return 1
     fi
-    mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.git.found_release" "$repo_name"): $release_version")"
+    mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.git.found_release" "$release_version")")"
+    if [[ -n "$current_conf" && -n "${current_conf[version]}" ]]; then
+        if mflibs::verify::version "$release_version" "${current_conf[version]}"; then
+            rm -rf "$target_dir"
+        else
+            mflibs::status::error "$(zen::i18n::translate "error.git.version_mismatch" "$release_version" "${current_conf[version]}")"
+        fi
+    fi
     [[ -d $target_dir ]] && rm -rf "$target_dir"
     mflibs::dir::mkcd "$target_dir"
     wget -q "$release_url"
