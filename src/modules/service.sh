@@ -200,6 +200,10 @@ zen::service::build::add_entry() {
 	local key="$1"
 	local value="$2"
 
+	if ! declare -p api_service 2>/dev/null | grep -q 'declare -A'; then
+        mflibs::status::error "Internal error: api_service must be declared as an associative array."
+    fi
+
 	if [[ -n "${api_service[$key]}" ]]; then
 		mflibs::status::error "$(zen::i18n::translate "messages.service.entry_exists" "$key")"
 	fi
