@@ -507,3 +507,35 @@ EOL
 	mflibs::shell::text::yellow "# https://mediaease.github.io/docs/mediaease/components/zen/README.md"
 	mflibs::shell::text::yellow "################################################################################"
 }
+
+# @function zen::service::get_version
+# @description Retrieves the version of an application using its API.
+# @arg $1 string The name of the application.
+# shellcheck disable=SC2154
+zen::software::get_version() {
+	local app="$1"
+	local base_url="http://127.0.0.1"
+	local software_version="unknown"
+	if [[ -z "${api_service[default_port]}" ]]; then
+		for key in "${!current_config[@]}"; do
+			api_service["$key"]="${current_config[$key]}"
+		done
+	fi
+	case "$app" in
+	radarr | radarr4k)
+		endpoint="$base_url:${api_service[default_port]}${api_service[root_url]}/api/v3/system/status"
+		software_version=$(zen::request::app_request_get "$endpoint" | jq -r '.version')
+		;;
+	sonarr | sonarr4k)
+		software_version=$(zen::request::app_request_get "$base_url:${api_service[default_port]}${api_service[root_url]}/api/v3/system/status" | jq -r '.version')
+		#software_version=$(curl -ks "$base_url:${api_service[default_port]}${api_service[root_url]}"/api/v3/system/status -H "X-API-KEY: ${api_service[apikey]}" | jq -r '.version')
+		;;
+	*)
+		software_version="unknown"
+		;;
+	esac
+	if [[ -z "${api_service[version]}" ]]; then
+		api_service["version"]="$software_version"
+	fi
+	echo "$software_version"
+}
