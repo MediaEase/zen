@@ -99,15 +99,11 @@ zen::software::radarr::update() {
 #   zen software remove radarr -u <username>
 zen::software::radarr::remove() {
 	local service_name
-	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-
+	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::service::manage "stop" "$service_name"
 	zen::service::manage "disable" "$service_name"
-	rm -f "$service_file"
-	zen::proxy::remove "$app_name" "${user[username]}"
-	rm -rf /opt/"${user[username]}"/"$app_name"
-	rm -rf /home/"${user[username]}"/.config/"$app_name"
-	rm -rf /home/"${user[username]}"/tmp/"$app_name"
+	zen::software::remove "$app_name"
+	zen::database::delete "service" "name = '${service_name}'"
 }
 
 # @function zen::software::radarr::backup
@@ -117,8 +113,9 @@ zen::software::radarr::remove() {
 # @example
 #   zen software backup radarr -u <username>
 zen::software::radarr::backup() {
-	local username="$1"
-	local app_name="$2"
+	local app_name="$1"
+	[ -z "$2" ] && backup_context="user" || backup_context="$2"
+	zen::software::backup::create "$app_name" "${backup_context}"
 }
 
 # @function zen::software::radarr::reset
@@ -128,19 +125,18 @@ zen::software::radarr::backup() {
 # @example
 #   zen software reset radarr -u <username>
 zen::software::radarr::reset() {
-	local username="$1"
-	local app_name="$2"
+	zen::software::reset "$app_name"
 }
 
 # @function zen::software::radarr::reinstall
 # @alias Reinstall Radarr
 # @description Reinstalls Radarr for a user.
-# @note This function is currently a placeholder and needs implementation.
 # @example
 #   zen software reinstall radarr -u <username>
 zen::software::radarr::reinstall() {
-	local username="$1"
-	local app_name="$2"
+	zen::software::radarr::read_config "update"
+	zen::software::radarr::remove
+	zen::software::radarr::add
 }
 
 # @function zen::software::radarr::read_config
