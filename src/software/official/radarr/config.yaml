@@ -20,6 +20,7 @@ arguments:
     - service: /etc/systemd/system/$app_name@.service
     - config: /home/%i/.config/$app_name/config.xml
     - proxy: /etc/caddy/softwares/%i.$app_name.caddy
+    - database: /home/%i/.config/$app_name/$app_name.db
   paths:
     - backup: /home/%i/.mediaease/backups/$app_name
     - data: /home/%i/.config/$app_name
