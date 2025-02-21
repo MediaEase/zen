@@ -13,7 +13,6 @@
 # @description Adds Bazarr for a user, including downloading, configuring, and starting the service.
 # @global app_name The name of the application (Bazarr).
 # @global config An associative array repreenting useful variables taken from the software config file
-# @global software_config_file Path to the software's configuration file.
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
@@ -22,48 +21,53 @@
 # @example
 #   zen software add bazarr -u <username> -o branch=beta # installs the beta (nightly) version
 zen::software::bazarr::add() {
-    # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
-    # configure the app. This will also generate the proxy file
-    zen::software::bazarr::config "${software_options[is_prerelease]}"
-    # create a backup file
-    zen::software::backup::create "$app_name" "${config[config_file]}"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
+	# configure the app. This will also generate the proxy file
+	zen::software::bazarr::config
+	# generate the service file, this will also start it
+	zen::service::generate "$app_name" false true
+	# Set up the authentication method (required for Bazarr)
+	zen::software::bazarr::secure
+	# create a backup file
+	zen::software::bazarr::backup "$app_name" "base"
 }
 
-################################################################################
 # @function zen::software::bazarr::config
 # @internal
 # @description Configures Bazarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string Indicates whether to use a prerelease version of Bazarr.
 # @global user An associative array containing user-specific information.
 # @example
-#   zen::software::bazarr::config "false"  # disables pre-release (develop)
-# @example
-#   zen::software::bazarr::config "true" # enables pre-release (nightly)
+#   zen::software::bazarr::config
 zen::software::bazarr::config() {
-    local is_prerelease="$1"
-    declare -g url_base
-    zen::software::autogen
-    echo "3.11" >"/opt/${user[username]}/$app_name/.python-version"
-    zen::workspace::venv::create "/opt/${user[username]}/$app_name" "${user[username]}" "true"
-    rm -f "/opt/${user[username]}/$app_name/.python-version"
-    zen::service::generate "$app_name" "${config[config_file]}"
-    zen::service::manage "stop" "$app_name@${user[username]}.service"
-    mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
-    url_base="/${user[username]}/${app_name}"
-    [[ ${software_options[is_prerelease]} == "true" ]] && branch="develop" || branch="master"
-    sed -i "/^auth:/,/^[^ ]/s/password: .*/password: ${user[password]}/; \
-        /^auth:/,/^[^ ]/s/username: .*/username: ${user[username]}/; \
-        /^general:/,/^[^ ]/s|url_base: .*|url_base: $url_base|; \
-        /^general:/,/^[^ ]/s/branch: .*/branch: $branch/; \
-        /^general:/,/^[^ ]/s/port: .*/port: ${default_port}/" /home/"${user[username]}"/.config/"$app_name"/config.yaml
-    # generate the proxy configuration
-    zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
-    zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
-    zen::permission::user_exec "/opt/${user[username]}/$app_name/Bazarr" "${user[username]}"
-    zen::proxy::generate "$app_name" "$default_port" "$url_base"
-    zen::service::manage "start" "$app_name@${user[username]}.service"
-    mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
+	declare -g url_base
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
+	zen::software::autogen
+	url_base="/${user[username]}/${app_name}"
+	[[ ${software_options[is_prerelease]} == "true" ]] && branch="develop" || branch="master"
+	mkdir -p "/home/${user[username]}/.config/${app_name}"
+	cat >"/home/${user[username]}/.config/${app_name}/config.xml" <<RCON
+<Config>
+	<BindAddress>127.0.0.1</BindAddress>
+	<Port>${default_port}</Port>
+	<UrlBase>${url_base}</UrlBase>
+	<EnableSsl>False</EnableSsl>
+	<SslPort>${ssl_port}</SslPort>
+	<SslCertPath></SslCertPath>
+	<SslCertPassword></SslCertPassword>
+	<ApiKey>${apikey}</ApiKey>
+	<LogLevel>Info</LogLevel>
+	<AnalyticsEnabled>False</AnalyticsEnabled>
+	<Branch>${branch}</Branch>
+	<UpdateAutomatically>True</UpdateAutomatically>
+	<UpdateMechanism>BuiltIn</UpdateMechanism>
+	<LaunchBrowser>False</LaunchBrowser>
+	<InstanceName>${config[app_name]}</InstanceName>
+	<Theme>dark</Theme>
+</Config>
+RCON
+	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+	zen::proxy::generate "$app_name" "$default_port" "$url_base"
+	mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
 }
 
 # @function zen::software::bazarr::update
@@ -73,19 +77,22 @@ zen::software::bazarr::config() {
 # @global software_config_file Path to the software's configuration file.
 # @example
 #   zen software update bazarr -u <username>
-# @example
-#   zen software update bazarr -u <username> -o branch=beta # update to latest beta (nightly) version
 zen::software::bazarr::update() {
-    local service_name
-    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-    zen::service::manage "stop" "$service_name"
-    rm -rf "/opt/${user[username]}/$app_name"
-    is_prerelease="false"
-    [[ "$software_branch" == "beta" ]] && is_prerelease="true"
-    # grab the correct release
-    zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[config_file]}"
-    zen::service::manage "start" "$service_name"
+	local service_name
+	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::software::bazarr::read_config
+	current_conf[version]="v$(zen::software::get_version "$app_name")"
+	zen::git::prerelease_check "${config[github]}" "${current_conf[version]}"
+	zen::service::manage "stop" "$service_name"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "${config[release_name]}"
+	if [ $? -eq 2 ]; then
+		zen::service::manage "restart" "$service_name"
+		return 1
+	fi
+	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+	zen::software::bazarr::backup "$app_name" "manual"
+	sleep 2
+	zen::service::manage "restart" "$service_name"
 }
 
 # @function zen::software::bazarr::remove
@@ -95,16 +102,12 @@ zen::software::bazarr::update() {
 # @example
 #   zen software remove bazarr -u <username>
 zen::software::bazarr::remove() {
-    local service_name
-    is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-    [ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-
-    zen::service::manage "disable" "$service_name"
-    rm -f "$service_file"
-    zen::proxy::remove "$app_name" "${user[username]}"
-    rm -rf /opt/"${user[username]}"/"$app_name"
-    rm -rf /home/"${user[username]}"/.config/"$app_name"
-    rm -rf /home/"${user[username]}"/tmp/"$app_name"
+	local service_name
+	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::service::manage "stop" "$service_name"
+	zen::service::manage "disable" "$service_name"
+	zen::software::remove "$app_name"
+	zen::database::delete "service" "name = '${service_name}'"
 }
 
 # @function zen::software::bazarr::backup
@@ -114,8 +117,9 @@ zen::software::bazarr::remove() {
 # @example
 #   zen software backup bazarr -u <username>
 zen::software::bazarr::backup() {
-    local username="$1"
-    local app_name="$2"
+	local app_name="$1"
+	[ -z "$2" ] && backup_context="user" || backup_context="$2"
+	zen::software::backup::create "$app_name" "${backup_context}"
 }
 
 # @function zen::software::bazarr::reset
@@ -125,17 +129,67 @@ zen::software::bazarr::backup() {
 # @example
 #   zen software reset bazarr -u <username>
 zen::software::bazarr::reset() {
-    local username="$1"
-    local app_name="$2"
+	zen::software::reset "$app_name"
 }
 
 # @function zen::software::bazarr::reinstall
 # @alias Reinstall Bazarr
 # @description Reinstalls Bazarr for a user.
-# @note This function is currently a placeholder and needs implementation.
 # @example
 #   zen software reinstall bazarr -u <username>
 zen::software::bazarr::reinstall() {
-    local username="$1"
-    local app_name="$2"
+	zen::software::bazarr::read_config "update"
+	zen::software::bazarr::remove
+	zen::software::bazarr::add
+}
+
+# @function zen::software::bazarr::read_config
+# @internal
+# @description Reads the Bazarr configuration file and sets the variables.
+# @global current_conf An associative array containing the current configuration.
+# @example
+#   zen::software::bazarr::read_config
+# shellcheck disable=SC2034
+zen::software::bazarr::read_config() {
+	declare -A -g current_conf api_service
+    while IFS= read -r line; do
+        case "$line" in
+            *"<ApiKey>"*)
+                apikey=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<Port>"*)
+                default_port=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<SslPort>"*)
+                ssl_port=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<UrlBase>"*)
+                url_base=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+        esac
+    done < <(grep -E "<ApiKey>|<Port>|<SslPort>|<UrlBase>" "/home/${user[username]}/.config/${app_name}/config.xml")
+	current_conf[default_port]="$default_port"
+	current_conf[ssl_port]="$ssl_port"
+	current_conf[apikey]="$apikey"
+	current_conf[root_url]="$url_base"
+	api_service=(
+		[default_port]="${current_conf[default_port]}"
+		[ssl_port]="${current_conf[ssl_port]}"
+		[apikey]="${current_conf[apikey]}"
+		[root_url]="${current_conf[root_url]}"
+	)
+}
+
+# @function zen::software::bazarr::secure
+# @internal
+# @description Secures Bazarr for a user, including setting up configuration files and proxy settings.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::bazarr::secure
+zen::software::bazarr::secure() {
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.secure" "$app_name")"
+	json_payload=$(jq -n --arg bindAddress "127.0.0.1" --argjson port "${api_service[default_port]:-0}" --argjson sslPort "${api_service[ssl_port]:-0}" --argjson enableSsl false --argjson launchBrowser false --arg authenticationMethod "forms" --arg authenticationRequired "enabled" --argjson analyticsEnabled false --arg username "${user[username]}" --arg password "${user[password]}" --arg passwordConfirmation "${user[password]}" --arg logLevel "info" --argjson logSizeLimit 1 --arg consoleLogLevel "" --arg branch "${branch}" --arg apiKey "${api_service[apikey]}" --arg sslCertPath "" --arg sslCertPassword "" --arg urlBase "${api_service[root_url]}" --arg instanceName "${config[app_name]}" --arg applicationUrl "" --argjson updateAutomatically true --arg updateMechanism "builtIn" --arg updateScriptPath "" --argjson proxyEnabled false --arg proxyType "http" --arg proxyHostname "" --argjson proxyPort 8080 --arg proxyUsername "" --arg proxyPassword "" --arg proxyBypassFilter "" --argjson proxyBypassLocalAddresses true --arg certificateValidation "enabled" --arg backupFolder "Backups" --argjson backupInterval 7 --argjson backupRetention 28 --argjson trustCgnatIpAddresses false --argjson id 1 '{bindAddress:$bindAddress,port:$port,sslPort:$sslPort,enableSsl:$enableSsl,launchBrowser:$launchBrowser,authenticationMethod:$authenticationMethod,authenticationRequired:$authenticationRequired,analyticsEnabled:$analyticsEnabled,username:$username,password:$password,passwordConfirmation:$passwordConfirmation,logLevel:$logLevel,logSizeLimit:$logSizeLimit,consoleLogLevel:$consoleLogLevel,branch:$branch,apiKey:$apiKey,sslCertPath:$sslCertPath,sslCertPassword:$sslCertPassword,urlBase:$urlBase,instanceName:$instanceName,applicationUrl:$applicationUrl,updateAutomatically:$updateAutomatically,updateMechanism:$updateMechanism,updateScriptPath:$updateScriptPath,proxyEnabled:$proxyEnabled,proxyType:$proxyType,proxyHostname:$proxyHostname,proxyPort:$proxyPort,proxyUsername:$proxyUsername,proxyPassword:$proxyPassword,proxyBypassFilter:$proxyBypassFilter,proxyBypassLocalAddresses:$proxyBypassLocalAddresses,certificateValidation:$certificateValidation,backupFolder:$backupFolder,backupInterval:$backupInterval,backupRetention:$backupRetention,trustCgnatIpAddresses:$trustCgnatIpAddresses,id:$id}')
+	url="http://127.0.0.1:${api_service[default_port]:-0}/${user[username]}/${config[altname]}/api/v3/config/host"
+	cd /srv/harmonyui && mflibs::log "su -c \"symfony console harmony:beautify:xml /home/${user[username]}/.config/${app_name}/config.xml\" \"${user[username]}\""
+	zen::request::app_request_save "${url}" "PUT" "${json_payload}"
 }

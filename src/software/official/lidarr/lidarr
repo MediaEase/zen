@@ -9,34 +9,36 @@
 # @copyright Copyright (C) 2025, MediaEase
 
 # @function zen::software::lidarr::add
-# @description Adds a Lidarr for a user, including downloading, configuring, and starting the service.
-# @global software_config_file Path to the software's configuration file.
+# @alias Install Lidarr
+# @description Adds Lidarr for a user, including downloading, configuring, and starting the service.
+# @global app_name The name of the application (Lidarr).
+# @global config An associative array repreenting useful variables taken from the software config file
 # @global user An associative array containing user-specific information.
 # @note Disables SC2154 because the variable is defined in the main script.
 # shellcheck disable=SC2154
+# @example
+#   zen software add lidarr -u <username>
+# @example
+#   zen software add lidarr -u <username> -o branch=beta # installs the beta (nightly) version
 zen::software::lidarr::add() {
-	# grab the correct release
 	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[release_name]}"
 	# configure the app. This will also generate the proxy file
-	zen::software::lidarr::config "${software_options[is_prerelease]}"
+	zen::software::lidarr::config
 	# generate the service file, this will also start it
-	zen::service::generate "$app_name" "${config[config_file]}"
+	zen::service::generate "$app_name" false true
+	# Set up the authentication method (required for Lidarr)
+	zen::software::lidarr::secure
 	# create a backup file
-	zen::software::backup::create "$app_name" "${config[config_file]}"
+	zen::software::lidarr::backup "$app_name" "base"
 }
 
-################################################################################
 # @function zen::software::lidarr::config
+# @internal
 # @description Configures Lidarr for a user, including setting up configuration files and proxy settings.
-# @arg $1 string Indicates whether to use a prerelease version of Lidarr.
 # @global user An associative array containing user-specific information.
 # @example
-#   # the following disables pre-release (develop):
-#   zen::software::lidarr::config "false"
-#   # the following enables pre-release (nightly):
-#   zen::software::lidarr::config "true"
+#   zen::software::lidarr::config
 zen::software::lidarr::config() {
-	local is_prerelease="$1"
 	declare -g url_base
 	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.configure" "$app_name")"
 	zen::software::autogen
@@ -59,72 +61,135 @@ zen::software::lidarr::config() {
 	<UpdateAutomatically>True</UpdateAutomatically>
 	<UpdateMechanism>BuiltIn</UpdateMechanism>
 	<LaunchBrowser>False</LaunchBrowser>
-	<InstanceName>${config[altname]}</InstanceName>
+	<InstanceName>${config[app_name]}</InstanceName>
 	<Theme>dark</Theme>
 </Config>
 RCON
-
-	# generate the proxy configuration
 	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
-	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
-	zen::permission::user_exec "/opt/${user[username]}/$app_name/Lidarr" "${user[username]}"
 	zen::proxy::generate "$app_name" "$default_port" "$url_base"
 	mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
 }
 
 # @function zen::software::lidarr::update
+# @alias Update Lidarr
 # @description Updates Lidarr for a user, including stopping the service, downloading the latest release, and restarting.
 # @global user An associative array containing user-specific information.
 # @global software_config_file Path to the software's configuration file.
+# @example
+#   zen software update lidarr -u <username>
 zen::software::lidarr::update() {
 	local service_name
-	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::software::lidarr::read_config
+	current_conf[version]="v$(zen::software::get_version "$app_name")"
+	zen::git::prerelease_check "${config[github]}" "${current_conf[version]}"
 	zen::service::manage "stop" "$service_name"
-	rm -rf "/opt/${user[username]}/$app_name"
-	is_prerelease="false"
-	[[ "$software_branch" == "beta" ]] && is_prerelease="true"
-	# grab the correct release
-	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "${software_options[is_prerelease]}" "${config[config_file]}"
-	zen::service::manage "start" "$service_name"
+	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "${config[release_name]}"
+	if [ $? -eq 2 ]; then
+		zen::service::manage "restart" "$service_name"
+		return 1
+	fi
+	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
+	zen::software::lidarr::backup "$app_name" "manual"
+	sleep 2
+	zen::service::manage "restart" "$service_name"
 }
 
 # @function zen::software::lidarr::remove
+# @alias Remove Lidarr
 # @description Removes Lidarr for a user, including disabling and deleting the service and cleaning up files.
 # @global user An associative array containing user-specific information.
+# @example
+#   zen software remove lidarr -u <username>
 zen::software::lidarr::remove() {
 	local service_name
-	is_multi=$(zen::software::get_config_key_value "$software_config_file" '.arguments.multi_user')
-	[ "$is_multi" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
-
+	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
+	zen::service::manage "stop" "$service_name"
 	zen::service::manage "disable" "$service_name"
-	rm -f "$service_file"
-	zen::proxy::remove "$app_name" "${user[username]}"
-	rm -rf /opt/"${user[username]}"/"$app_name"
-	rm -rf /home/"${user[username]}"/.config/"$app_name"
-	rm -rf /home/"${user[username]}"/tmp/"$app_name"
+	zen::software::remove "$app_name"
+	zen::database::delete "service" "name = '${service_name}'"
 }
 
 # @function zen::software::lidarr::backup
+# @alias Backup Lidarr
 # @description Creates a backup for Lidarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software backup lidarr -u <username>
 zen::software::lidarr::backup() {
-	local username="$1"
-	local app_name="$2"
+	local app_name="$1"
+	[ -z "$2" ] && backup_context="user" || backup_context="$2"
+	zen::software::backup::create "$app_name" "${backup_context}"
 }
 
 # @function zen::software::lidarr::reset
+# @alias Reset Lidarr
 # @description Resets Lidarr settings for a user.
 # @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reset lidarr -u <username>
 zen::software::lidarr::reset() {
-	local username="$1"
-	local app_name="$2"
+	zen::software::reset "$app_name"
 }
 
 # @function zen::software::lidarr::reinstall
+# @alias Reinstall Lidarr
 # @description Reinstalls Lidarr for a user.
-# @note This function is currently a placeholder and needs implementation.
+# @example
+#   zen software reinstall lidarr -u <username>
 zen::software::lidarr::reinstall() {
-	local username="$1"
-	local app_name="$2"
+	zen::software::lidarr::read_config "update"
+	zen::software::lidarr::remove
+	zen::software::lidarr::add
+}
+
+# @function zen::software::lidarr::read_config
+# @internal
+# @description Reads the Lidarr configuration file and sets the variables.
+# @global current_conf An associative array containing the current configuration.
+# @example
+#   zen::software::lidarr::read_config
+# shellcheck disable=SC2034
+zen::software::lidarr::read_config() {
+	declare -A -g current_conf api_service
+    while IFS= read -r line; do
+        case "$line" in
+            *"<ApiKey>"*)
+                apikey=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<Port>"*)
+                default_port=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<SslPort>"*)
+                ssl_port=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+            *"<UrlBase>"*)
+                url_base=$(echo "$line" | sed -E 's/<[^>]+>//g' | tr -d '[:space:]')
+                ;;
+        esac
+    done < <(grep -E "<ApiKey>|<Port>|<SslPort>|<UrlBase>" "/home/${user[username]}/.config/${app_name}/config.xml")
+	current_conf[default_port]="$default_port"
+	current_conf[ssl_port]="$ssl_port"
+	current_conf[apikey]="$apikey"
+	current_conf[root_url]="$url_base"
+	api_service=(
+		[default_port]="${current_conf[default_port]}"
+		[ssl_port]="${current_conf[ssl_port]}"
+		[apikey]="${current_conf[apikey]}"
+		[root_url]="${current_conf[root_url]}"
+	)
+}
+
+# @function zen::software::lidarr::secure
+# @internal
+# @description Secures Lidarr for a user, including setting up configuration files and proxy settings.
+# @global user An associative array containing user-specific information.
+# @example
+#   zen::software::lidarr::secure
+zen::software::lidarr::secure() {
+	mflibs::shell::text::white "$(zen::i18n::translate "messages.software.secure" "$app_name")"
+	json_payload=$(jq -n --arg bindAddress "127.0.0.1" --argjson port "${api_service[default_port]:-0}" --argjson sslPort "${api_service[ssl_port]:-0}" --argjson enableSsl false --argjson launchBrowser false --arg authenticationMethod "forms" --arg authenticationRequired "enabled" --argjson analyticsEnabled false --arg username "${user[username]}" --arg password "${user[password]}" --arg passwordConfirmation "${user[password]}" --arg logLevel "info" --argjson logSizeLimit 1 --arg consoleLogLevel "" --arg branch "${branch}" --arg apiKey "${api_service[apikey]}" --arg sslCertPath "" --arg sslCertPassword "" --arg urlBase "${api_service[root_url]}" --arg instanceName "${config[app_name]}" --arg applicationUrl "" --argjson updateAutomatically true --arg updateMechanism "builtIn" --arg updateScriptPath "" --argjson proxyEnabled false --arg proxyType "http" --arg proxyHostname "" --argjson proxyPort 8080 --arg proxyUsername "" --arg proxyPassword "" --arg proxyBypassFilter "" --argjson proxyBypassLocalAddresses true --arg certificateValidation "enabled" --arg backupFolder "Backups" --argjson backupInterval 7 --argjson backupRetention 28 --argjson trustCgnatIpAddresses false --argjson id 1 '{bindAddress:$bindAddress,port:$port,sslPort:$sslPort,enableSsl:$enableSsl,launchBrowser:$launchBrowser,authenticationMethod:$authenticationMethod,authenticationRequired:$authenticationRequired,analyticsEnabled:$analyticsEnabled,username:$username,password:$password,passwordConfirmation:$passwordConfirmation,logLevel:$logLevel,logSizeLimit:$logSizeLimit,consoleLogLevel:$consoleLogLevel,branch:$branch,apiKey:$apiKey,sslCertPath:$sslCertPath,sslCertPassword:$sslCertPassword,urlBase:$urlBase,instanceName:$instanceName,applicationUrl:$applicationUrl,updateAutomatically:$updateAutomatically,updateMechanism:$updateMechanism,updateScriptPath:$updateScriptPath,proxyEnabled:$proxyEnabled,proxyType:$proxyType,proxyHostname:$proxyHostname,proxyPort:$proxyPort,proxyUsername:$proxyUsername,proxyPassword:$proxyPassword,proxyBypassFilter:$proxyBypassFilter,proxyBypassLocalAddresses:$proxyBypassLocalAddresses,certificateValidation:$certificateValidation,backupFolder:$backupFolder,backupInterval:$backupInterval,backupRetention:$backupRetention,trustCgnatIpAddresses:$trustCgnatIpAddresses,id:$id}')
+	url="http://127.0.0.1:${api_service[default_port]:-0}/${user[username]}/${config[altname]}/api/v3/config/host"
+	cd /srv/harmonyui && mflibs::log "su -c \"symfony console harmony:beautify:xml /home/${user[username]}/.config/${app_name}/config.xml\" \"${user[username]}\""
+	zen::request::app_request_save "${url}" "PUT" "${json_payload}"
 }

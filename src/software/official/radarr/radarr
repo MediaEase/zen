@@ -77,8 +77,6 @@ RCON
 # @global software_config_file Path to the software's configuration file.
 # @example
 #   zen software update radarr -u <username>
-# @example
-#   zen software update radarr -u <username> -o branch=beta # update to latest beta (nightly) version
 zen::software::radarr::update() {
 	local service_name
 	[ "${config[is_multi]}" == "true" ] && service_name="$app_name@${user[username]}.service" || service_name="$app_name.service"
