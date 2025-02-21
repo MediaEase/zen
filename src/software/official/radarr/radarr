@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/official/radarr/radarr.sh
-# @version 1.4.1
+# @version 1.4.2
 # @project MediaEase
 # @description Radarr handler
 # @author Thomas Chauveau (tomcdj71)

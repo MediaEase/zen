@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/prompt.sh
 # @project MediaEase
-# @version 1.8.11
+# @version 1.8.12
 # @description Contains a library of internationalization functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com

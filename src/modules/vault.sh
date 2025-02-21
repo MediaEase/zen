@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/vault.sh
 # @project MediaEase
-# @version 1.1.47
+# @version 1.1.48
 # @description A library for managing the secure vault in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
