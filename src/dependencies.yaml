@@ -85,7 +85,7 @@ komga:
 lazylibrarian:
   apt: python3-dev python3-pip python3-openssl python3-setuptools python3-venv
 lidarr:
-  apt: mediainfo
+  apt: mediainfo libchromaprint-tools
 medusa:
   apt: openssl
 mylar3:
@@ -125,9 +125,9 @@ qbittorrent:
 quota:
   apt: quota
 radarr:
-  apt: curl sqlite3 mediainfo
+  apt: mediainfo
 radarr4k:
-  apt: curl sqlite3 mediainfo
+  apt: mediainfo
 rclone:
   apt: fuse3 libfuse3-dev
 readarr:
