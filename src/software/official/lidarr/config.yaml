@@ -32,4 +32,4 @@ arguments:
     - subdomain: true
     - branches: [main, beta]
   release_name: linux-core-x64.tar.gz
-  executable_files: [/opt/%i/$app_name/Lidarr]
+  executable_files: [/opt/%i/$app_name/Lidarr, /opt/%i/$app_name/fpcalc]
