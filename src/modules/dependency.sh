@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/dependency.sh
 # @project MediaEase
-# @version 1.5.13
+# @version 1.6.0
 # @description Contains a library of functions used in the MediaEase Project for managing dependencies.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
