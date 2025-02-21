@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/official/prowlarr/prowlarr.sh
-# @version 1.0.15
+# @version 1.0.27
 # @project MediaEase
 # @description Prowlarr handler
 # @author Thomas Chauveau (tomcdj71)

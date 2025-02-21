@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/official/whisparr/whisparr.sh
-# @version 1.1.6
+# @version 1.1.15
 # @project MediaEase
 # @description Whisparr handler
 # @author Thomas Chauveau (tomcdj71)

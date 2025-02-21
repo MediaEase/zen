@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file software/official/emby/emby.sh
-# @version 1.1.8
+# @version 1.1.18
 # @project MediaEase
 # @description Emby handler
 # @author Thomas Chauveau (tomcdj71)
