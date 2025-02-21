@@ -71,6 +71,7 @@ zen::git::clone() {
 # @arg $4 string Name or pattern of the release file to be retrieved.
 # @exitcode 0 on successful retrieval and extraction.
 # @exitcode 1 on failure.
+# @exitcode 2 if the current version is not greater than the release version.
 # @stdout Details the process of downloading and extracting the release.
 zen::git::get_release() {
     local target_dir="$1"
@@ -96,16 +97,17 @@ zen::git::get_release() {
     fi
     if [[ -z "$release_url" ]]; then
         mflibs::shell::text::red "$(zen::i18n::translate "errors.git.no_release_found" "$repo_name")"
-        return 1
+        exit 1
     fi
     mflibs::shell::text::white::sl "$(mflibs::shell::text::cyan "$(zen::i18n::translate "messages.git.found_release" "$release_version")")"
-    if [[ -n "$current_conf" && -n "${current_conf[version]}" ]]; then
+    if [[ -n "${current_conf[version]}" ]]; then
         if mflibs::verify::version "$release_version" "${current_conf[version]}"; then
-            rm -rf "$target_dir"
+            mflibs::status::info "$(zen::i18n::translate "info.git.version_greater" "$release_version" "${current_conf[version]}")"
         else
-            mflibs::status::error "$(zen::i18n::translate "error.git.version_mismatch" "$release_version" "${current_conf[version]}")"
+            mflibs::shell::text::red "$(zen::i18n::translate "errors.git.version_not_greater" "$release_version" "${current_conf[version]}")"
+            return 2
         fi
-    fi
+    fi 
     [[ -d $target_dir ]] && rm -rf "$target_dir"
     mflibs::dir::mkcd "$target_dir"
     wget -q "$release_url"
