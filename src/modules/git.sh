@@ -124,6 +124,18 @@ zen::git::get_release() {
     else
         zen::permission::read_exec "$target_dir" "www-data" "www-data"
     fi
+    if [[ -n "${config[executable_files]}" ]]; then
+        files_str="${config[executable_files]}"
+        files_str="${files_str#[}" 
+        files_str="${files_str%]}"
+        IFS=',' read -ra files <<< "$files_str"
+        for file in "${files[@]}"; do
+            file="$(echo "$file" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+            # shellcheck disable=SC2154
+            file="$(echo "$file" | sed -e "s/%i/${user[username]}/g" -e "s/\$app_name/${config[altname]}/g")"
+            zen::permission::user_exec "$file" "$username" "$group"
+        done
+    fi
     mflibs::shell::text::green "$(zen::i18n::translate "success.git.download_release" "$repo_name")"
 }
 

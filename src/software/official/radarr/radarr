@@ -66,8 +66,6 @@ zen::software::radarr::config() {
 </Config>
 RCON
 	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
-	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
-	zen::permission::user_exec "/opt/${user[username]}/$app_name/${config[app_name]}" "${user[username]}"
 	zen::proxy::generate "$app_name" "$default_port" "$url_base"
 	mflibs::shell::text::green "$(zen::i18n::translate "success.software.configure" "$app_name")"
 }
@@ -88,13 +86,15 @@ zen::software::radarr::update() {
 	current_conf[version]="v$(zen::software::get_version "$app_name")"
 	zen::git::prerelease_check "${config[github]}" "${current_conf[version]}"
 	zen::service::manage "stop" "$service_name"
-	rm -rf "/opt/${user[username]}/$app_name"
 	zen::git::get_release "/opt/${user[username]}/$app_name" "${config[github]}" "$is_prerelease" "${config[release_name]}"
+	if [ $? -eq 2 ]; then
+		zen::service::manage "restart" "$service_name"
+		return 1
+	fi
 	zen::permission::read_exec "/home/${user[username]}/.config/${app_name}" "${user[username]}"
-	zen::permission::read_exec "/opt/${user[username]}/${app_name}" "${user[username]}"
-	zen::permission::user_exec "/opt/${user[username]}/$app_name/${config[app_name]}" "${user[username]}"
 	zen::software::radarr::backup "$app_name" "manual"
-	zen::service::manage "start" "$service_name"
+	sleep 2
+	zen::service::manage "restart" "$service_name"
 }
 
 # @function zen::software::radarr::remove

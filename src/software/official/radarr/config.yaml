@@ -33,3 +33,4 @@ arguments:
     - subdomain: true
     - branches: [main, beta]
   release_name: linux-core-x64.tar.gz
+  executable_files: [/opt/%i/$app_name/Radarr, /opt/%i/$app_name/Sonarr]
