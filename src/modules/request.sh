@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/requests.sh
 # @project MediaEase
-# @version 1.1.2
+# @version 1.1.3
 # @description Contains a library of functions used in the MediaEase Project for managing requests.
 # @license BSD-3 Clause (Included in LICENSE)
 # @copyright Copyright (C) 2025, MediaEase

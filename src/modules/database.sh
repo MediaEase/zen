@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @file modules/database.sh
 # @project MediaEase
-# @version 1.0.26
+# @version 1.0.27
 # @description Contains a library of database functions used in the MediaEase project.
 # @author Thomas Chauveau (tomcdj71)
 # @author_contact thomas.chauveau.pro@gmail.com
